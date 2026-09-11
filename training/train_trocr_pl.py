@@ -6,7 +6,7 @@ Pozwala trenować 11B modeli na jednym GPU (8–16 GB VRAM) zamiast full-FT.
 Wskazówki Slayer (https://slayer.fabryka.ai/trening):
   - QLoRA / LoRA: 4-bit + adaptery → 11–14B na jednym GPU
   - Unsloth / Liger: 2–4× szybciej, mniej VRAM
-  - NEFTune + packing: darmowy zysk jakości i przepustowości
+  - NEFTune: darmowy zysk jakości
 
 Uruchomienie (wymaga CUDA + bitsandbytes + peft):
 
@@ -47,7 +47,7 @@ def _collate(batch, processor):
 
 def _inject_lora(model, lora_rank: int, lora_alpha: int) -> object:
     """Wstrzykuje adaptery LoRA do dekodera modelu (PEFT)."""
-    from peft import LoraConfig, get_peft_model
+    from peft import LoraConfig, TaskType, get_peft_model
 
     # TrOCR: dekoder to TrOCRForCausalLM — targetujemy projekcje attention
     lora_config = LoraConfig(
@@ -56,7 +56,7 @@ def _inject_lora(model, lora_rank: int, lora_alpha: int) -> object:
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         lora_dropout=0.05,
         bias="none",
-        task_feature_type="seq2seq-lm",  # peft >= 0.11
+        task_type=TaskType.SEQ_2_SEQ_LM,
     )
     return get_peft_model(model, lora_config)
 
@@ -73,7 +73,6 @@ def train(
     lora_alpha: int = 32,
     use_4bit: bool = True,
     neftune_noise: float = 5.0,
-    packing: bool = True,
 ) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cpu":
@@ -134,14 +133,13 @@ def train(
         save_strategy="epoch",
         eval_strategy="epoch" if val_ds else "no",
         predict_with_generate=True,
-        fp16=(device == "cuda"),
+        # bf16 dopasowane do bnb_4bit_compute_dtype; fp16 tylko bez 4-bit
+        bf16=(device == "cuda" and use_4bit),
+        fp16=(device == "cuda" and not use_4bit),
         logging_steps=50,
         report_to="none",
         # NEFTune: dodaje szum do embeddingów — darmowy zysk jakości (Slayer)
         neftune_noise_alpha=neftune_noise if neftune_noise > 0 else None,
-        # packing: grupuje krótkie sekwencje dla lepszego wykorzystania GPU
-        group_by_length=packing,
-        length_column_name="labels_length" if packing else None,
     )
 
     trainer = Seq2SeqTrainer(
@@ -175,7 +173,6 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--lora-alpha", type=int, default=32)
     p.add_argument("--no-4bit", action="store_true", help="Wyłącz 4-bit (full LoRA)")
     p.add_argument("--no-neftune", action="store_true", help="Wyłącz NEFTune")
-    p.add_argument("--no-packing", action="store_true", help="Wyłącz packing")
     return p.parse_args()
 
 
@@ -188,7 +185,6 @@ def main() -> None:
         a.lora_rank, a.lora_alpha,
         use_4bit=not a.no_4bit,
         neftune_noise=0.0 if a.no_neftune else 5.0,
-        packing=not a.no_packing,
     )
 
 

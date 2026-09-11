@@ -12,11 +12,11 @@ license = { text = "MIT" }
 authors = [{ name = "OCR Engine" }]
 dependencies = [
     "torch>=2.0",
-    "transformers>=4.40",
+    "transformers>=4.40,<5.0",
+    "sentencepiece>=0.1",
     "pillow>=10.0",
     "numpy>=1.24",
     "opencv-python-headless>=4.8",
-    "craft-text-detector>=0.4",
     "langdetect>=1.0",
 ]
 
@@ -27,6 +27,9 @@ dev = [
 ]
 correct = [
     "openai>=1.0",
+]
+craft = [
+    "craft-text-detector>=0.4",
 ]
 train = [
     "datasets>=2.14",

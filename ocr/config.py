@@ -26,8 +26,7 @@ class OcrConfig:
     Pola modeli pozwalają podmienić checkpointi (np. na własny fine-tune PL).
     """
 
-    # Detektor (CRAFT)
-    detector_model: str = "craft_base"
+    # Detektor (progi CRAFT; detektor wybierany automatycznie — OpenCV fallback)
     text_threshold: float = 0.7
     link_threshold: float = 0.4
     low_text_threshold: float = 0.4
@@ -43,7 +42,6 @@ class OcrConfig:
 
     # Routing języka
     force_language: str | None = None  # "pl" | "en" | None (auto)
-    min_line_chars_for_lang_detect: int = 5
 
     # Urządzenie
     device: Device = field(default="auto")

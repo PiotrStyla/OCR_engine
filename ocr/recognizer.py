@@ -8,12 +8,10 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
 
-from .lang import detect_language
 from .preprocess import crop_to_bbox, to_pil_rgb
 from .result import Language
 
@@ -53,11 +51,11 @@ class _TrOCRBackend:
                 )
             sequences = generated.sequences
             decoded = self.processor.batch_decode(sequences, skip_special_tokens=True)
-            results.extend((text.strip(), _mean_token_conf(generated, self.device)) for text in decoded)
+            results.extend((text.strip(), _mean_token_conf(generated)) for text in decoded)
         return results
 
 
-def _mean_token_conf(generated, device: str) -> float:
+def _mean_token_conf(generated) -> float:
     """Szacuje średnie prawdopodobieństwo wygenerowanych tokenów."""
     try:
         import torch
@@ -123,14 +121,18 @@ class Recognizer:
     ) -> list[tuple[str, float]]:
         """Rozpoznaje linie. `languages` to język per linia (z routingu)."""
         # Pogrupuj po języku, żeby ładować tylko potrzebne modele i batchować
+        img_h, img_w = image.shape[:2]
+        pad = self.config.line_padding
         crops_by_lang: dict[Language, list[tuple[int, object]]] = {}
         for idx, (bbox, lang) in enumerate(zip(bboxes, languages)):
+            if hasattr(bbox, "expand"):
+                bbox = bbox.expand(pad, img_w, img_h)
             crop = crop_to_bbox(image, bbox)
             if crop.size == 0:
                 continue
             crops_by_lang.setdefault(lang, []).append((idx, to_pil_rgb(crop)))
 
-        out: list[tuple[str, float]] | None = [("", 0.0)] * len(bboxes)
+        out: list[tuple[str, float]] = [("", 0.0)] * len(bboxes)
         for lang, items in crops_by_lang.items():
             backend = self._backend_for(lang)
             idxs = [i for i, _ in items]
@@ -138,7 +140,7 @@ class Recognizer:
             decoded = backend.recognize(imgs, self.config.batch_size)
             for i, (text, conf) in zip(idxs, decoded):
                 out[i] = (text, conf)
-        return out  # type: ignore[return-value]
+        return out
 
     def close(self) -> None:
         self._backends.clear()

@@ -1,21 +1,23 @@
 # OCR Engine
 
-Silnik OCR w Pythonie: **CRAFT** (detekcja linii tekstu) + **TrOCR** (rozpoznawanie),
+Silnik OCR w Pythonie: **detekcja linii** (CRAFT lub OpenCV) + **TrOCR** (rozpoznawanie),
 z wsparciem języków **PL/EN**, routingiem języka per linia i **korektą tekstu przez
 Fabryka API** (Bielik).
 
 ## Architektura
 
 ```
-obraz → preprocess (deskew) → CRAFT (detekcja linii) → routing języka (PL/EN)
+obraz → preprocess (deskew) → detekcja linii → routing języka (PL/EN)
       → TrOCR (rozpoznawanie) → [korekta przez Fabryka/Bielik] → OcrResult
 ```
 
-- **Detekcja**: CRAFT (`craft-text-detector`) — znajduje bboxy linii tekstu.
+- **Detekcja**: auto-wybór — **CRAFT** (`craft-text-detector`) gdy dostępny,
+  w przeciwnym razie **fallback OpenCV** (morfologia + kontury; `ocr/opencv_detector.py`).
 - **Rozpoznawanie**: TrOCR (`microsoft/trocr-base-printed` dla EN; lokalny fine-tune QLoRA dla PL).
 - **Korekta tekstu**: [Fabryka AI](https://fabryka.ai) — Bielik (polski LLM) naprawia błędy
   OCR (diakrytyki, pocięte słowa, interpunkcja). Opcjonalna, wymaga klucza API.
-- **Routing języka**: heurystyka polskich diakrytyków + `langdetect`.
+- **Routing języka**: heurystyka polskich diakrytyków + `langdetect` (etykieta ustawiana
+  po rozpoznaniu; do routingu modelu użyj `force_language`).
 - **Porządek czytania**: grupowanie linii w poziome pasy (top→bottom), wewnątrz left→right.
 
 > **Uwaga PL:** oficjalne modele TrOCR są tylko angielskie. Polskie diakrytyki
@@ -29,9 +31,16 @@ obraz → preprocess (deskew) → CRAFT (detekcja linii) → routing języka (PL
 pip install -e .
 # dev (testy):
 pip install -e ".[dev]"
+# detektor CRAFT (wymaga Py <3.11 — stary pin opencv):
+pip install -e ".[craft]"
+# korekta przez Fabryka API:
+pip install -e ".[correct]"
 # trening PL (GPU):
 pip install -e ".[train]"
 ```
+
+> Bez `craft-text-detector` działa automatyczny detektor OpenCV — wystarczy do
+> dokumentów i skanów na jasnym tle.
 
 ## Użycie
 
@@ -107,7 +116,7 @@ z retry (429/502/503/504 z exponential backoff).
 | `OCR_CORRECT_TEXT` | `false` | `true`/`false` — włącz korektę przez Fabryka |
 | `FABRYKA_API_KEY` | (brak) | klucz API Fabryka (https://fabryka.ai) |
 | `FABRYKA_MODEL` | `bielik-11b-v3` | model do korekty |
-| `FABRYKA_BASE_URL` | `https://fabryka.ai/v1` | bazowy URL API |
+| `FABRYKA_BASE_URL` | `auto` | `auto` lub pełny URL (np. `https://router.fabryka.ai/v1`) |
 | `OCR_RECOGNIZER_EN` | `microsoft/trocr-base-printed` | model TrOCR EN |
 | `OCR_RECOGNIZER_PL` | `ocr/trocr-pl-base` | lokalny fine-tune PL |
 | `OCR_DEVICE` | `auto` | `auto`/`cpu`/`cuda` |
@@ -130,6 +139,9 @@ tests/      # testy jednostkowe (nie wymagają modeli ML)
 
 - Fine-tune PL wymaga danych + GPU (patrz `training/`). Alternatywa bez treningu:
   korekta tekstu przez Fabryka API (Bielik) — włącz `--correct`.
-- `refine_languages` (drugi przebieg rozpoznawania po detekcji języka) jest szkicowy.
+- Routing języka wybiera model PRZED rozpoznaniem — bez `force_language` domyślnie EN
+  (PL trafia na model EN; diakrytyki naprawia korekta Bielik albo fine-tune PL).
 - Brak obsługi układów wielokolumnowych / tabel (sortowanie czytania uproszczone).
+- Detektor OpenCV (fallback) jest prostszy od CRAFT — dobry do dokumentów/skanów,
+  słabszy do tekstu w naturze i złożonych tła.
 - Alternatywa bez treningu: PaddleOCR-VL + LoRA RysOCR (lepsza polska diakrytyka od ręki).

@@ -11,7 +11,6 @@ Zgodnie z [metodologią Slayer](https://slayer.fabryka.ai/trening) (SOTA 2026):
 - **QLoRA** — 4-bit quantization bazowego modelu + trening tylko adapterów LoRA.
   Pozwala trenować 11B modeli na jednym GPU (8–16 GB VRAM) zamiast full-FT.
 - **NEFTune** — dodaje szum do embeddingów, darmowy zysk jakości.
-- **Packing** (`group_by_length`) — grupuje krótkie sekwencje dla lepszego wykorzystania GPU.
 - **Wyższy LR** (2e-4) niż full-FT (5e-5) — standard dla LoRA.
 
 ## Wymagania
@@ -53,7 +52,6 @@ python -m training.train_trocr_pl \
 Opcje QLoRA:
 - `--no-4bit` — wyłącz 4-bit (pełne LoRA, więcej VRAM)
 - `--no-neftune` — wyłącz NEFTune
-- `--no-packing` — wyłącz packing
 
 Po treningu model trafia do `./ocr/trocr-pl-base` (domyślna ścieżka w `OcrConfig.recognizer_pl`).
 Silnik automatycznie go użyje, gdy wykryje język polski.

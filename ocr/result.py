@@ -65,7 +65,7 @@ class OcrResult:
 
     @property
     def text(self) -> str:
-        """Peny tekst złączony w porządku czytania (linia po linii)."""
+        """Pełny tekst złączony w porządku czytania (linia po linii)."""
         return "\n".join(line.text for line in self.lines if line.text)
 
     @property
@@ -74,7 +74,8 @@ class OcrResult:
 
     @property
     def languages(self) -> list[Language]:
-        return list({line.language for line in self.lines})
+        """Unikalne języki linii, w kolejności występowania."""
+        return list(dict.fromkeys(line.language for line in self.lines))
 
     def to_dict(self) -> dict:
         return {

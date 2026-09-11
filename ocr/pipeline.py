@@ -50,6 +50,11 @@ class OcrEngine:
         for bbox, lang, (text, conf) in zip(bboxes, languages, decoded):
             if not text:
                 continue
+            # Bez wymuszonego języka aktualizujemy etykietę z rozpoznanego tekstu
+            if self.config.force_language is None:
+                detected = detect_language(text)
+                if detected != "unknown":
+                    lang = detected
             lines.append(TextLine(text=text, bbox=bbox, language=lang, confidence=conf))
 
         result = OcrResult(lines=lines, image_size=(arr.shape[1], arr.shape[0]))
@@ -81,58 +86,26 @@ class OcrEngine:
                 "Korekta zmieniła liczbę linii (%d → %d) — zachowuję oryginalne bboxy.",
                 len(result.lines), len(corrected_lines),
             )
+            n = len(result.lines)
             new_lines = [
-                TextLine(text=cl, bbox=result.lines[min(i, len(result.lines) - 1)].bbox,
-                         language=result.lines[0].language, confidence=result.lines[0].confidence)
+                TextLine(
+                    text=cl,
+                    bbox=result.lines[min(i, n - 1)].bbox,
+                    language=result.lines[min(i, n - 1)].language,
+                    confidence=result.lines[min(i, n - 1)].confidence,
+                )
                 for i, cl in enumerate(corrected_lines)
             ]
         return OcrResult(lines=new_lines, image_size=result.image_size)
 
     def _route_languages(self, bboxes: list[BBox]) -> list[Language]:
-        """Bezpoznawaniowy routing: jeśli wymuszono język → ten język,
-        w przeciwnym razie 'en' domyślnie (detekcja języka następuje po rozpoznaniu
-        w drugim przebiegu — tu uproszczenie: używamy force lub 'en')."""
+        """Routing języka: jeśli wymuszono język → ten język,
+        w przeciwnym razie 'en' domyślnie. Detekcja języka z tekstu
+        następuje po rozpoznaniu (etykieta w wyniku), bez ponownej inferencji."""
         force = self.config.force_language
         if force in ("pl", "en"):
             return [force] * len(bboxes)  # type: ignore[list-item]
-        # Bez wymuszenia domyślnie EN; po rozpoznaniu można by przeanalizować
-        # i powtórzyć dla PL — zostawiamy jako 'en' (patrz refine_languages).
         return ["en"] * len(bboxes)
-
-    def refine_languages(self, result: OcrResult) -> OcrResult:
-        """Drugie przejście: detekcja języka na rozpoznanym tekście i ponowne
-        rozpoznanie linii, których język różni się od użytego."""
-        if self.config.force_language is not None:
-            return result
-        if not result.lines:
-            return result
-
-        new_lines: list[TextLine] = []
-        changed = False
-        for line in result.lines:
-            detected = detect_language(line.text)
-            if detected != line.language and detected in ("pl", "en"):
-                changed = True
-            new_lines.append(
-                TextLine(text=line.text, bbox=line.bbox, language=detected, confidence=line.confidence)
-            )
-        if not changed:
-            return result
-
-        # Ponowne rozpoznanie linii, których język się zmienił
-        arr = None  # leniwe
-        re_idx = [
-            i for i, ln in enumerate(new_lines)
-            if ln.language != result.lines[i].language
-        ]
-        if not re_idx:
-            return OcrResult(lines=new_lines, image_size=result.image_size)
-
-        logger.debug("Refine: ponowne rozpoznanie %d linii", len(re_idx))
-        # Wymaga oryginalnego obrazu — tu uproszczenie: zostawiamy tekst,
-        # tylko aktualizujemy etykiety języka. Pełna ponowna inferencja
-        # wymagałaby zachowania obrazu (patrz recognize(keep_image=True)).
-        return OcrResult(lines=new_lines, image_size=result.image_size)
 
     def close(self) -> None:
         self.detector.close()
