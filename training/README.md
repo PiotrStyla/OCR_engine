@@ -59,6 +59,8 @@ Opcje QLoRA:
 - `--no-neftune` — wyłącz NEFTune
 
 Po treningu model trafia do `./ocr/trocr-pl-base` (domyślna ścieżka w `OcrConfig.recognizer_pl`).
+Zapisywane są: **scalony pełny model** (od razu ładowany przez silnik) oraz adaptery
+LoRA w podkatalogu `adapter/` (do dalszego treningu / inspekcji).
 Silnik automatycznie go użyje, gdy wykryje język polski.
 
 ## Ewaluacja

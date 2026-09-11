@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+from pathlib import Path
 
 import torch
 from transformers import (
@@ -75,17 +76,18 @@ def train(
     neftune_noise: float = 5.0,
 ) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    if device == "cpu":
+    if device == "cpu" and use_4bit:
         logger.warning(
-            "Brak CUDA — QLoRA wymaga GPU (bitsandbytes). "
-            "Uruchom na maszynie z CUDA."
+            "Brak CUDA — 4-bit bitsandbytes wymaga GPU. "
+            "Przełączam na zwykłe LoRA (wolne na CPU, tylko do smoke-testu)."
         )
+        use_4bit = False
 
     processor = TrOCRProcessor.from_pretrained(base_model)
 
     # QLoRA: 4-bit quantization przy ładowaniu bazowego modelu
     quant_kwargs = {}
-    if use_4bit and device == "cuda":
+    if use_4bit:
         quant_kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -100,7 +102,6 @@ def train(
     # konfiguracja dekodera
     model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
     model.config.pad_token_id = processor.tokenizer.pad_token_id
-    model.config.vocab_size = model.config.decoder.vocab_size
     model.config.eos_token_id = processor.tokenizer.sep_token_id
     model.config.max_length = 128
     model.config.early_stopping = True
@@ -108,10 +109,12 @@ def train(
     model.config.length_penalty = 2.0
     model.config.num_beams = 4
 
-    # QLoRA: wstrzyknięcie adapterów (tylko one są trenowane)
-    if use_4bit and device == "cuda":
-        model = _inject_lora(model, lora_rank, lora_alpha)
-        model.print_trainable_parameters()
+    # LoRA: adaptery zawsze (metoda treningu); przy 4-bit najpierw przygotowanie kbit
+    if use_4bit:
+        from peft import prepare_model_for_kbit_training
+        model = prepare_model_for_kbit_training(model)
+    model = _inject_lora(model, lora_rank, lora_alpha)
+    model.print_trainable_parameters()
 
     train_samples = load_pairs(train_dir)
     if not train_samples:
@@ -151,13 +154,13 @@ def train(
     )
     trainer.train()
 
-    # Zapis: adaptery LoRA + processor. Pełny model można scalić później.
-    if use_4bit and device == "cuda":
-        model.save_pretrained(output_dir)  # zapisuje tylko adaptery
-    else:
-        model.save_pretrained(output_dir)
+    # Zapis: adaptery w output_dir/adapter + scalony pełny model w output_dir
+    # (Recognizer ładuje pełny model przez VisionEncoderDecoderModel.from_pretrained)
+    model.save_pretrained(str(Path(output_dir) / "adapter"))
+    merged = model.merge_and_unload()
+    merged.save_pretrained(output_dir)
     processor.save_pretrained(output_dir)
-    logger.info("Model zapisany w %s", output_dir)
+    logger.info("Model zapisany w %s (adaptery: %s)", output_dir, Path(output_dir) / "adapter")
 
 
 def _parse_args() -> argparse.Namespace:
