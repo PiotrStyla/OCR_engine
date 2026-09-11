@@ -22,11 +22,14 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     # recognize
-    rec = sub.add_parser("recognize", help="Rozpoznaj tekst z obrazu")
-    rec.add_argument("image", type=Path, help="Ścieżka do obrazu")
+    rec = sub.add_parser("recognize", help="Rozpoznaj tekst z obrazu lub PDF")
+    rec.add_argument("image", type=Path, help="Ścieżka do obrazu lub PDF")
     rec.add_argument("--lang", choices=["pl", "en"], default=None, help="Wymuś język")
     rec.add_argument("--json", action="store_true", help="Wyjście JSON")
     rec.add_argument("--no-deskew", action="store_true", help="Pomiń korektę pochylenia")
+    rec.add_argument("--pages", default=None,
+                     help="Zakres stron PDF, np. '1-3,5' (domyślnie: wszystkie)")
+    rec.add_argument("--dpi", type=int, default=300, help="DPI renderowania stron PDF")
     rec.add_argument("--correct", action="store_true",
                      help="Korekta tekstu przez Fabryka API (wymaga FABRYKA_API_KEY)")
     rec.add_argument("--fabryka-model", default="bielik-11b-v3",
@@ -52,12 +55,19 @@ def _cmd_recognize(args) -> int:
         device=args.device,  # type: ignore[arg-type]
     )
     with OcrEngine(config) as engine:
-        result = engine.recognize(args.image)
+        if args.image.suffix.lower() == ".pdf":
+            results = engine.recognize_pdf(args.image, pages=args.pages, dpi=args.dpi)
+        else:
+            results = [engine.recognize(args.image)]
 
     if args.json:
-        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+        out = [r.to_dict() for r in results]
+        print(json.dumps(out[0] if len(out) == 1 else out, ensure_ascii=False, indent=2))
     else:
-        print(result.text)
+        for i, r in enumerate(results):
+            if len(results) > 1:
+                print(f"--- strona {i + 1} ---")
+            print(r.text)
     return 0
 
 

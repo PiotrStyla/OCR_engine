@@ -38,7 +38,23 @@ class OcrEngine:
         arr = load_image(image)
         if self.config.deskew:
             arr = deskew(arr)
+        return self._recognize_array(arr)
 
+    def recognize_pdf(
+        self, pdf: ImageLike, pages: str | None = None, dpi: int = 300
+    ) -> list[OcrResult]:
+        """Rozpoznaje strony PDF. `pages`: zakres '1-3,5' (None = wszystkie)."""
+        from .preprocess import iter_pdf_pages
+
+        results: list[OcrResult] = []
+        for _page_no, arr in iter_pdf_pages(pdf, dpi=dpi, pages=pages):
+            if self.config.deskew:
+                arr = deskew(arr)
+            results.append(self._recognize_array(arr))
+        return results
+
+    def _recognize_array(self, arr: np.ndarray) -> OcrResult:
+        """Właściwy pipeline na array RGB (po preprocessingu)."""
         bboxes = self.detector.detect(arr)
         if not bboxes:
             return OcrResult(lines=[], image_size=(arr.shape[1], arr.shape[0]))

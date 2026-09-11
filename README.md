@@ -60,6 +60,12 @@ for line in result.lines:
 with OcrEngine(OcrConfig(force_language="pl")) as engine:
     for path in paths:
         print(engine.recognize(path).text)
+
+# PDF — lista wyników per strona
+with OcrEngine() as engine:
+    pages = engine.recognize_pdf("dokument.pdf", pages="1-3", dpi=300)
+    for i, page in enumerate(pages, 1):
+        print(f"--- strona {i} ---\n{page.text}")
 ```
 
 ### CLI
@@ -67,6 +73,8 @@ with OcrEngine(OcrConfig(force_language="pl")) as engine:
 ```bash
 ocr recognize dokument.png                 # tekst
 ocr recognize dokument.png --lang pl --json # JSON z bboxami
+ocr recognize dokument.pdf                  # PDF — wszystkie strony
+ocr recognize dokument.pdf --pages 1-3,5    # wybrane strony
 ocr recognize dokument.png --correct        # korekta tekstu przez Fabryka/Bielik
 ocr recognize dokument.png --no-deskew
 ocr recognize dokument.png --device cpu

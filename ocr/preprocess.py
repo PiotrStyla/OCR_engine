@@ -86,3 +86,40 @@ def to_pil_rgb(image: np.ndarray):
     """Konwertuje array RGB na PIL.Image (leniwy import PIL)."""
     from PIL import Image
     return Image.fromarray(image.astype(np.uint8), mode="RGB")
+
+
+def parse_page_range(spec: str | None, n_pages: int) -> list[int]:
+    """Parsuje zakres stron '1-3,5' (1-indeksowane) na listę indeksów 0-bazowanych."""
+    if not spec:
+        return list(range(n_pages))
+    out: list[int] = []
+    for part in spec.split(","):
+        part = part.strip()
+        if "-" in part:
+            a, b = part.split("-", 1)
+            start, end = int(a), int(b)
+            out.extend(range(start - 1, end))
+        else:
+            out.append(int(part) - 1)
+    return [i for i in out if 0 <= i < n_pages]
+
+
+def iter_pdf_pages(source, dpi: int = 300, pages: str | None = None):
+    """Iteruje strony PDF jako obrazy RGB (H,W,3) uint8.
+
+    `pages`: zakres 1-indeksowany, np. "1-3,5". None = wszystkie strony.
+    Zwraca generator (numer_strony_1based, ndarray).
+    """
+    import fitz  # leniwy import (PyMuPDF)
+
+    doc = fitz.open(str(source)) if not hasattr(source, "read") else fitz.open(stream=source.read(), filetype="pdf")
+    try:
+        idxs = parse_page_range(pages, doc.page_count)
+        zoom = dpi / 72.0
+        mat = fitz.Matrix(zoom, zoom)
+        for i in idxs:
+            pix = doc.load_page(i).get_pixmap(matrix=mat, alpha=False)
+            arr = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
+            yield i + 1, arr.copy()
+    finally:
+        doc.close()
