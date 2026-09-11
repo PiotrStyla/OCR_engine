@@ -37,9 +37,20 @@ data/pl_lines_train/
 - **Syntetyczne** — wbudowany generator linii z polskim tekstem:
   ```bash
   python -m training.generate_synthetic --output ./data/pl_lines_train --count 5000
+
+  # z dodatkowymi zdaniami z polskiej Wikipedii (~30% próbek):
+  python -m training.generate_synthetic --output ./data/pl_lines_train \
+      --count 5000 --wiki-sentences 1000 --wiki-cache ./data/wiki_sentences.txt
   ```
   Renderuje linie różnymi czcionkami systemowymi (tylko te z polskimi glifami),
-  z augmentacjami: pochylenie, blur, szum, gamma. Korpus: `training/corpus_pl.py`.
+  z augmentacjami: pochylenie, blur, szum, gamma.
+  Korpus (`training/corpus_pl.py`): zdania potoczne i urzędowe, faktury
+  (`Faktura VAT nr ...`, kwoty, NIP/KRS/REGON), umowy i język prawniczy,
+  formuły medyczne, daty, adresy, imiona i nazwiska, telefony, e-maile.
+  Opcja `--wiki-sentences` pobiera losowe zdania z pl.wikipedia.org
+  (`training/wiki_corpus.py`) — filtrowane pod kątem długości i jakości,
+  z preferencją zdań z diakrytykami. `--wiki-cache` zapisuje pobrane zdania
+  do pliku, więc kolejne generowania nie wymagają sieci.
 - Zbiory publiczne z polskimi dokumentami (np. fragmenty OCR-ów z korektą).
 
 ## Uruchomienie

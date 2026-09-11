@@ -22,7 +22,15 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-from .corpus_pl import FORMULAS, SENTENCES, WORDS
+from .corpus_pl import (
+    DOMAIN_GENERATORS,
+    FORMULAS,
+    INVOICE,
+    LEGAL,
+    MEDICAL,
+    SENTENCES,
+    WORDS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,13 +68,20 @@ def _font_supports_pl(font_path: Path) -> bool:
     return all(ord(ch) in cmap for ch in "ąćęłńóśźżĄĆĘŁŃÓŚŹŻ")
 
 
-def _random_text(rng: random.Random) -> str:
-    """Losowy tekst: zdanie, formula urzędowa lub kompozycja wyrazów."""
+def _random_text(rng: random.Random, wiki_pool: list[str] | None = None) -> str:
+    """Losowy tekst: zdanie, formula, domena specjalistyczna, wiki lub wyrazy."""
     kind = rng.random()
-    if kind < 0.55:
+    if wiki_pool and kind < 0.30:
+        return rng.choice(wiki_pool)
+    if kind < 0.50:
         return rng.choice(SENTENCES)
-    if kind < 0.75:
+    if kind < 0.60:
         return rng.choice(FORMULAS)
+    if kind < 0.75:
+        # domeny specjalistyczne (faktury/prawo/medycyna) lub wzorce liczbowe
+        if rng.random() < 0.5:
+            return rng.choice(rng.choice([INVOICE, LEGAL, MEDICAL]))
+        return rng.choice(DOMAIN_GENERATORS)(rng)
     # kompozycja losowych wyrazów (2–8 słów)
     n = rng.randint(2, 8)
     words = rng.sample(WORDS, min(n, len(WORDS)))
@@ -137,8 +152,15 @@ def generate(
     fonts_dir: Path = _DEFAULT_FONTS_DIR,
     seed: int | None = None,
     font_size_range: tuple[int, int] = (18, 42),
+    wiki_sentences: int = 0,
+    wiki_cache: Path | None = None,
 ) -> int:
-    """Generuje `count` par .png/.txt w `output_dir`. Zwraca liczbę wygenerowanych."""
+    """Generuje `count` par .png/.txt w `output_dir`. Zwraca liczbę wygenerowanych.
+
+    `wiki_sentences`: jeśli >0, pobiera zdania z pl.wikipedia.org i dodaje je
+    do puli tekstów (~30% próbek). `wiki_cache` — plik .txt do zapisu/odczytu
+    pobranych zdań (powtarzalność bez ponownego pobierania).
+    """
     rng = random.Random(seed)
     fonts = _find_fonts(fonts_dir)
     if not fonts:
@@ -151,10 +173,24 @@ def generate(
         raise SystemExit(f"Żadna czcionka w {fonts_dir} nie obsługuje polskich znaków")
     logger.info("Czcionek z polskimi glifami: %d", len(fonts))
 
+    wiki_pool: list[str] = []
+    if wiki_sentences > 0:
+        from .wiki_corpus import fetch_wiki_sentences, load_sentences, save_sentences
+
+        if wiki_cache and wiki_cache.exists():
+            wiki_pool = load_sentences(wiki_cache)
+            logger.info("Wikipedia: wczytano %d zdań z cache %s", len(wiki_pool), wiki_cache)
+        else:
+            wiki_pool = fetch_wiki_sentences(wiki_sentences)
+            if wiki_cache:
+                wiki_cache.parent.mkdir(parents=True, exist_ok=True)
+                save_sentences(wiki_pool, wiki_cache)
+            logger.info("Wikipedia: pobrano %d zdań", len(wiki_pool))
+
     output_dir.mkdir(parents=True, exist_ok=True)
     written = 0
     for i in range(count):
-        text = _random_text(rng)
+        text = _random_text(rng, wiki_pool or None)
         font = rng.choice(fonts)
         size = rng.randint(*font_size_range)
         try:
@@ -179,6 +215,10 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=None, help="Ziarno RNG (powtarzalność)")
     p.add_argument("--min-font", type=int, default=18)
     p.add_argument("--max-font", type=int, default=42)
+    p.add_argument("--wiki-sentences", type=int, default=0,
+                   help="pobierz N zdań z pl.wikipedia.org do korpusu")
+    p.add_argument("--wiki-cache", type=Path, default=None,
+                   help="plik .txt z cache'em zdań wiki (odczyt/zapis)")
     return p.parse_args()
 
 
@@ -191,6 +231,8 @@ def main() -> None:
         fonts_dir=a.fonts_dir,
         seed=a.seed,
         font_size_range=(a.min_font, a.max_font),
+        wiki_sentences=a.wiki_sentences,
+        wiki_cache=a.wiki_cache,
     )
 
 

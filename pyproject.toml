@@ -39,6 +39,7 @@ train = [
     "jiwer>=3.0",
     "peft>=0.11",
     "bitsandbytes>=0.43",
+    "requests>=2.31",
 ]
 
 [project.scripts]
