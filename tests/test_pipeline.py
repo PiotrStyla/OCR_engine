@@ -24,9 +24,18 @@ class _FakeDetector:
 class _FakeRecognizer:
     def __init__(self, config):
         self.config = config
+        self.pl_available = False
+        self.calls: list[list[str]] = []
+        self.responses: list[list[tuple[str, float]]] = []
+
+    def has_model_for(self, language):
+        return self.pl_available if language == "pl" else True
 
     def recognize_lines(self, image, bboxes, languages):
-        return [("linia 1", 0.9), ("linia 2", 0.8)]
+        self.calls.append(list(languages))
+        if self.responses:
+            return self.responses.pop(0)
+        return [(f"linia {i + 1}", 0.9) for i in range(len(bboxes))]
 
     def close(self):
         pass
@@ -121,3 +130,54 @@ def test_pipeline_correction_skipped_when_disabled(monkeypatch):
     # bez korekty tekst oryginalny
     assert result.text == "linia 1\nlinia 2"
     assert engine.corrector.calls == []
+
+
+def test_pipeline_second_pass_pl(monkeypatch):
+    """Linie wykryte jako PL po pierwszym przebiegu są re-rozpoznawane modelem PL."""
+    engine = _make_engine(monkeypatch, OcrConfig(deskew=False))
+    engine.recognizer.pl_available = True
+    # 1. wywołanie (EN routing): zwraca polski tekst → detect_language → "pl"
+    # 2. wywołanie (PL re-rozpoznanie): lepszy tekst
+    engine.recognizer.responses = [
+        [("Zażółć gęślą jaźń", 0.7), ("hello world", 0.8)],
+        [("Zażółć gęślą jaźń — PL", 0.95)],
+    ]
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    arr[:] = 255
+    result = engine.recognize(arr)
+
+    assert len(engine.recognizer.calls) == 2
+    assert engine.recognizer.calls[1] == ["pl"]  # tylko linia PL re-rozpoznana
+    assert result.lines[0].text == "Zażółć gęślą jaźń — PL"
+    assert result.lines[0].language == "pl"
+    assert result.lines[0].confidence == 0.95
+    assert result.lines[1].text == "hello world"
+
+
+def test_pipeline_second_pass_skipped_without_pl_model(monkeypatch):
+    """Brak modelu PL → drugi przebieg pomijany (fallback EN dałby to samo)."""
+    engine = _make_engine(monkeypatch, OcrConfig(deskew=False))
+    engine.recognizer.pl_available = False
+    engine.recognizer.responses = [
+        [("Zażółć gęślą jaźń", 0.7), ("hello world", 0.8)],
+    ]
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    arr[:] = 255
+    result = engine.recognize(arr)
+
+    assert len(engine.recognizer.calls) == 1  # tylko pierwszy przebieg
+    assert result.lines[0].language == "pl"   # etykieta zaktualizowana
+    assert result.lines[0].text == "Zażółć gęślą jaźń"  # tekst z EN
+
+
+def test_pipeline_second_pass_skipped_with_force_language(monkeypatch):
+    """force_language → brak detekcji języka, brak drugiego przebiegu."""
+    engine = _make_engine(monkeypatch, OcrConfig(force_language="en", deskew=False))
+    engine.recognizer.pl_available = True
+    engine.recognizer.responses = [[("Zażółć gęślą jaźń", 0.7), ("x", 0.8)]]
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    arr[:] = 255
+    result = engine.recognize(arr)
+
+    assert len(engine.recognizer.calls) == 1
+    assert all(ln.language == "en" for ln in result.lines)

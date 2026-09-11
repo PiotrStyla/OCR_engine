@@ -47,15 +47,36 @@ class OcrEngine:
         decoded = self.recognizer.recognize_lines(arr, bboxes, languages)
 
         lines: list[TextLine] = []
-        for bbox, lang, (text, conf) in zip(bboxes, languages, decoded):
+        redo: list[tuple[int, BBox, Language]] = []  # (idx w lines, bbox, wykryty język)
+        for bbox, routed_lang, (text, conf) in zip(bboxes, languages, decoded):
             if not text:
                 continue
+            lang = routed_lang
             # Bez wymuszonego języka aktualizujemy etykietę z rozpoznanego tekstu
             if self.config.force_language is None:
                 detected = detect_language(text)
                 if detected != "unknown":
                     lang = detected
             lines.append(TextLine(text=text, bbox=bbox, language=lang, confidence=conf))
+            if lang != routed_lang and lang in ("pl", "en"):
+                redo.append((len(lines) - 1, bbox, lang))
+
+        # Drugi przebieg: linie rozpoznane niewłaściwym modelem → re-rozpoznanie
+        # właściwym. Tylko gdy model docelowego języka istnieje (fallback EN
+        # dałby ten sam wynik — strata czasu).
+        if redo:
+            redo = [r for r in redo if self.recognizer.has_model_for(r[2])]
+        if redo:
+            logger.debug("Drugi przebieg: %d linii do re-rozpoznania", len(redo))
+            re_decoded = self.recognizer.recognize_lines(
+                arr, [b for _, b, _ in redo], [lang for _, _, lang in redo]
+            )
+            for (li, _, _), (text, conf) in zip(redo, re_decoded):
+                if text:
+                    lines[li] = TextLine(
+                        text=text, bbox=lines[li].bbox,
+                        language=lines[li].language, confidence=conf,
+                    )
 
         result = OcrResult(lines=lines, image_size=(arr.shape[1], arr.shape[0]))
         if self.config.correct_text:

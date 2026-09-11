@@ -16,8 +16,9 @@ obraz → preprocess (deskew) → detekcja linii → routing języka (PL/EN)
 - **Rozpoznawanie**: TrOCR (`microsoft/trocr-base-printed` dla EN; lokalny fine-tune QLoRA dla PL).
 - **Korekta tekstu**: [Fabryka AI](https://fabryka.ai) — Bielik (polski LLM) naprawia błędy
   OCR (diakrytyki, pocięte słowa, interpunkcja). Opcjonalna, wymaga klucza API.
-- **Routing języka**: heurystyka polskich diakrytyków + `langdetect` (etykieta ustawiana
-  po rozpoznaniu; do routingu modelu użyj `force_language`).
+- **Routing języka**: heurystyka polskich diakrytyków + `langdetect`. Bez
+  `force_language` linie idą najpierw modelem EN, a te wykryte jako PL są
+  **re-rozpoznawane modelem PL** w drugim przebiegu (gdy model PL istnieje).
 - **Porządek czytania**: grupowanie linii w poziome pasy (top→bottom), wewnątrz left→right.
 
 > **Uwaga PL:** oficjalne modele TrOCR są tylko angielskie. Polskie diakrytyki
@@ -139,8 +140,9 @@ tests/      # testy jednostkowe (nie wymagają modeli ML)
 
 - Fine-tune PL wymaga danych + GPU (patrz `training/`). Alternatywa bez treningu:
   korekta tekstu przez Fabryka API (Bielik) — włącz `--correct`.
-- Routing języka wybiera model PRZED rozpoznaniem — bez `force_language` domyślnie EN
-  (PL trafia na model EN; diakrytyki naprawia korekta Bielik albo fine-tune PL).
+- Routing języka: bez `force_language` linie startują modelem EN, a wykryte jako PL
+  są re-rozpoznawane modelem PL (drugi przebieg, gdy model istnieje). Gdy modelu PL
+  brak — zostaje wynik EN (diakrytyki naprawia korekta Bielik).
 - Brak obsługi układów wielokolumnowych / tabel (sortowanie czytania uproszczone).
 - Detektor OpenCV (fallback) jest prostszy od CRAFT — dobry do dokumentów/skanów,
   słabszy do tekstu w naturze i złożonych tła.

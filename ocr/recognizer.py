@@ -88,6 +88,11 @@ class Recognizer:
         self.device = config.resolved_device()
         self._backends: dict[Language, _TrOCRBackend] = {}
 
+    def has_model_for(self, language: Language) -> bool:
+        """True jeśli model dla języka istnieje (bez ładowania)."""
+        name = self.config.recognizer_pl if language == "pl" else self.config.recognizer_en
+        return _model_exists(name)
+
     def _backend_for(self, language: Language) -> _TrOCRBackend:
         if language in self._backends:
             return self._backends[language]
