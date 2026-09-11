@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg-link
+.eggs/
+build/
+dist/
+wheels/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Models / data (duże pliki)
+ocr/trocr-pl-base/
+*.gguf
+*.pt
+*.bin
+*.safetensors
+
+# Test images
+test_document.png
+
+# Environment / secrets
+.env
+.env.*
+*.key
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ocr-engine"
+version = "0.1.0"
+description = "Silnik OCR oparty na CRAFT (detekcja) + TrOCR (rozpoznawanie) z wsparciem PL/EN"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "OCR Engine" }]
+dependencies = [
+    "torch>=2.0",
+    "transformers>=4.40",
+    "pillow>=10.0",
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+    "craft-text-detector>=0.4",
+    "langdetect>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+]
+correct = [
+    "openai>=1.0",
+]
+train = [
+    "datasets>=2.14",
+    "accelerate>=0.25",
+    "evaluate>=0.4",
+    "jiwer>=3.0",
+    "peft>=0.11",
+    "bitsandbytes>=0.43",
+]
+
+[project.scripts]
+ocr = "ocr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ocr*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
