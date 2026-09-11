@@ -77,7 +77,9 @@ class OcrResult:
         """Unikalne języki linii, w kolejności występowania."""
         return list(dict.fromkeys(line.language for line in self.lines))
 
-    def to_dict(self) -> dict:
+    def to_dict(self, confidence_threshold: float = 0.0) -> dict:
+        """Serializacja do dict. Przy confidence_threshold > 0 linie poniżej
+        progu dostają flagę 'low_confidence: true'."""
         return {
             "text": self.text,
             "image_size": self.image_size,
@@ -87,6 +89,9 @@ class OcrResult:
                     "bbox": list(line.bbox.to_tuple()),
                     "language": line.language,
                     "confidence": line.confidence,
+                    **({"low_confidence": True}
+                       if confidence_threshold > 0
+                       and line.confidence < confidence_threshold else {}),
                 }
                 for line in self.lines
             ],

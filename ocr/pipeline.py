@@ -100,24 +100,49 @@ class OcrEngine:
         return result
 
     def _correct_result(self, result: OcrResult) -> OcrResult:
-        """Stosuje korektę tekstu przez Fabryka API (jeśli włączona i dostępna)."""
+        """Stosuje korektę tekstu przez Fabryka API (jeśli włączona i dostępna).
+
+        Gdy `correct_low_confidence_only` i `confidence_threshold` > 0, do API
+        trafiają wyłącznie linie z confidence < próg — oszczędność tokenów.
+        """
         if not result.lines or not self.corrector.enabled:
             return result
-        full_text = result.text
-        if not full_text.strip():
+        selective = (
+            self.config.correct_low_confidence_only
+            and self.config.confidence_threshold > 0
+        )
+        if selective:
+            idx = [i for i, ln in enumerate(result.lines)
+                   if ln.confidence < self.config.confidence_threshold]
+            if not idx:
+                return result
+        else:
+            idx = list(range(len(result.lines)))
+
+        joined = "\n".join(result.lines[i].text for i in idx)
+        if not joined.strip():
             return result
-        corrected = self.corrector.correct(full_text)
-        if not corrected or corrected == full_text:
+        corrected = self.corrector.correct(joined)
+        if not corrected or corrected == joined:
             return result
-        # Rozdziel poprawiony tekst z powrotem na linie (zachowaj liczbę linii).
         corrected_lines = corrected.split("\n")
-        # Jeśli liczba linii się zgadza — nadpisz teksty; w przeciwnym razie
-        # zostaw jeden "poprawiony" blok z oryginalnymi bboxami pierwszej linii.
-        if len(corrected_lines) == len(result.lines):
-            new_lines = [
-                TextLine(text=cl, bbox=ln.bbox, language=ln.language, confidence=ln.confidence)
-                for ln, cl in zip(result.lines, corrected_lines)
-            ]
+
+        if len(corrected_lines) == len(idx):
+            new_lines = list(result.lines)
+            for i, cl in zip(idx, corrected_lines):
+                ln = result.lines[i]
+                new_lines[i] = TextLine(
+                    text=cl, bbox=ln.bbox,
+                    language=ln.language, confidence=ln.confidence,
+                )
+        elif selective:
+            # Podzbiór: przy zmienionej liczbie linii nie da się bezpiecznie
+            # dopasować poprawek do oryginałów — zachowujemy oryginał.
+            logger.warning(
+                "Korekta zmieniła liczbę linii (%d → %d) — pomijam korektę.",
+                len(idx), len(corrected_lines),
+            )
+            return result
         else:
             logger.warning(
                 "Korekta zmieniła liczbę linii (%d → %d) — zachowuję oryginalne bboxy.",

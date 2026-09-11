@@ -181,3 +181,88 @@ def test_pipeline_second_pass_skipped_with_force_language(monkeypatch):
 
     assert len(engine.recognizer.calls) == 1
     assert all(ln.language == "en" for ln in result.lines)
+
+
+class _EchoCorrector:
+    """Mock korektora — zwraca wejście z dopiskiem '!' na końcu każdej linii."""
+
+    def __init__(self, config):
+        self.config = config
+        self.enabled = True
+        self.calls: list[str] = []
+
+    def correct(self, text):
+        self.calls.append(text)
+        return "\n".join(line + "!" for line in text.split("\n"))
+
+    def close(self):
+        pass
+
+
+def test_correction_only_low_confidence_lines(monkeypatch):
+    """correct_low_confidence_only: do API trafiają tylko linie poniżej progu."""
+    config = OcrConfig(
+        correct_text=True, deskew=False,
+        confidence_threshold=0.8, correct_low_confidence_only=True,
+    )
+    engine = _make_engine(monkeypatch, config)
+    engine.corrector = _EchoCorrector(config)
+    engine.recognizer.responses = [[("pewna linia", 0.95), ("niepewna", 0.3)]]
+
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    result = engine.recognize(arr)
+
+    assert engine.corrector.calls == ["niepewna"]  # tylko niska pewność
+    assert result.lines[0].text == "pewna linia"   # nietknięta
+    assert result.lines[1].text == "niepewna!"     # poprawiona
+
+
+def test_correction_skipped_when_all_confident(monkeypatch):
+    """Wszystkie linie powyżej progu → zero wywołań API."""
+    config = OcrConfig(
+        correct_text=True, deskew=False,
+        confidence_threshold=0.8, correct_low_confidence_only=True,
+    )
+    engine = _make_engine(monkeypatch, config)
+    engine.recognizer.responses = [[("dobry tekst", 0.9), ("tez dobry", 0.85)]]
+
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    result = engine.recognize(arr)
+
+    assert engine.corrector.calls == []
+    assert result.text == "dobry tekst\ntez dobry"
+
+
+def test_correction_selective_mismatch_keeps_original(monkeypatch):
+    """Selektywna korekta ze zmienioną liczbą linii → oryginał bez zmian."""
+
+    class _SplittingCorrector(_EchoCorrector):
+        def correct(self, text):
+            self.calls.append(text)
+            return "a\nb\nc"  # 3 linie zamiast 1
+
+    config = OcrConfig(
+        correct_text=True, deskew=False,
+        confidence_threshold=0.8, correct_low_confidence_only=True,
+    )
+    engine = _make_engine(monkeypatch, config)
+    engine.corrector = _SplittingCorrector(config)
+    engine.recognizer.responses = [[("pewna", 0.9), ("niepewna", 0.3)]]
+
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    result = engine.recognize(arr)
+
+    assert result.text == "pewna\nniepewna"  # oryginał zachowany
+
+
+def test_low_confidence_flag_in_json(monkeypatch):
+    """to_dict z progiem oznacza linie niskopewne flagą low_confidence."""
+    engine = _make_engine(monkeypatch, OcrConfig(deskew=False))
+    engine.recognizer.responses = [[("pewna", 0.9), ("niepewna", 0.3)]]
+
+    arr = np.zeros((100, 100, 3), dtype=np.uint8)
+    result = engine.recognize(arr)
+    d = result.to_dict(confidence_threshold=0.5)
+
+    assert "low_confidence" not in d["lines"][0]
+    assert d["lines"][1]["low_confidence"] is True

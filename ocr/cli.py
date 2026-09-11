@@ -32,6 +32,10 @@ def _build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--dpi", type=int, default=300, help="DPI renderowania stron PDF")
     rec.add_argument("--correct", action="store_true",
                      help="Korekta tekstu przez Fabryka API (wymaga FABRYKA_API_KEY)")
+    rec.add_argument("--correct-low-only", action="store_true",
+                     help="Korekta tylko linii z confidence < --confidence-threshold")
+    rec.add_argument("--confidence-threshold", type=float, default=0.0,
+                     help="Próg niskiego confidence (flaga w JSON / selektywna korekta)")
     rec.add_argument("--fabryka-model", default="bielik-11b-v3",
                      help="Model Fabryka do korekty (domyślnie: bielik-11b-v3)")
     rec.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
@@ -50,7 +54,9 @@ def _cmd_recognize(args) -> int:
     config = OcrConfig(
         force_language=args.lang,
         deskew=not args.no_deskew,
-        correct_text=args.correct,
+        correct_text=args.correct or args.correct_low_only,
+        correct_low_confidence_only=args.correct_low_only,
+        confidence_threshold=args.confidence_threshold,
         fabryka_model=args.fabryka_model,
         device=args.device,  # type: ignore[arg-type]
     )
@@ -61,7 +67,7 @@ def _cmd_recognize(args) -> int:
             results = [engine.recognize(args.image)]
 
     if args.json:
-        out = [r.to_dict() for r in results]
+        out = [r.to_dict(config.confidence_threshold) for r in results]
         print(json.dumps(out[0] if len(out) == 1 else out, ensure_ascii=False, indent=2))
     else:
         for i, r in enumerate(results):

@@ -58,6 +58,11 @@ class OcrConfig:
     fabryka_model: str = "bielik-11b-v3"  # polski model do korekty
     fabryka_timeout: float = 30.0  # sekundy
 
+    # Próg pewności: linie z confidence < progu są flagowane w JSON
+    # i (opcjonalnie) korygowane wyłącznie przez Fabryka. 0.0 = wyłączone.
+    confidence_threshold: float = 0.0
+    correct_low_confidence_only: bool = False  # korekta tylko linii o niskim confidence
+
     def resolved_device(self) -> str:
         return _resolve_device(self.device)
 
@@ -73,6 +78,15 @@ class OcrConfig:
                 return default
             return v.lower() in ("1", "true", "yes", "on")
 
+        def env_float(key: str, default: float) -> float:
+            v = os.environ.get(key)
+            if v is None:
+                return default
+            try:
+                return float(v)
+            except ValueError:
+                return default
+
         return cls(
             recognizer_en=env("OCR_RECOGNIZER_EN", "microsoft/trocr-base-printed"),
             recognizer_pl=env("OCR_RECOGNIZER_PL", "ocr/trocr-pl-base"),
@@ -83,4 +97,6 @@ class OcrConfig:
             fabryka_api_key=os.environ.get("FABRYKA_API_KEY"),
             fabryka_base_url=env("FABRYKA_BASE_URL", "auto"),
             fabryka_model=env("FABRYKA_MODEL", "bielik-11b-v3"),
+            confidence_threshold=env_float("OCR_CONFIDENCE_THRESHOLD", 0.0),
+            correct_low_confidence_only=env_bool("OCR_CORRECT_LOW_ONLY", False),
         )

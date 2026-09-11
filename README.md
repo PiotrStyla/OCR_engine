@@ -117,6 +117,22 @@ Wymaga: `pip install ocr-engine[correct]` (pakiet `openai`). Brak klucza → kor
 pominięta z ostrzeżeniem (graceful degradation). Błąd API → zwraca oryginalny tekst
 z retry (429/502/503/504 z exponential backoff).
 
+### Próg pewności (confidence)
+
+Każda linia ma `confidence` ∈ [0,1] z rozpoznawania TrOCR. Próg pozwala
+flagować niskopewne linie i ograniczyć korektę tylko do nich (oszczędność API):
+
+```bash
+# oznacz linie z confidence < 0.7 flagą "low_confidence" w JSON:
+ocr recognize dokument.png --json --confidence-threshold 0.7
+
+# korekta Fabryka TYLKO dla niskopewnych linii:
+ocr recognize dokument.png --correct-low-only --confidence-threshold 0.7
+```
+
+W selektywnej korekcie do API trafiają wyłącznie linie poniżej progu; jeśli
+korektor zwróci inną liczbę linii niż wysłano, oryginał zostaje zachowany.
+
 ### Konfiguracja (zmienne środowiskowe)
 
 | Zmienna | Domyślnie | Opis |
@@ -129,6 +145,8 @@ z retry (429/502/503/504 z exponential backoff).
 | `OCR_RECOGNIZER_EN` | `microsoft/trocr-base-printed` | model TrOCR EN |
 | `OCR_RECOGNIZER_PL` | `ocr/trocr-pl-base` | lokalny fine-tune PL |
 | `OCR_DEVICE` | `auto` | `auto`/`cpu`/`cuda` |
+| `OCR_CONFIDENCE_THRESHOLD` | `0.0` | próg flagowania niskopewnych linii |
+| `OCR_CORRECT_LOW_ONLY` | `false` | korekta tylko linii poniżej progu |
 
 ## Testy
 
