@@ -34,7 +34,12 @@ data/pl_lines_train/
 
 Źródła danych:
 - Własne skany dokumentów + transkrypcje (najlepsze).
-- Syntetyczne: wygeneruj obrazy linii z polskim tekstem (czcionki z diakrytykami).
+- **Syntetyczne** — wbudowany generator linii z polskim tekstem:
+  ```bash
+  python -m training.generate_synthetic --output ./data/pl_lines_train --count 5000
+  ```
+  Renderuje linie różnymi czcionkami systemowymi (tylko te z polskimi glifami),
+  z augmentacjami: pochylenie, blur, szum, gamma. Korpus: `training/corpus_pl.py`.
 - Zbiory publiczne z polskimi dokumentami (np. fragmenty OCR-ów z korektą).
 
 ## Uruchomienie

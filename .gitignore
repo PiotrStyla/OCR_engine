@@ -34,8 +34,11 @@ ocr/trocr-pl-base/
 *.bin
 *.safetensors
 
-# Test images
+# Dane treningowe i pliki testowe
+data/
 test_document.png
+test_pl_font.png
+sample_grid.png
 
 # Environment / secrets
 .env
