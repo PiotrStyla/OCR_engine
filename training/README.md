@@ -65,7 +65,22 @@ Silnik automatycznie go użyje, gdy wykryje język polski.
 
 ## Ewaluacja
 
-CER/WER można policzyć z `evaluate` + `jiwer` (zależności `[train]`).
+CER/WER liczone przez `jiwer` (zależność `[train]`):
+
+```bash
+# baseline (EN, przed fine-tunem):
+python -m training.evaluate --data ./data/pl_lines_val --model microsoft/trocr-base-printed
+
+# po fine-tunie:
+python -m training.evaluate --data ./data/pl_lines_val --model ./ocr/trocr-pl-base
+
+# z korektą Bielik (wymaga FABRYKA_API_KEY):
+python -m training.evaluate --data ./data/pl_lines_val --model microsoft/trocr-base-printed --correct
+```
+
+Wynik dla syntetycznych danych PL (12 próbek, CPU): EN baseline CER ~55%.
+Korekta Bielik **pogarsza** CER przy tak zepsutym wejściu — działa dobrze tylko
+na lekko zniekształconym tekście.
 
 ## Uwagi
 
