@@ -37,6 +37,7 @@ vlm = [
     "paddleocr[doc-parser]>=3.4",
 ]
 train = [
+    "fonttools>=4.0",
     "datasets>=2.14",
     "accelerate>=0.25",
     "evaluate>=0.4",
@@ -51,7 +52,7 @@ ocr = "ocr.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["ocr*"]
+include = ["ocr*", "training*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

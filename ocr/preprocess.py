@@ -19,6 +19,11 @@ def load_image(source: ImageLike) -> np.ndarray:
     """Wczytuje obraz z pliku lub przepuszcza array. Zwraca RGB uint8 (H,W,3)."""
     if isinstance(source, np.ndarray):
         arr = source
+        if arr.ndim == 2:
+            return cv2.cvtColor(arr, cv2.COLOR_GRAY2RGB)
+        if arr.ndim != 3 or arr.shape[2] != 3 or arr.dtype != np.uint8:
+            raise ValueError("Expected RGB uint8 array with shape (H, W, 3)")
+        return arr
     else:
         path = str(source)
         arr = cv2.imread(path, cv2.IMREAD_COLOR)
@@ -56,15 +61,16 @@ def _estimate_angle(gray: np.ndarray, max_angle: float = 5.0) -> float:
     return best_angle
 
 
-def deskew(image: np.ndarray, max_angle: float = 5.0) -> np.ndarray:
+def deskew(image: np.ndarray, max_angle: float = 5.0, *, return_transform=False):
     """Koryguje pochylenie tekstu (drobne rotacje)."""
     gray = to_grayscale(image)
     angle = _estimate_angle(gray, max_angle)
     if abs(angle) < 0.5:
-        return image
+        return (image, np.array([[1., 0., 0.], [0., 1., 0.]])) if return_transform else image
     h, w = image.shape[:2]
     m = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1.0)
-    return cv2.warpAffine(image, m, (w, h), flags=cv2.INTER_LINEAR, borderValue=(255, 255, 255))
+    rotated = cv2.warpAffine(image, m, (w, h), flags=cv2.INTER_LINEAR, borderValue=(255, 255, 255))
+    return (rotated, m) if return_transform else rotated
 
 
 def crop_to_bbox(image: np.ndarray, bbox) -> np.ndarray:

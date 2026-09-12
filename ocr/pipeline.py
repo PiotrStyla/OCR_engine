@@ -6,6 +6,7 @@ Punkt wejścia wysokopoziomowy: `OcrEngine.recognize(image) -> OcrResult`.
 from __future__ import annotations
 
 import logging
+from dataclasses import replace
 from pathlib import Path
 from typing import Union
 
@@ -37,8 +38,27 @@ class OcrEngine:
         """Rozpoznaje tekst z obrazu (ścieżka lub array RGB)."""
         arr = load_image(image)
         if self.config.deskew:
-            arr = deskew(arr)
+            arr, transform = deskew(arr, return_transform=True)
+            return self._source_coordinates(self._recognize_array(arr), transform)
         return self._recognize_array(arr)
+
+    @staticmethod
+    def _source_coordinates(result, transform):
+        import cv2
+        inverse = cv2.invertAffineTransform(transform)
+        lines = []
+        w, h = result.image_size
+        for line in result.lines:
+            b = line.bbox
+            corners = np.array([[b.x1,b.y1,1], [b.x2,b.y1,1],
+                                [b.x2,b.y2,1], [b.x1,b.y2,1]], dtype=float)
+            points = corners @ inverse.T
+            points[:, 0] = np.clip(points[:, 0], 0, w)
+            points[:, 1] = np.clip(points[:, 1], 0, h)
+            box = BBox(int(np.floor(points[:,0].min())), int(np.floor(points[:,1].min())),
+                       int(np.ceil(points[:,0].max())), int(np.ceil(points[:,1].max())))
+            lines.append(replace(line, bbox=box, source_polygon=tuple(map(tuple, points.tolist()))))
+        return replace(result, lines=lines, source_to_processed=transform.tolist())
 
     def recognize_pdf(
         self, pdf: ImageLike, pages: str | None = None, dpi: int = 300
@@ -47,10 +67,8 @@ class OcrEngine:
         from .preprocess import iter_pdf_pages
 
         results: list[OcrResult] = []
-        for _page_no, arr in iter_pdf_pages(pdf, dpi=dpi, pages=pages):
-            if self.config.deskew:
-                arr = deskew(arr)
-            results.append(self._recognize_array(arr))
+        for page_no, arr in iter_pdf_pages(pdf, dpi=dpi, pages=pages):
+            results.append(replace(self.recognize(arr), page_number=page_no))
         return results
 
     def _recognize_array(self, arr: np.ndarray) -> OcrResult:
@@ -74,7 +92,8 @@ class OcrEngine:
                 if detected != "unknown":
                     lang = detected
             lines.append(TextLine(text=text, bbox=bbox, language=lang, confidence=conf))
-            if lang != routed_lang and lang in ("pl", "en"):
+            if (self.config.recognizer_backend == "trocr"
+                    and lang != routed_lang and lang in ("pl", "en")):
                 redo.append((len(lines) - 1, bbox, lang))
 
         # Drugi przebieg: linie rozpoznane niewłaściwym modelem → re-rozpoznanie
@@ -131,11 +150,12 @@ class OcrEngine:
             new_lines = list(result.lines)
             for i, cl in zip(idx, corrected_lines):
                 ln = result.lines[i]
-                new_lines[i] = TextLine(
-                    text=cl, bbox=ln.bbox,
-                    language=ln.language, confidence=ln.confidence,
+                new_lines[i] = replace(
+                    ln, text=cl, raw_text=ln.raw_text if ln.raw_text is not None else ln.text,
+                    raw_confidence=ln.raw_confidence if ln.raw_confidence is not None else ln.confidence,
+                    confidence=ln.confidence if cl == ln.text else float("nan"),
                 )
-        elif selective:
+        else:
             # Podzbiór: przy zmienionej liczbie linii nie da się bezpiecznie
             # dopasować poprawek do oryginałów — zachowujemy oryginał.
             logger.warning(
@@ -143,22 +163,7 @@ class OcrEngine:
                 len(idx), len(corrected_lines),
             )
             return result
-        else:
-            logger.warning(
-                "Korekta zmieniła liczbę linii (%d → %d) — zachowuję oryginalne bboxy.",
-                len(result.lines), len(corrected_lines),
-            )
-            n = len(result.lines)
-            new_lines = [
-                TextLine(
-                    text=cl,
-                    bbox=result.lines[min(i, n - 1)].bbox,
-                    language=result.lines[min(i, n - 1)].language,
-                    confidence=result.lines[min(i, n - 1)].confidence,
-                )
-                for i, cl in enumerate(corrected_lines)
-            ]
-        return OcrResult(lines=new_lines, image_size=result.image_size)
+        return replace(result, lines=new_lines)
 
     def _route_languages(self, bboxes: list[BBox]) -> list[Language]:
         """Routing języka: jeśli wymuszono język → ten język,

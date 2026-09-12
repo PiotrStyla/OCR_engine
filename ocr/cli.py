@@ -30,21 +30,21 @@ def _build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--pages", default=None,
                      help="Zakres stron PDF, np. '1-3,5' (domyślnie: wszystkie)")
     rec.add_argument("--dpi", type=int, default=300, help="DPI renderowania stron PDF")
-    rec.add_argument("--correct", action="store_true",
+    rec.add_argument("--correct", action=argparse.BooleanOptionalAction, default=None,
                      help="Korekta tekstu przez Fabryka API (wymaga FABRYKA_API_KEY)")
-    rec.add_argument("--correct-low-only", action="store_true",
+    rec.add_argument("--correct-low-only", action=argparse.BooleanOptionalAction, default=None,
                      help="Korekta tylko linii z confidence < --confidence-threshold")
-    rec.add_argument("--confidence-threshold", type=float, default=0.0,
+    rec.add_argument("--confidence-threshold", type=float, default=None,
                      help="Próg niskiego confidence (flaga w JSON / selektywna korekta)")
-    rec.add_argument("--fabryka-model", default="bielik-11b-v3",
+    rec.add_argument("--fabryka-model", default=None,
                      help="Model Fabryka do korekty (domyślnie: bielik-11b-v3)")
-    rec.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
-    rec.add_argument("--backend", choices=["trocr", "paddlevl"], default="trocr",
+    rec.add_argument("--device", choices=["auto", "cpu", "cuda"], default=None)
+    rec.add_argument("--backend", choices=["trocr", "paddlevl"], default=None,
                      help="Backend rozpoznawania: trocr lub paddlevl (PaddleOCR-VL VLM)")
 
     # check-fabryka
     chk = sub.add_parser("check-fabryka", help="Sprawdź połączenie z Fabryka API")
-    chk.add_argument("--fabryka-model", default="bielik-11b-v3",
+    chk.add_argument("--fabryka-model", default=None,
                      help="Model do przetestowania (domyślnie: bielik-11b-v3)")
     return parser
 
@@ -53,16 +53,21 @@ def _cmd_recognize(args) -> int:
     if not args.image.exists():
         print(f"Plik nie istnieje: {args.image}", file=sys.stderr)
         return 2
-    config = OcrConfig(
-        force_language=args.lang,
-        deskew=not args.no_deskew,
-        correct_text=args.correct or args.correct_low_only,
-        correct_low_confidence_only=args.correct_low_only,
-        confidence_threshold=args.confidence_threshold,
-        fabryka_model=args.fabryka_model,
-        device=args.device,  # type: ignore[arg-type]
-        recognizer_backend=args.backend,
-    )
+    config = OcrConfig.from_env()
+    for arg, field in (("lang", "force_language"), ("correct", "correct_text"),
+                       ("correct_low_only", "correct_low_confidence_only"),
+                       ("confidence_threshold", "confidence_threshold"),
+                       ("fabryka_model", "fabryka_model"), ("device", "device"),
+                       ("backend", "recognizer_backend")):
+        value = getattr(args, arg)
+        if value is not None:
+            setattr(config, field, value)
+    if args.no_deskew:
+        config.deskew = False
+    if args.correct_low_only:
+        config.correct_text = True
+    if config.correct_low_confidence_only and config.confidence_threshold <= 0:
+        raise ValueError("Selective correction requires confidence-threshold > 0")
     with OcrEngine(config) as engine:
         if args.image.suffix.lower() == ".pdf":
             results = engine.recognize_pdf(args.image, pages=args.pages, dpi=args.dpi)
@@ -75,14 +80,15 @@ def _cmd_recognize(args) -> int:
     else:
         for i, r in enumerate(results):
             if len(results) > 1:
-                print(f"--- strona {i + 1} ---")
+                print(f"--- strona {r.page_number or i + 1} ---")
             print(r.text)
     return 0
 
 
 def _cmd_check_fabryka(args) -> int:
     config = OcrConfig.from_env()
-    config.fabryka_model = args.fabryka_model
+    if args.fabryka_model is not None:
+        config.fabryka_model = args.fabryka_model
     corrector = TextCorrector(config)
 
     print(f"Endpoint: {corrector.base_url}")

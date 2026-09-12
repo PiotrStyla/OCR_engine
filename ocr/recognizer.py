@@ -51,37 +51,49 @@ class _TrOCRBackend:
                 )
             sequences = generated.sequences
             decoded = self.processor.batch_decode(sequences, skip_special_tokens=True)
-            results.extend((text.strip(), _mean_token_conf(generated)) for text in decoded)
+            confidence = _token_confidences(self.model, generated)
+            results.extend((text.strip(), conf) for text, conf in zip(decoded, confidence))
         return results
 
 
-def _mean_token_conf(generated, prompt_offset: int = 1) -> float:
-    """Szacuje średnie prawdopodobieństwo wygenerowanych tokenów.
+def _token_confidences(model, generated) -> list[float]:
+    """Mean selected-token probability per sequence; not calibrated accuracy.
 
-    `prompt_offset`: liczba tokenów prefiksu przed wygenerowanymi
-    (TrOCR: 1 dla BOS; VLM: długość promptu w input_ids).
+    Transformers resolves beam ancestry. EOS, PAD and tokens after EOS are
+    excluded. Empty output has unknown confidence, never a fabricated zero.
     """
-    try:
-        import torch
-        scores = generated.scores  # tuple[tensor] per krok
-        if not scores:
-            return 0.0
-        probs = []
-        for step, score in enumerate(scores):
-            tok = generated.sequences[:, prompt_offset + step]
-            p = torch.softmax(score, dim=-1).gather(-1, tok.unsqueeze(-1)).squeeze(-1)
-            probs.append(p.mean().item())
-        return float(sum(probs) / len(probs)) if probs else 0.0
-    except Exception:
-        return 0.0
+    import torch
+    if not generated.scores:
+        return [float("nan")] * len(generated.sequences)
+    scores = model.compute_transition_scores(
+        generated.sequences, generated.scores,
+        beam_indices=getattr(generated, "beam_indices", None), normalize_logits=True,
+    )
+    tokens = generated.sequences[:, -scores.shape[1]:]
+    mask = torch.ones_like(tokens, dtype=torch.bool)
+    eos = model.generation_config.eos_token_id
+    eos_ids = eos if isinstance(eos, (list, tuple)) else [eos]
+    end = torch.zeros_like(mask)
+    for token in eos_ids:
+        if token is not None:
+            end |= tokens == token
+    mask &= end.cumsum(dim=1) == 0
+    pad = model.generation_config.pad_token_id
+    if pad is not None:
+        mask &= tokens != pad
+    return [float(row[valid].exp().mean()) if valid.any() else float("nan")
+            for row, valid in zip(scores, mask)]
 
 
 def _paddlevl_pipeline_version(model_name: str) -> str:
     """Mapuje nazwę repo HF na pipeline_version pakietu paddleocr."""
-    for v in ("1.6", "1.5"):
-        if v in model_name:
-            return f"v{v}"
-    return "v1"
+    versions = {"PaddlePaddle/PaddleOCR-VL": "v1",
+                "PaddlePaddle/PaddleOCR-VL-1.5": "v1.5",
+                "PaddlePaddle/PaddleOCR-VL-1.6": "v1.6"}
+    if model_name not in versions:
+        raise ValueError("Unsupported PaddleOCR-VL model. Use an explicit supported "
+                         "PaddlePaddle model ID; custom weights/adapters are not supported.")
+    return versions[model_name]
 
 
 class _PaddleVLBackend:

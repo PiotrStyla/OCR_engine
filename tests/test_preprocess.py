@@ -23,10 +23,8 @@ def _white_image(w: int, h: int, color=(255, 255, 255)) -> np.ndarray:
 def test_load_image_from_array_rgb():
     arr = _white_image(20, 10, color=(10, 20, 30))
     loaded = load_image(arr)
-    # wejście BGR-konwencja? nie — load_image traktuje array jako BGR i konwertuje
     assert loaded.shape == (10, 20, 3)
-    # kolor (10,20,30) BGR -> RGB (30,20,10)
-    assert tuple(loaded[0, 0]) == (30, 20, 10)
+    assert tuple(loaded[0, 0]) == (10, 20, 30)
 
 
 def test_load_image_missing_file(tmp_path):

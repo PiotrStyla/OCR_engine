@@ -1,5 +1,11 @@
 # OCR Engine
 
+> Aktualizacja po audycie (2026-09-12): zobacz [plan CPU i zdalnych testów](docs/CPU_REMOTE_PLAN.md).
+> CLI respektuje ENV, a jawne flagi mają pierwszeństwo. Tablice wejściowe muszą być RGB uint8.
+> Wyniki zawierają źródłowy numer strony i geometrię po odwrotnym mapowaniu deskew.
+> Korekta zachowuje `raw_text`/`raw_confidence`; zmieniony tekst nie dziedziczy pewności OCR.
+> Niestandardowe checkpointy Paddle są odrzucane, dopóki nie ma ich jawnej integracji.
+
 Silnik OCR w Pythonie: **detekcja linii** (CRAFT lub OpenCV) + **TrOCR** (rozpoznawanie),
 z wsparciem języków **PL/EN**, routingiem języka per linia i **korektą tekstu przez
 Fabryka API** (Bielik).

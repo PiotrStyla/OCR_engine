@@ -135,7 +135,7 @@ def _augment(img: Image.Image, rng: random.Random) -> Image.Image:
     if rng.random() < 0.5:
         arr = np.asarray(img).astype(np.float32)
         noise = rng.random() * 12.0 + 2.0
-        arr = arr + np.random.normal(0.0, noise, arr.shape)
+        arr = arr + np.random.default_rng(rng.getrandbits(64)).normal(0.0, noise, arr.shape)
         img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
     # losowa zmiana jasności/kontrastu (prosta gamma)
     if rng.random() < 0.4:

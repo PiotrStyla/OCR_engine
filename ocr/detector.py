@@ -85,7 +85,9 @@ class TextDetector:
         import cv2
         bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
         result = self._craft.detect_text(bgr)
-        boxes = result.get("boxes", []) or []
+        boxes = result.get("boxes")
+        if boxes is None:
+            boxes = []
 
         bboxes: list[BBox] = []
         h, _ = arr.shape[:2]

@@ -39,6 +39,8 @@ data/
 test_document.png
 test_pl_font.png
 sample_grid.png
+!benchmarks/smoke-v1/test_document.png
+validation/
 
 # Environment / secrets
 .env

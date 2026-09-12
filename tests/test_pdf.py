@@ -78,3 +78,6 @@ def test_recognize_pdf_calls_pipeline_per_page(monkeypatch, pdf_3_pages):
     results = engine.recognize_pdf(pdf_3_pages, dpi=72)
     assert len(results) == 3
     assert len(seen) == 3
+    assert [r.page_number for r in results] == [1, 2, 3]
+    subset = engine.recognize_pdf(pdf_3_pages, pages="2-3", dpi=72)
+    assert [r.page_number for r in subset] == [2, 3]

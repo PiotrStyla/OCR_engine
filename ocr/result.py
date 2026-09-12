@@ -51,6 +51,9 @@ class TextLine:
     bbox: BBox
     language: Language
     confidence: float  # NaN = backend nie raportuje pewności (np. VLM)
+    raw_text: str | None = None
+    raw_confidence: float | None = None
+    source_polygon: tuple[tuple[float, float], ...] | None = None
 
     def __post_init__(self) -> None:
         if math.isnan(self.confidence):
@@ -65,6 +68,8 @@ class OcrResult:
 
     lines: list[TextLine] = field(default_factory=list)
     image_size: tuple[int, int] = (0, 0)  # (width, height)
+    page_number: int | None = None
+    source_to_processed: list[list[float]] | None = None
 
     @property
     def text(self) -> str:
@@ -86,11 +91,18 @@ class OcrResult:
         return {
             "text": self.text,
             "image_size": self.image_size,
+            "page_number": self.page_number,
+            "coordinate_space": "source_image_pixels",
+            "source_to_processed": self.source_to_processed,
             "lines": [
                 {
                     "text": line.text,
                     "bbox": list(line.bbox.to_tuple()),
                     "language": line.language,
+                    "raw_text": line.raw_text if line.raw_text is not None else line.text,
+                    "raw_confidence": (line.raw_confidence if line.raw_confidence is not None
+                                       and math.isfinite(line.raw_confidence) else None),
+                    "source_polygon": line.source_polygon,
                     # NaN (backend bez confidence) → null w JSON
                     "confidence": (None if math.isnan(line.confidence)
                                    else line.confidence),
