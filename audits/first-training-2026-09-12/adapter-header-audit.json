@@ -1,0 +1,21 @@
+{
+  "hf_revision": "0d42a14958063e4e0e94b02f6dce361337198c9f",
+  "tensor_count": 144,
+  "tensor_counts_by_module": {
+    "q_proj": 48,
+    "k_proj": 48,
+    "v_proj": 48,
+    "o_proj": 0,
+    "out_proj": 0,
+    "fc1": 0,
+    "fc2": 0
+  },
+  "examples": [
+    "base_model.model.decoder.model.decoder.layers.0.encoder_attn.k_proj.lora_A.weight",
+    "base_model.model.decoder.model.decoder.layers.0.encoder_attn.k_proj.lora_B.weight",
+    "base_model.model.decoder.model.decoder.layers.0.encoder_attn.q_proj.lora_A.weight",
+    "base_model.model.decoder.model.decoder.layers.0.encoder_attn.q_proj.lora_B.weight",
+    "base_model.model.decoder.model.decoder.layers.0.encoder_attn.v_proj.lora_A.weight",
+    "base_model.model.decoder.model.decoder.layers.0.encoder_attn.v_proj.lora_B.weight"
+  ]
+}

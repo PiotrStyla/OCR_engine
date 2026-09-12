@@ -1,0 +1,14 @@
+{
+  "training_first_token": 0,
+  "generation_first_token": 2,
+  "matched_modules": {
+    "q_proj": 2,
+    "k_proj": 2,
+    "v_proj": 2,
+    "o_proj": 0,
+    "out_proj": 2,
+    "fc1": 1,
+    "fc2": 1
+  },
+  "old_config_trainable_parameters": 384
+}

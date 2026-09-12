@@ -2,3 +2,4 @@
 experiments/** -text
 benchmarks/public-pilot-v1/** -text
 benchmarks/print-pilot-v1/** -text
+audits/first-training-2026-09-12/** -text

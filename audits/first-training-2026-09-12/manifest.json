@@ -1,0 +1,10 @@
+{
+  "adapter-header-audit.json": "19e9d7443ff95f184b0e2faea06025dfb054790635581fe7ad7b5af57bc507dc",
+  "adapter__adapter_config.json": "beb118652d9a005fa406dcb2a15d5e348964ce82f6102a0ec5b326b69dcc57bf",
+  "AUDYT.md": "d2e863f50cd929564e0380bf59d63806f724f1548f59bed390f67d0a27c4e8a0",
+  "checkpoint-375__trainer_state.json": "964810ee0794b42db902b46e75d67a91ee15569640006f413ecf83d61ef3162f",
+  "config.json": "056e96164bd944d198670a1abf5afbb84893d26b17060f5bdc472bed06ab3aee",
+  "generation_config.json": "8a067523202986d498539b0a6450741d1f71abdd1e299be5f73e27c14de83dd5",
+  "reproduce.py": "305fd4f3e7fda24e4b27e14a4dec51751aaa6b07ec27c7043c51d598e3159986",
+  "reproduction-result.json": "92f8968301e992dc21d577f03fd930a5fde2e79196662a249c43040b4e1d5c66"
+}
