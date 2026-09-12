@@ -113,3 +113,9 @@ na lekko zniekształconym tekście.
 - `trocr-base` (334M) to dobry kompromis; dla trudnych przypadków rozważ `trocr-large`.
 - Jeśli brak GPU, rozważ alternatywę: włącz korektę tekstu przez Fabryka API (Bielik)
   — patrz README głównego projektu. Albo PaddleOCR-VL + LoRA RysOCR.
+# Naprawa i ponowna ewaluacja pierwszego treningu
+
+Aktualna procedura: [TRAINING_RECOVERY.md](../docs/TRAINING_RECOVERY.md).
+Najpierw uruchom `kaggle_reevaluate_first_run.ipynb` na GPU — porównuje
+istniejący model bez treningu i bez publikacji. Poprawiony notebook treningowy
+wybiera checkpoint według CER; dodatkowe warstwy MLP są opcjonalne.
