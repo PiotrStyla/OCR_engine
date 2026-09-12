@@ -2,6 +2,12 @@
 
 ## Stan 2026-09-12
 
+**Aktualizacja po eksperymentach:** poniższe punkty 1–4 opisują stan sprzed
+prób. Wykonano już testy korekty Fabryki, Tesseract CPU i dwa osobne piloty
+skanów. Aktualne wyniki: [korekta i syntetyki](EXPERIMENTS_2026-09-12.md),
+[kursywa](PUBLIC_SCAN_PILOT.md), [zwykły druk i przygotowanie vision](PRINT_AND_VISION_PILOT.md).
+Zdalne OCR obrazów i trening nadal nie były uruchamiane.
+
 1. Poprawki audytu: lokalna gałąź `codex/ocr-correctness`. Testy CPU, bez wag OCR. Własne nazwy checkpointów Paddle są teraz odrzucane zamiast ignorowane; obsługa adapterów wymaga osobnej implementacji. Bboxy są mapowane do oryginalnego rastra (dla PDF przy wybranym DPI). Confidence poprawionego tekstu jest nieznane; surowy tekst i score są zachowane. Nie jest to jeszcze kalibracja score.
 2. Znaleziono `C:/Users/Hipek/OneDrive/Pulpit/OCR/test_document.png` i 12 par w `data/pl_lines_sample`. Strona została obejrzana i ręcznie przepisana do `benchmarks/smoke-v1`. To test funkcjonalny, nie reprezentatywny benchmark polskich dokumentów ani test SOTA. Widoczne ASCII trzeba przepisywać dosłownie, bez odtwarzania polskich znaków. Pary 12 linii pozostają poza testem jakości do czasu kontroli etykiet i niezależności od treningu.
 3. Fabryka: publiczna dokumentacja opisuje chat/completions, models i credits, z tekstowym przykładem `qwen3.6-35b-a3b`. Nie znaleziono w niej potwierdzenia image input ani fine-tuningu. Strona główna oznacza aliasy smart router jako projekt MVP. Nie wysłano żadnych danych ani płatnych zapytań. Źródła: https://router.fabryka.ai/docs oraz https://router.fabryka.ai/ (odczyt 2026-09-12).

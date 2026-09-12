@@ -1,0 +1,10 @@
+{
+  "experiments/2026-09-12/print-scans/run.json": "60b11aadb49aa0b4e47f9d06619c47f56956cac65d7fc4537091b69aeac6f720",
+  "experiments/2026-09-12/print-scans/summary.json": "04338440df096efb968a53bec75ded6581aa18c6b67fe429d2529c02d90f157a",
+  "experiments/2026-09-12/print-scans/vision-preflight.json": "fe34721379db89ac8ae1880f9a24d73b75ffaa363339b3e19d3fdee061eb9298",
+  "experiments/2026-09-12/print-scans/predictions.jsonl": "66d6d34a3f2b199eba87cc0cf4365b0ad7aef237ce77b92a40ef86cdc04bae04",
+  "benchmarks/print-pilot-v1/manifest.jsonl": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990",
+  "benchmarks/print-pilot-v1/source-metadata.json": "2afa6eca793661d31756bcb82917cd7a44d46588e24eb98300231bb0031b8a04",
+  "benchmarks/print-pilot-v1/references/odezwa-12.txt": "0ca837b25e8fcca204789667a9ea3a9c9a726bd7b2f367c148ca9cd89be60196",
+  "benchmarks/print-pilot-v1/references/torun-74.txt": "c5adf4f00fbc0c3da44e7a53e9c232706864442162993fbed118305a7a4d422e"
+}

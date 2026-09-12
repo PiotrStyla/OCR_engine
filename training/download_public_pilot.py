@@ -4,6 +4,7 @@ Usage: python -m training.download_public_pilot
 No model, GPU, API key or private documents required.
 """
 import hashlib
+import argparse
 import json
 from pathlib import Path
 from urllib.parse import urlparse
@@ -13,11 +14,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    manifest = ROOT / 'benchmarks/public-pilot-v1/manifest.jsonl'
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pilot', choices=['public-pilot-v1', 'print-pilot-v1'], default='public-pilot-v1')
+    args = parser.parse_args()
+    manifest = ROOT / 'benchmarks' / args.pilot / 'manifest.jsonl'
     for line in manifest.read_text(encoding='utf-8').splitlines():
         row = json.loads(line)
         target = (manifest.parent / row['image']).resolve()
-        if not target.is_relative_to(ROOT / 'data/public-pilot-v1'):
+        if not target.is_relative_to(ROOT / 'data' / args.pilot):
             raise ValueError('Image outside pilot directory')
         if target.exists():
             data = target.read_bytes()

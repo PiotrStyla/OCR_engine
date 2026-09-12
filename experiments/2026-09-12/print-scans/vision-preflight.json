@@ -1,0 +1,20 @@
+{
+  "mode": "dry-run",
+  "provider": "gemini",
+  "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+  "model": "gemini-3.8-flash",
+  "pages": 1,
+  "ids": [
+    "odezwa-12"
+  ],
+  "max_requests": 1,
+  "max_output_tokens_per_request": 8192,
+  "max_retries": 0,
+  "timeout_seconds": 60,
+  "prompt": "Transcribe the visible text in reading order. Preserve spelling, case, numbers and diacritics exactly as visible. Do not correct or infer missing characters. Return only the transcription; no explanation. Return an empty string for a blank page.",
+  "prompt_sha256": "12f47818357a7e5eae7ef231ad71e1f9698ab33bd477392cd480ce6763de9dc5",
+  "manifest_sha256": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990",
+  "time_utc": "2026-09-12T14:45:08.137082+00:00",
+  "references_sent": false,
+  "billing_verified": false
+}

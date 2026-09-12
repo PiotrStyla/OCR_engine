@@ -203,3 +203,5 @@ tests/      # testy jednostkowe (nie wymagają modeli ML)
 - Alternatywa bez treningu: PaddleOCR-VL + LoRA RysOCR (lepsza polska diakrytyka od ręki).
 
 Pilot rzeczywistych skanów: [wyniki i odtworzenie](docs/PUBLIC_SCAN_PILOT.md).
+
+Zwykły druk i vision API: [wyniki oraz przygotowany test](docs/PRINT_AND_VISION_PILOT.md).

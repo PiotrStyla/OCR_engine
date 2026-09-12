@@ -1,0 +1,19 @@
+{
+  "engine": "tesseract.js",
+  "package": "7.0.0",
+  "lock_sha256": "e5adc3e09c411a7d8e8402e9e5e09104b4b82d15e816b196f14acc91d6b1e154",
+  "languages": "pol+eng",
+  "oem": 1,
+  "workers": 1,
+  "startup_seconds": 0.3147602,
+  "model_hashes": {
+    "eng.traineddata": "5dc5d8d640a212c9d6184921ba103b186f50e0fed9ee716c53e6b312b400d747",
+    "pol.traineddata": "02b89cad819f1374631b4a3c92bdac79c214150f97a3686df78de6c8c30782db"
+  },
+  "node": "v24.19.0",
+  "cpu": "AMD Ryzen 5 5500U with Radeon Graphics         ",
+  "platform": "win32",
+  "time_utc": "2026-09-12T14:40:00.105Z",
+  "scope": "Public scan diagnostic; not SOTA benchmark",
+  "input_manifest_sha256": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990"
+}

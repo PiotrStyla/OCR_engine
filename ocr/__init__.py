@@ -16,8 +16,16 @@ Lub z kontrolą cyklu życia (lepsze dla wielu obrazów):
 from __future__ import annotations
 
 from .config import OcrConfig
-from .pipeline import OcrEngine, recognize
 from .result import BBox, Language, OcrResult, TextLine
+
+
+def __getattr__(name):
+    # Remote page parsing and preflight must not require local ML dependencies.
+    if name in {'OcrEngine', 'recognize'}:
+        from .pipeline import OcrEngine, recognize
+        globals().update(OcrEngine=OcrEngine, recognize=recognize)
+        return globals()[name]
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
 
 __all__ = [
     "OcrConfig",
