@@ -63,3 +63,5 @@ kontrola długości etykiet i podobieństwa tekstów pozostają niezbędne przed
 wnioskami o generalizacji. Poprawki infrastruktury nie dowodzą poprawy CER.
 
 Weryfikacja lokalna: 111 testów przeszło. Test na losowym małym modelu CPU potwierdził gradienty LoRA oraz wybór pierwszego checkpointu po pogorszeniu CER w drugiej epoce. Nie jest to pomiar jakości pełnego modelu.
+
+Kaggle: wybierz GPU T4 (API: --accelerator NvidiaTeslaT4). Zaobserwowany PyTorch 2.10.0+cu128 nie obsługuje P100 sm_60. Notebook wykonuje teraz rzeczywisty test CUDA przed pobraniem danych; samo cuda.is_available() nie wystarcza.
