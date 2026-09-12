@@ -39,6 +39,10 @@ class OcrConfig:
     recognizer_fallback: str = "microsoft/trocr-base-printed"
     # jeśli model PL nie istnieje, użyj fallback (EN) zamiast rzucać błędem
     use_fallback_if_pl_missing: bool = True
+    # backend rozpoznawania: "trocr" (detektor→TrOCR per język) lub
+    # "paddlevl" (PaddleOCR-VL-0.9B, VLM wielojęzyczny, bez fine-tuningu)
+    recognizer_backend: str = "trocr"
+    paddlevl_model: str = "PaddlePaddle/PaddleOCR-VL"
 
     # Routing języka
     force_language: str | None = None  # "pl" | "en" | None (auto)
@@ -91,6 +95,8 @@ class OcrConfig:
             recognizer_en=env("OCR_RECOGNIZER_EN", "microsoft/trocr-base-printed"),
             recognizer_pl=env("OCR_RECOGNIZER_PL", "ocr/trocr-pl-base"),
             recognizer_fallback=env("OCR_RECOGNIZER_FALLBACK", "microsoft/trocr-base-printed"),
+            recognizer_backend=env("OCR_RECOGNIZER_BACKEND", "trocr"),
+            paddlevl_model=env("OCR_PADDLEVL_MODEL", "PaddlePaddle/PaddleOCR-VL"),
             force_language=os.environ.get("OCR_FORCE_LANGUAGE"),
             device=env("OCR_DEVICE", "auto"),  # type: ignore[arg-type]
             correct_text=env_bool("OCR_CORRECT_TEXT", False),

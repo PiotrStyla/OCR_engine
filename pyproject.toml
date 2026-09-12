@@ -32,6 +32,10 @@ correct = [
 craft = [
     "craft-text-detector>=0.4",
 ]
+vlm = [
+    "paddlepaddle>=3.2",
+    "paddleocr[doc-parser]>=3.4",
+]
 train = [
     "datasets>=2.14",
     "accelerate>=0.25",

@@ -15,6 +15,9 @@ Uruchomienie:
     # z korektą Bielik (wymaga FABRYKA_API_KEY):
     python -m training.evaluate --data ./data/pl_lines_val \
         --model microsoft/trocr-base-printed --correct
+
+    # head-to-head z PaddleOCR-VL (SOTA VLM, ~2 GB download):
+    python -m training.evaluate --data ./data/pl_lines_val --backend paddlevl
 """
 
 from __future__ import annotations
@@ -58,19 +61,26 @@ class EvalReport:
 
 def evaluate(
     data_dir: str | Path,
-    model_name: str,
+    model_name: str | None = None,
     batch_size: int = 8,
     limit: int | None = None,
     correct: bool = False,
+    backend: str = "trocr",
     config: OcrConfig | None = None,
 ) -> EvalReport:
     """Uruchamia model na parach z `data_dir` i liczy CER/WER.
 
+    `backend`: "trocr" (VisionEncoderDecoder) lub "paddlevl" (PaddleOCR-VL VLM).
     `correct=True` dodatkowo mierzy metryki po korekcie Fabryka/Bielik.
     """
     from jiwer import cer, wer
 
-    from ocr.recognizer import _TrOCRBackend
+    if backend == "paddlevl":
+        from ocr.recognizer import _PaddleVLBackend as Backend
+        model_name = model_name or "PaddlePaddle/PaddleOCR-VL"
+    else:
+        from ocr.recognizer import _TrOCRBackend as Backend
+        model_name = model_name or "microsoft/trocr-base-printed"
 
     samples = load_pairs(data_dir)
     if limit:
@@ -79,10 +89,10 @@ def evaluate(
         raise SystemExit(f"Brak danych w {data_dir}")
 
     device = (config or OcrConfig()).resolved_device()
-    backend = _TrOCRBackend(model_name, device)
+    model = Backend(model_name, device)
 
     refs = [s.text for s in samples]
-    hyps = [t for t, _ in backend.recognize([s.image for s in samples], batch_size)]
+    hyps = [t for t, _ in model.recognize([s.image for s in samples], batch_size)]
 
     report = EvalReport(cer=cer(refs, hyps), wer=wer(refs, hyps), n_lines=len(refs))
 
@@ -101,9 +111,11 @@ def evaluate(
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Ewaluacja TrOCR (CER/WER)")
+    p = argparse.ArgumentParser(description="Ewaluacja modeli OCR (CER/WER)")
     p.add_argument("--data", required=True, help="Katalog z parami .png/.txt")
-    p.add_argument("--model", default="microsoft/trocr-base-printed")
+    p.add_argument("--model", default=None,
+                   help="model HF/lokalny (domyślnie wg backendu)")
+    p.add_argument("--backend", choices=["trocr", "paddlevl"], default="trocr")
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--correct", action="store_true",
@@ -118,7 +130,7 @@ def main() -> None:
     cfg = OcrConfig(device=a.device, correct_text=a.correct)
     report = evaluate(
         a.data, a.model, batch_size=a.batch_size, limit=a.limit,
-        correct=a.correct, config=cfg,
+        correct=a.correct, backend=a.backend, config=cfg,
     )
     print(report.summary())
 

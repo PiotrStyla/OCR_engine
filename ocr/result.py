@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -49,9 +50,11 @@ class TextLine:
     text: str
     bbox: BBox
     language: Language
-    confidence: float
+    confidence: float  # NaN = backend nie raportuje pewności (np. VLM)
 
     def __post_init__(self) -> None:
+        if math.isnan(self.confidence):
+            return
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError(f"confidence poza zakresem [0,1]: {self.confidence}")
 
@@ -88,9 +91,12 @@ class OcrResult:
                     "text": line.text,
                     "bbox": list(line.bbox.to_tuple()),
                     "language": line.language,
-                    "confidence": line.confidence,
+                    # NaN (backend bez confidence) → null w JSON
+                    "confidence": (None if math.isnan(line.confidence)
+                                   else line.confidence),
                     **({"low_confidence": True}
                        if confidence_threshold > 0
+                       and not math.isnan(line.confidence)
                        and line.confidence < confidence_threshold else {}),
                 }
                 for line in self.lines

@@ -55,8 +55,12 @@ class _TrOCRBackend:
         return results
 
 
-def _mean_token_conf(generated) -> float:
-    """Szacuje średnie prawdopodobieństwo wygenerowanych tokenów."""
+def _mean_token_conf(generated, prompt_offset: int = 1) -> float:
+    """Szacuje średnie prawdopodobieństwo wygenerowanych tokenów.
+
+    `prompt_offset`: liczba tokenów prefiksu przed wygenerowanymi
+    (TrOCR: 1 dla BOS; VLM: długość promptu w input_ids).
+    """
     try:
         import torch
         scores = generated.scores  # tuple[tensor] per krok
@@ -64,7 +68,7 @@ def _mean_token_conf(generated) -> float:
             return 0.0
         probs = []
         for step, score in enumerate(scores):
-            tok = generated.sequences[:, step + 1]  # token na tym kroku
+            tok = generated.sequences[:, prompt_offset + step]
             p = torch.softmax(score, dim=-1).gather(-1, tok.unsqueeze(-1)).squeeze(-1)
             probs.append(p.mean().item())
         return float(sum(probs) / len(probs)) if probs else 0.0
@@ -72,28 +76,95 @@ def _mean_token_conf(generated) -> float:
         return 0.0
 
 
+def _paddlevl_pipeline_version(model_name: str) -> str:
+    """Mapuje nazwę repo HF na pipeline_version pakietu paddleocr."""
+    for v in ("1.6", "1.5"):
+        if v in model_name:
+            return f"v{v}"
+    return "v1"
+
+
+class _PaddleVLBackend:
+    """PaddleOCR-VL (0.9B VLM) przez pakiet `paddleocr` — rozpoznawanie linii.
+
+    Model wielojęzyczny (109 języków, w tym polski) — bez fine-tuningu.
+    Wymaga extras `[vlm]` (paddlepaddle + paddleocr[doc-parser]).
+    VLM nie raportuje confidence → zwracany jest NaN (linie nie są
+    flagowane jako niskopewne).
+    """
+
+    def __init__(self, model_name: str, device: str) -> None:
+        from paddleocr import PaddleOCRVL
+
+        self._pipe = PaddleOCRVL(
+            pipeline_version=_paddlevl_pipeline_version(model_name),
+            # dla pojedynczych linii: bez preprocessingu i detekcji layoutu
+            use_layout_detection=False,
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            device="gpu" if device == "cuda" else "cpu",
+        )
+
+    def recognize(self, images: Sequence, batch_size: int) -> list[tuple[str, float]]:
+        results: list[tuple[str, float]] = []
+        for img in images:
+            arr = np.asarray(img.convert("RGB"))
+            text = ""
+            for res in self._pipe.predict(arr):
+                blocks = res.json["res"].get("parsing_res_list", [])
+                blocks = sorted(blocks, key=lambda b: b.get("block_order", 0))
+                text = "\n".join(
+                    b.get("block_content", "")
+                    for b in blocks if b.get("block_label") != "image"
+                ).strip()
+            results.append((text, float("nan")))
+        return results
+
+
 def _model_exists(name: str) -> bool:
-    """True jeśli `name` to istniejący katalog lokalny lub nazwa repo HF."""
+    """True jeśli `name` to istniejący katalog lokalny lub realne repo HF."""
     if os.path.isdir(name):
         return True
-    # nazwa HF repo (zawiera '/') — zakładamy dostępność, HF rzuci błędem przy ładowaniu
-    return "/" in name
+    if "/" not in name:
+        return False
+    # wygląda jak repo HF — zweryfikuj (krótki timeout; brak sieci → False)
+    try:
+        from huggingface_hub import model_info
+        model_info(name, timeout=5)
+        return True
+    except Exception:
+        return False
 
 
 class Recognizer:
-    """Zarządza modelami TrOCR dla języków PL i EN."""
+    """Zarządza modelami rozpoznawania (TrOCR per język lub VLM wielojęzyczny)."""
 
     def __init__(self, config: "OcrConfig") -> None:
         self.config = config
         self.device = config.resolved_device()
-        self._backends: dict[Language, _TrOCRBackend] = {}
+        self._backends: dict[str, object] = {}
 
     def has_model_for(self, language: Language) -> bool:
         """True jeśli model dla języka istnieje (bez ładowania)."""
+        if self.config.recognizer_backend == "paddlevl":
+            # PaddleOCR-VL obsługuje 109 języków natywnie — wystarczy pakiet
+            try:
+                import paddleocr  # noqa: F401
+                return True
+            except ImportError:
+                return False
         name = self.config.recognizer_pl if language == "pl" else self.config.recognizer_en
         return _model_exists(name)
 
-    def _backend_for(self, language: Language) -> _TrOCRBackend:
+    def _backend_for(self, language: Language):
+        if self.config.recognizer_backend == "paddlevl":
+            if "paddlevl" not in self._backends:
+                logger.info("Ładowanie PaddleOCR-VL: %s", self.config.paddlevl_model)
+                self._backends["paddlevl"] = _PaddleVLBackend(
+                    self.config.paddlevl_model, self.device
+                )
+            return self._backends["paddlevl"]
+
         if language in self._backends:
             return self._backends[language]
 

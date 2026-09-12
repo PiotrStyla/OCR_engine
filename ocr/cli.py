@@ -39,6 +39,8 @@ def _build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--fabryka-model", default="bielik-11b-v3",
                      help="Model Fabryka do korekty (domyślnie: bielik-11b-v3)")
     rec.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
+    rec.add_argument("--backend", choices=["trocr", "paddlevl"], default="trocr",
+                     help="Backend rozpoznawania: trocr lub paddlevl (PaddleOCR-VL VLM)")
 
     # check-fabryka
     chk = sub.add_parser("check-fabryka", help="Sprawdź połączenie z Fabryka API")
@@ -59,6 +61,7 @@ def _cmd_recognize(args) -> int:
         confidence_threshold=args.confidence_threshold,
         fabryka_model=args.fabryka_model,
         device=args.device,  # type: ignore[arg-type]
+        recognizer_backend=args.backend,
     )
     with OcrEngine(config) as engine:
         if args.image.suffix.lower() == ".pdf":

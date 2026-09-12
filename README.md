@@ -147,6 +147,24 @@ korektor zwróci inną liczbę linii niż wysłano, oryginał zostaje zachowany.
 | `OCR_DEVICE` | `auto` | `auto`/`cpu`/`cuda` |
 | `OCR_CONFIDENCE_THRESHOLD` | `0.0` | próg flagowania niskopewnych linii |
 | `OCR_CORRECT_LOW_ONLY` | `false` | korekta tylko linii poniżej progu |
+| `OCR_RECOGNIZER_BACKEND` | `trocr` | `trocr` lub `paddlevl` (PaddleOCR-VL VLM) |
+
+## Backend PaddleOCR-VL (opcjonalny, SOTA)
+
+Alternatywny backend rozpoznawania: [PaddleOCR-VL](https://huggingface.co/PaddlePaddle/PaddleOCR-VL)
+— model VLM 0.9B, 109 języków (w tym polski), #1 na OmniDocBench. Nie wymaga
+fine-tuningu ani detektora per język.
+
+```bash
+pip install -e ".[vlm]"   # paddlepaddle + paddleocr[doc-parser]
+
+ocr recognize dokument.png --backend paddlevl
+python -m training.evaluate --data ./data/pl_lines_val --backend paddlevl
+```
+
+Uwagi: backend VLM nie raportuje `confidence` (w JSON: `null`), rozpoznaje
+linie po jednej (wolniejsze na CPU). Porównanie head-to-head z TrOCR:
+`python -m training.evaluate --data <zbiór> --backend trocr|paddlevl`.
 
 ## Testy
 
