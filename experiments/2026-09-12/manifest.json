@@ -5,6 +5,9 @@
     "experiments\\2026-09-12\\fabryka\\summary.json": "321a42dc9d6cb3db939aa5fcc84445fd2c061dca9b8bf4b9f35ba225a8cde7bb",
     "experiments\\2026-09-12\\tesseract\\predictions.jsonl": "ab0acca0072a0ee230ccf46c87634ff0436b5cde725a38b4e02bbc1c78958121",
     "experiments\\2026-09-12\\tesseract\\run.json": "241d03a09c23a39b8e46f031a007c3154f8d1d523467dc3070b5d36578c132b0",
-    "experiments\\2026-09-12\\tesseract\\summary.json": "49ba8f836a4ed1bfcc54b2fe5fc756fedfbe419c9a015729c1d1f58811499e79"
+    "experiments\\2026-09-12\\tesseract\\summary.json": "49ba8f836a4ed1bfcc54b2fe5fc756fedfbe419c9a015729c1d1f58811499e79",
+    "experiments\\2026-09-12\\gemini-vision\\predictions.jsonl": "bd735f254db81ed144dba1fff5283b332f5f0e25b5ee14324d07bf86d01e5220",
+    "experiments\\2026-09-12\\gemini-vision\\run.json": "b786b53486e86bf7080f370821f6ed0ded48629e92373d41107f5a1796d4e142",
+    "experiments\\2026-09-12\\gemini-vision\\summary.json": "631c6d91557b5064c4ad67f76d34296b51e289058e01502be0a0df263e3dabad"
   }
 }

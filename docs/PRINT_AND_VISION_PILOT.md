@@ -107,3 +107,26 @@ rzeczywistych zapytań Gemini.
 Następne porównanie powinno obejmować osobno zwykły druk i kursywę, przy
 identycznych obrazach i zamrożonych referencjach. Nadal brak podstaw do
 ogłoszenia SOTA lub zamawiania treningu.
+
+## Wykonana sonda Gemini — 2026-09-12 (uzupełnienie)
+
+Po ustawieniu `GEMINI_API_KEY` (darmowa warstwa Google AI Studio) wykonano
+`probe_vision --execute` na obu stronach pilota. Modele z rodziny 2.5
+(`gemini-2.5-flash`, `2.5-pro`, `2.5-flash-lite`) zwracają 404 „no longer
+available" dla nowego klucza; użyto `gemini-3.1-flash-lite` (odpowiada przez
+warstwę OpenAI-compat `generativelanguage.googleapis.com/v1beta/openai/`).
+
+| Dokument | CER | WER | Tesseract CER/WER |
+|---|---:|---:|---:|
+| odezwa-12 | 0,20% | 1,21% | 1,06% / 7,29% |
+| torun-74 | 0,60% | 2,38% | 0,60% / 2,65% |
+| **Łącznie (micro)** | **0,44%** | **1,92%** | **0,79% / 4,48%** |
+
+2 żądania, obie odpowiedzi `stop`. Normalizacja i scorer identyczne jak dla
+baseline'u CPU. To dwie strony historycznego druku — nie estymacja na
+formularze, kursywę, tabele ani dokumenty wielokolumnowe. Darmowa warstwa
+Gemini może używać danych do ulepszania produktu; wysłano wyłącznie obrazy
+publiczne (Public domain), bez referencji.
+
+Dowody: `experiments/2026-09-12/gemini-vision/{run.json,predictions.jsonl,summary.json}`.
+Sumy kontrolne dopisane do `experiments/2026-09-12/manifest.json`.
