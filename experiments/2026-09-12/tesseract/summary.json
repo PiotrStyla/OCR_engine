@@ -1,0 +1,25 @@
+{
+  "normalization": "NFC + whitespace collapse; case and diacritics retained",
+  "page": {
+    "samples": 1,
+    "exact_matches": 1,
+    "character_edits": 0,
+    "reference_chars": 111,
+    "cer": 0.0,
+    "word_edits": 0,
+    "reference_words": 25,
+    "wer": 0.0,
+    "inference_seconds": 0.19620589999999993
+  },
+  "line": {
+    "samples": 12,
+    "exact_matches": 10,
+    "character_edits": 3,
+    "reference_chars": 370,
+    "cer": 0.008108108108108109,
+    "word_edits": 3,
+    "reference_words": 55,
+    "wer": 0.05454545454545454,
+    "inference_seconds": 0.4741373999999996
+  }
+}

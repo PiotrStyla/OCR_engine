@@ -1,0 +1,17 @@
+{
+  "time_utc": "2026-09-12T10:13:02.723782+00:00",
+  "git_commit": "7ba81b66acc3a3b8f8b91a3d4e91fd73b16b4d1a",
+  "cases_sha256": "9b10c46281e9511d3a0a99e1006ffda59cb166c4ee26e98e6ee4ba412b5f6fa4",
+  "system_prompt": "Jesteś korektorem tekstu rozpoznanego przez OCR. Otrzymasz tekst z błędami rozpoznawania (często brak polskich diakrytyków: ą→a, ę→e, ł→l, ó→o, ś→s, ż→z, ź→z, ć→c, ń→n; czasami pocięte słowa, błędna interpunkcja). Zwróć WYŁĄCZNIE poprawiony tekst, bez komentarzy, bez wyjaśnień, bez markdown. Zachowaj oryginalny układ linii i sens. Nie dodawaj informacji, której nie ma w tekście. Jeśli tekst jest poprawny, zwróć go bez zmian.",
+  "endpoint": "https://fabryka.ai/v1/chat/completions",
+  "models": [
+    "bielik-11b-v3",
+    "qwen3.8-27b"
+  ],
+  "max_tokens_per_request": 256,
+  "requests_planned": 16,
+  "scope": "Constructed correction diagnostic, not an OCR benchmark or SOTA evaluation.",
+  "temperature": 0,
+  "retries": 0,
+  "timeout_seconds": 45
+}

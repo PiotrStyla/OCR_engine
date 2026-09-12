@@ -13,6 +13,7 @@ class _FakeCompletions:
         self.response_text = response_text
         self.model_ids = model_ids or ["bielik-11b-v3", "auto"]
         self.calls = []
+        self.finish_reason = "stop"
 
     def create(self, **kwargs):
         self.calls.append(kwargs)
@@ -22,6 +23,7 @@ class _FakeCompletions:
 
         class _Choice:
             message = _Msg()
+            finish_reason = self.finish_reason
 
         class _Resp:
             choices = [_Choice()]
@@ -119,6 +121,12 @@ def test_correct_strips_whitespace():
     corrector = _make_corrector(response_text="  poprawiony  ")
     result = corrector.correct("tekst")
     assert result == "poprawiony"
+
+
+def test_correct_rejects_truncated_response():
+    corrector = _make_corrector(response_text="ucięty")
+    corrector._client.chat.completions.finish_reason = "length"
+    assert corrector.correct("pełna oryginalna linia") == "pełna oryginalna linia"
 
 
 def test_correct_api_failure_returns_original():

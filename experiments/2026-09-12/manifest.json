@@ -1,0 +1,10 @@
+{
+  "sha256": {
+    "experiments\\2026-09-12\\fabryka\\responses.jsonl": "7605fbf4464e954519710810f114887f9a668ffb50cbbe1a1f9edb8a2dedc6c7",
+    "experiments\\2026-09-12\\fabryka\\run.json": "8845ebedd1f710843a0b13f73ffdb9f4f4828e1a0e66124d02566c37d435c004",
+    "experiments\\2026-09-12\\fabryka\\summary.json": "321a42dc9d6cb3db939aa5fcc84445fd2c061dca9b8bf4b9f35ba225a8cde7bb",
+    "experiments\\2026-09-12\\tesseract\\predictions.jsonl": "ab0acca0072a0ee230ccf46c87634ff0436b5cde725a38b4e02bbc1c78958121",
+    "experiments\\2026-09-12\\tesseract\\run.json": "241d03a09c23a39b8e46f031a007c3154f8d1d523467dc3070b5d36578c132b0",
+    "experiments\\2026-09-12\\tesseract\\summary.json": "49ba8f836a4ed1bfcc54b2fe5fc756fedfbe419c9a015729c1d1f58811499e79"
+  }
+}

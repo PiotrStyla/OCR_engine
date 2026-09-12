@@ -1,0 +1,171 @@
+{
+  "complete": true,
+  "models": {
+    "bielik-11b-v3": {
+      "requests": 8,
+      "completed": 8,
+      "baseline_cer": 0.021538461538461538,
+      "effective_cer": 0.046153846153846156,
+      "clean_controls": 6,
+      "clean_controls_changed": 3,
+      "tokens": 2072,
+      "cases": [
+        {
+          "id": "ascii-original",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 7,
+          "reference_chars": 30,
+          "changed_clean": true,
+          "raw_output_edits": 7
+        },
+        {
+          "id": "lost-diacritics",
+          "accepted": true,
+          "raw_edits": 6,
+          "effective_edits": 1,
+          "reference_chars": 30,
+          "changed_clean": false,
+          "raw_output_edits": 1
+        },
+        {
+          "id": "clean-polish",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 18,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-numbers",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 61,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-negation",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 64,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-name",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 4,
+          "reference_chars": 33,
+          "changed_clean": true,
+          "raw_output_edits": 4
+        },
+        {
+          "id": "broken-word",
+          "accepted": true,
+          "raw_edits": 1,
+          "effective_edits": 0,
+          "reference_chars": 51,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "line-layout",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 3,
+          "reference_chars": 38,
+          "changed_clean": true,
+          "raw_output_edits": 3
+        }
+      ]
+    },
+    "qwen3.8-27b": {
+      "requests": 8,
+      "completed": 8,
+      "baseline_cer": 0.021538461538461538,
+      "effective_cer": 0.024615384615384615,
+      "clean_controls": 6,
+      "clean_controls_changed": 2,
+      "tokens": 1715,
+      "cases": [
+        {
+          "id": "ascii-original",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 6,
+          "reference_chars": 30,
+          "changed_clean": true,
+          "raw_output_edits": 6
+        },
+        {
+          "id": "lost-diacritics",
+          "accepted": true,
+          "raw_edits": 6,
+          "effective_edits": 0,
+          "reference_chars": 30,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-polish",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 18,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-numbers",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 61,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-negation",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 64,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "clean-name",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 2,
+          "reference_chars": 33,
+          "changed_clean": true,
+          "raw_output_edits": 2
+        },
+        {
+          "id": "broken-word",
+          "accepted": true,
+          "raw_edits": 1,
+          "effective_edits": 0,
+          "reference_chars": 51,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        },
+        {
+          "id": "line-layout",
+          "accepted": true,
+          "raw_edits": 0,
+          "effective_edits": 0,
+          "reference_chars": 38,
+          "changed_clean": false,
+          "raw_output_edits": 0
+        }
+      ]
+    }
+  }
+}

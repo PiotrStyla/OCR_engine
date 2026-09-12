@@ -1,0 +1,1 @@
+{"name":"ocr-cpu-baseline","private":true,"description":"Optional Tesseract WASM baseline; not a web app","type":"module","dependencies":{"tesseract.js":"7.0.0"}}

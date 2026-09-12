@@ -41,6 +41,8 @@ test_pl_font.png
 sample_grid.png
 !benchmarks/smoke-v1/test_document.png
 validation/
+node_modules/
+tools/cpu-baseline/cache/
 
 # Environment / secrets
 .env

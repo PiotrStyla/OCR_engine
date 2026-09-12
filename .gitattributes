@@ -1,0 +1,2 @@
+# Preserve evidence bytes so SHA256 manifests survive checkout on Windows.
+experiments/** -text

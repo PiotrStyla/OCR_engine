@@ -5,6 +5,10 @@
 > Wyniki zawierają źródłowy numer strony i geometrię po odwrotnym mapowaniu deskew.
 > Korekta zachowuje `raw_text`/`raw_confidence`; zmieniony tekst nie dziedziczy pewności OCR.
 > Niestandardowe checkpointy Paddle są odrzucane, dopóki nie ma ich jawnej integracji.
+>
+> [Pierwsze pomiary CPU i Fabryki](docs/EXPERIMENTS_2026-09-12.md): Tesseract stanowi
+> osobny baseline; na małym teście korekta tekstowa zwiększała łączny CER.
+> Wyniki nie są potwierdzeniem SOTA. Ucięte odpowiedzi korektora są odrzucane.
 
 Silnik OCR w Pythonie: **detekcja linii** (CRAFT lub OpenCV) + **TrOCR** (rozpoznawanie),
 z wsparciem języków **PL/EN**, routingiem języka per linia i **korektą tekstu przez

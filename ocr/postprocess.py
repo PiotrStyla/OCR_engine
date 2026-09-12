@@ -91,6 +91,7 @@ class TextCorrector:
             base_url=self.base_url,
             api_key=self.api_key,
             timeout=self.config.fabryka_timeout,
+            max_retries=0,  # retries are bounded by _call_with_retry
         )
         return self._client
 
@@ -134,6 +135,9 @@ class TextCorrector:
                     temperature=0.0,
                     max_tokens=max(256, len(text) * 4),
                 )
+                if resp.choices[0].finish_reason != "stop":
+                    logger.warning("Incomplete correction response — keeping original text")
+                    return text
                 corrected = resp.choices[0].message.content
                 if corrected is None:
                     return text
