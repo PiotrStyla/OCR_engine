@@ -53,6 +53,19 @@ data/pl_lines_train/
   do pliku, więc kolejne generowania nie wymagają sieci.
 - Zbiory publiczne z polskimi dokumentami (np. fragmenty OCR-ów z korektą).
 
+## Hugging Face + Kaggle (darmowe GPU)
+
+Gotowy zbiór i notebook:
+
+- **Dataset:** [PiotrSty/ocr-pl-lines](https://huggingface.co/datasets/PiotrSty/ocr-pl-lines)
+  — 2000 par train + 200 val, wygenerowane `generate_synthetic` (seed 42/123).
+- **Model:** [PiotrSty/trocr-pl-base](https://huggingface.co/PiotrSty/trocr-pl-base)
+  — docelowy repo; po treningu `OcrConfig(recognizer_pl="PiotrSty/trocr-pl-base")`
+  pobierze go automatycznie przez HF Hub.
+- **Notebook:** `training/kaggle_trocr_pl.ipynb` — pełny pipeline na darmowym
+  GPU Kaggle (klon repo → dataset z HF → QLoRA → ewaluacja → push modelu).
+  Wymaga Kaggle Secrets `HF_TOKEN` i włączonego GPU (Settings → Accelerator).
+
 ## Uruchomienie
 
 ```bash
