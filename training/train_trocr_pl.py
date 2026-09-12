@@ -85,18 +85,31 @@ def train(
 
     processor = TrOCRProcessor.from_pretrained(base_model)
 
-    # QLoRA: 4-bit quantization przy ładowaniu bazowego modelu
-    quant_kwargs = {}
+    # QLoRA: 4-bit quantization przy ładowaniu bazowego modelu.
+    # bnb 4-bit + VisionEncoderDecoderModel potrafi crashować w transformers
+    # (missing-keys init) — wtedy fallback na pełne LoRA fp16; przy 336M
+    # parametrach TrOCR-base to i tak wystarczające na 16 GB VRAM.
+    model = None
     if use_4bit:
-        quant_kwargs["quantization_config"] = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16,
-            bnb_4bit_use_double_quant=True,
-        )
-        logger.info("QLoRA: 4-bit NF4 quantization włączona")
-
-    model = VisionEncoderDecoderModel.from_pretrained(base_model, **quant_kwargs)
+        try:
+            model = VisionEncoderDecoderModel.from_pretrained(
+                base_model,
+                quantization_config=BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.bfloat16,
+                    bnb_4bit_use_double_quant=True,
+                ),
+            )
+            logger.info("QLoRA: 4-bit NF4 quantization włączona")
+        except (AttributeError, RuntimeError, ImportError) as exc:
+            logger.warning(
+                "4-bit load nie powiódł się (%s) — przełączam na pełne LoRA fp16",
+                exc,
+            )
+            use_4bit = False
+    if model is None:
+        model = VisionEncoderDecoderModel.from_pretrained(base_model)
     model.to(device)
 
     # konfiguracja dekodera
