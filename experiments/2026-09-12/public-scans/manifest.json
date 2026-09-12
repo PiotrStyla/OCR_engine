@@ -1,0 +1,7 @@
+{
+  "experiments/2026-09-12/public-scans/run.json": "811cad5bd04fedaaf38f48e95ccb307529c12a6228d726ae9ba83269944fc8ea",
+  "experiments/2026-09-12/public-scans/summary.json": "a637625136fe305f37da603b5a2f639f55f815a016dad5898d71b196c0e09b58",
+  "experiments/2026-09-12/public-scans/predictions.jsonl": "5ddb467ce02a5f571287aabfb816498d2b75f1c28853dee161c1e9ca99d8375f",
+  "benchmarks/public-pilot-v1/manifest.jsonl": "1d6bbb7cdf492c1f48a76f0617da3c31fad047494a68d439c56d42e13bfa6aa6",
+  "benchmarks/public-pilot-v1/source-metadata.json": "70be21c72682c3c42195bf9fdbb1de85a7ac573ba5ea9281bacfea2fb4faadb8"
+}

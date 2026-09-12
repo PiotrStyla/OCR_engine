@@ -15,8 +15,14 @@ mkdirSync(output, { recursive: false });
 const hash = data => createHash('sha256').update(data).digest('hex');
 const fixture = join(root, 'benchmarks/smoke-v1/manifest.jsonl');
 const page = JSON.parse(readFileSync(fixture, 'utf8').trim());
-const cases = [{ id: page.id, kind: 'page', path: resolve(dirname(fixture), page.image), reference: page.text }];
-for (const file of readdirSync(sampleDirectory).filter(f => f.endsWith('.png')).sort()) {
+const manifestMode = sampleDirectory.endsWith('.jsonl');
+const cases = manifestMode ? readFileSync(sampleDirectory, 'utf8').trim().split('\n').map(line => {
+  const row = JSON.parse(line);
+  const path = resolve(dirname(resolve(sampleDirectory)), row.image);
+  if (hash(readFileSync(path)) !== row.sha256) throw new Error(`Checksum mismatch: ${row.id}`);
+  return { id: row.id, kind: 'page', path, reference: row.text };
+}) : [{ id: page.id, kind: 'page', path: resolve(dirname(fixture), page.image), reference: page.text }];
+for (const file of (manifestMode ? [] : readdirSync(sampleDirectory)).filter(f => f.endsWith('.png')).sort()) {
   cases.push({ id: `line-${file.slice(0, -4)}`, kind: 'line', path: resolve(sampleDirectory, file),
     reference: readFileSync(join(sampleDirectory, file.replace(/\.png$/, '.txt')), 'utf8').trim() });
 }
@@ -35,8 +41,11 @@ try {
     let result;
     try {
       const { data } = await worker.recognize(item.path);
-      result = { ...item, path: undefined, status: 'ok', text: data.text,
-        confidence: data.confidence, psm, elapsed_seconds: (performance.now() - began) / 1000 };
+      const empty = !data.text.trim();
+      result = { ...item, path: undefined, status: empty ? 'error' : 'ok', text: data.text,
+        error_type: empty ? 'EmptyRecognition' : undefined,
+        confidence: empty ? null : data.confidence, raw_engine_confidence: data.confidence,
+        psm, elapsed_seconds: (performance.now() - began) / 1000 };
     } catch (error) {
       result = { ...item, path: undefined, status: 'error', text: '', error_type: error.name,
         psm, elapsed_seconds: (performance.now() - began) / 1000 };
@@ -54,5 +63,6 @@ writeFileSync(join(output, 'run.json'), JSON.stringify({ engine: 'tesseract.js',
   lock_sha256: hash(readFileSync(join(here, 'pnpm-lock.yaml'))), languages: 'pol+eng', oem: 1,
   workers: 1, startup_seconds: startupSeconds, model_hashes: weights,
   node: process.version, cpu: os.cpus()[0].model, platform: process.platform,
-  time_utc: new Date().toISOString(), scope: '1 synthetic page + 12 oracle line crops; not SOTA benchmark'
+  time_utc: new Date().toISOString(), scope: manifestMode ? 'Public scan diagnostic; not SOTA benchmark' : '1 synthetic page + 12 oracle line crops; not SOTA benchmark',
+  input_manifest_sha256: manifestMode ? hash(readFileSync(sampleDirectory)) : null
 }, null, 2));

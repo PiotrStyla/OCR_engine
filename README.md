@@ -201,3 +201,5 @@ tests/      # testy jednostkowe (nie wymagają modeli ML)
 - Detektor OpenCV (fallback) jest prostszy od CRAFT — dobry do dokumentów/skanów,
   słabszy do tekstu w naturze i złożonych tła.
 - Alternatywa bez treningu: PaddleOCR-VL + LoRA RysOCR (lepsza polska diakrytyka od ręki).
+
+Pilot rzeczywistych skanów: [wyniki i odtworzenie](docs/PUBLIC_SCAN_PILOT.md).

@@ -1,2 +1,3 @@
 # Preserve evidence bytes so SHA256 manifests survive checkout on Windows.
 experiments/** -text
+benchmarks/public-pilot-v1/** -text

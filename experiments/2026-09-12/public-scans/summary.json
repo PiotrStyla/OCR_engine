@@ -1,0 +1,25 @@
+{
+  "pages": 2,
+  "errors_or_missing": 1,
+  "cer_micro": 0.8994413407821229,
+  "wer_micro": 0.975,
+  "normalization": "Unicode NFC + whitespace only; case and diacritics preserved",
+  "manifest_sha256": "1d6bbb7cdf492c1f48a76f0617da3c31fad047494a68d439c56d42e13bfa6aa6",
+  "predictions_sha256": "5ddb467ce02a5f571287aabfb816498d2b75f1c28853dee161c1e9ca99d8375f",
+  "results": [
+    {
+      "id": "elementarz-15",
+      "status": "error",
+      "cer": 1.0,
+      "wer": 1.0,
+      "exact_match": false
+    },
+    {
+      "id": "elementarz-51",
+      "status": "ok",
+      "cer": 0.8656716417910447,
+      "wer": 0.9629629629629629,
+      "exact_match": false
+    }
+  ]
+}
