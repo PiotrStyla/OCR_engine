@@ -22,8 +22,29 @@
 
 Otwórz na Kaggle `training/kaggle_reevaluate_first_run.ipynb` z GPU.
 Dane i modele są publiczne, ale po błędzie HTTP 429 na współdzielonym IP Kaggle
-notebook wymaga HF_TOKEN z Kaggle Secrets. Włącz ten sekret dla notebooka
-w Add-ons > Secrets; jego wartość nie trafia do pliku ani logu.
+notebook wymaga HF_TOKEN. Domyślnie odczytuje go z Kaggle Secrets; włącz sekret
+dla tego notebooka w Add-ons > Secrets. Wcześniej ustawiona zmienna środowiskowa
+HF_TOKEN ma pierwszeństwo. Wartość nie jest drukowana ani zapisywana do pliku.
+
+Jeśli Kaggle nadal nie udostępnia dodanego sekretu, w sesji interaktywnej
+uruchom osobną komórkę przed komórką pobierania danych:
+
+```python
+import os
+from getpass import getpass
+os.environ['HF_TOKEN'] = getpass('Token Hugging Face (hf_...): ').strip()
+```
+
+Wklej token Hugging Face z prawem odczytu do ukrytego pola, nie do kodu.
+Następnie uruchom ponownie komórkę pobierania danych. Ta ścieżka wymaga
+aktualnego notebooka z obsługą zmiennej środowiskowej; stary notebook zawsze
+wywoływał get_secret. Ustawienie jest tymczasowe dla bieżącej sesji i procesów
+przez nią uruchomionych. Save & Run All uruchamia osobny proces: tam nadal
+trzeba udostępnić sekret. Notebook celowo nie wyświetla automatycznego monitu
+o token, żeby uruchomienie w tle nie czekało na wpisanie danych.
+
+Komunikat `HF authentication configured` potwierdza tylko uzyskanie wartości;
+dopiero udane pobieranie potwierdza działanie dostępu do danych.
 Ewaluacja pobiera wyłącznie val/*, z max_workers=2.
 Kaggle API token służy wyłącznie do zewnętrznego uruchomienia notebooka;
 przy uruchomieniu w interfejsie Kaggle nie trzeba go wklejać do notebooka.

@@ -63,8 +63,10 @@ Gotowy zbiór i notebook:
   — docelowy repo; po treningu `OcrConfig(recognizer_pl="PiotrSty/trocr-pl-base")`
   pobierze go automatycznie przez HF Hub.
 - **Notebook:** `training/kaggle_trocr_pl.ipynb` — pełny pipeline na darmowym
-  GPU Kaggle (klon repo → dataset z HF → QLoRA → ewaluacja → push modelu).
-  Wymaga Kaggle Secrets `HF_TOKEN` i włączonego GPU (Settings → Accelerator).
+  GPU Kaggle (klon repo → dataset z HF → LoRA → ewaluacja → lokalny eksport).
+  Wymaga `HF_TOKEN` i GPU T4; bez automatycznej publikacji modelu.
+  Gdy Kaggle Secrets nie działa, dostępna jest opisana w
+  [instrukcji naprawy](../docs/TRAINING_RECOVERY.md) metoda interaktywna z `getpass`.
 
 ## Uruchomienie
 
