@@ -59,6 +59,8 @@ Gotowy zbiór i notebook:
 
 - **Dataset:** [PiotrSty/ocr-pl-lines](https://huggingface.co/datasets/PiotrSty/ocr-pl-lines)
   — 2000 par train + 200 val, wygenerowane `generate_synthetic` (seed 42/123).
+  Notebook pobiera pojedyncze archiwum `ocr-pl-lines-v1.tar.gz`, aby nie przekraczać
+  limitu żądań HF i nie wymagać sekretu `HF_TOKEN` dla publicznych danych.
 - **Model:** [PiotrSty/trocr-pl-base](https://huggingface.co/PiotrSty/trocr-pl-base)
   — docelowy repo; po treningu `OcrConfig(recognizer_pl="PiotrSty/trocr-pl-base")`
   pobierze go automatycznie przez HF Hub.
