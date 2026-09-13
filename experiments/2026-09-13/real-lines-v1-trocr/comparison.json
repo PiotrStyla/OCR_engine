@@ -1,0 +1,217 @@
+{
+  "benchmark": "real-lines-v1",
+  "lines": 75,
+  "models": {
+    "trocr-pl-run2": {
+      "summary": {
+        "model": "trocr-pl-run2",
+        "model_source": "C:\\Users\\Hipek\\OneDrive\\Pulpit\\OCR\\data\\training-runs\\run2-kaggle-v11\\trocr-pl-run2",
+        "lines": 75,
+        "cer_micro": 0.11108010047446273,
+        "wer_micro": 0.3584,
+        "by_page": {
+          "odezwa-12": {
+            "lines": 33,
+            "cer": 0.11541072640868975,
+            "wer": 0.3522267206477733
+          },
+          "torun-74": {
+            "lines": 42,
+            "cer": 0.1080568720379147,
+            "wer": 0.36243386243386244
+          }
+        },
+        "elapsed_seconds": 424.609,
+        "manifest_sha256": "987c89227e5539b104b398ee591dda27835def465b7d82fe8c86ea0e329b8b86",
+        "model_revision": null,
+        "normalization": "jiwer defaults; case and diacritics preserved",
+        "predictions_sha256": "6c9a2b6c20eb3c356e962a32559fd1de69d4bb0cfbffb6d3de99eeaccbb626bd"
+      },
+      "exact_matches": 6,
+      "median_line_cer": 0.07547169811320754,
+      "worst_lines": [
+        {
+          "id": "odezwa-12-16",
+          "cer": 2.727272727272727,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-13",
+          "cer": 1.6923076923076923,
+          "wer": 1.5,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-00",
+          "cer": 1.0,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-21",
+          "cer": 0.5555555555555556,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-05",
+          "cer": 0.543859649122807,
+          "wer": 0.7647058823529411,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-04",
+          "cer": 0.41379310344827586,
+          "wer": 0.8235294117647058,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-27",
+          "cer": 0.36,
+          "wer": 0.6,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-25",
+          "cer": 0.3142857142857143,
+          "wer": 0.6666666666666666,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-28",
+          "cer": 0.24,
+          "wer": 0.4,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-08",
+          "cer": 0.20930232558139536,
+          "wer": 0.8333333333333334,
+          "exact_match": false
+        }
+      ]
+    },
+    "trocr-en-baseline": {
+      "summary": {
+        "model": "trocr-en-baseline",
+        "model_source": "microsoft/trocr-base-printed",
+        "lines": 75,
+        "cer_micro": 0.8191459670667038,
+        "wer_micro": 1.0016,
+        "by_page": {
+          "odezwa-12": {
+            "lines": 33,
+            "cer": 0.8540393754243042,
+            "wer": 1.0364372469635628
+          },
+          "torun-74": {
+            "lines": 42,
+            "cer": 0.79478672985782,
+            "wer": 0.9788359788359788
+          }
+        },
+        "elapsed_seconds": 652.668,
+        "manifest_sha256": "987c89227e5539b104b398ee591dda27835def465b7d82fe8c86ea0e329b8b86",
+        "model_revision": "93450be3f1ed40a930690d951ef3932687cc1892",
+        "normalization": "jiwer defaults; case and diacritics preserved",
+        "predictions_sha256": "044b928552c72ad5d4185c660f70d76798d8ff2f2d3be4b49ed1a5784f94bcb6"
+      },
+      "exact_matches": 1,
+      "median_line_cer": 0.8148148148148148,
+      "worst_lines": [
+        {
+          "id": "odezwa-12-21",
+          "cer": 3.4444444444444446,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-05",
+          "cer": 2.4615384615384617,
+          "wer": 2.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-13",
+          "cer": 2.1538461538461537,
+          "wer": 5.0,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-21",
+          "cer": 1.131578947368421,
+          "wer": 1.3333333333333333,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-16",
+          "cer": 1.0,
+          "wer": 1.5,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-04",
+          "cer": 0.8775510204081632,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-20",
+          "cer": 0.8653846153846154,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-14",
+          "cer": 0.8541666666666666,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "torun-74-41",
+          "cer": 0.8478260869565217,
+          "wer": 1.0,
+          "exact_match": false
+        },
+        {
+          "id": "odezwa-12-30",
+          "cer": 0.847457627118644,
+          "wer": 1.0,
+          "exact_match": false
+        }
+      ]
+    }
+  },
+  "conclusion": "Recognizer-only score on manually verified real line crops; excludes detection, segmentation and reading order.",
+  "confidence_diagnostics": [
+    {
+      "threshold": 0.5,
+      "below_lines": 2,
+      "below_cer": 2.1666666666666665,
+      "at_or_above_lines": 73,
+      "at_or_above_cer": 0.09721831975273953
+    },
+    {
+      "threshold": 0.6,
+      "below_lines": 5,
+      "below_cer": 1.0,
+      "at_or_above_lines": 70,
+      "at_or_above_cer": 0.08843732112192329
+    },
+    {
+      "threshold": 0.7,
+      "below_lines": 8,
+      "below_cer": 0.6333333333333333,
+      "at_or_above_lines": 67,
+      "at_or_above_cer": 0.08345577431677931
+    },
+    {
+      "threshold": 0.8,
+      "below_lines": 50,
+      "below_cer": 0.1475054229934924,
+      "at_or_above_lines": 25,
+      "at_or_above_cer": 0.04538341158059468
+    }
+  ]
+}

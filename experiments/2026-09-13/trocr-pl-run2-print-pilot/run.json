@@ -1,0 +1,17 @@
+{
+  "engine": "trocr-pl-run2",
+  "model_path": "C:\\Users\\Hipek\\OneDrive\\Pulpit\\OCR\\data\\training-runs\\run2-kaggle-v11\\trocr-pl-run2",
+  "model_sha256": "c1bc4445e0803f3a0f81bd3f283474eb8b646616db3626dffeb6062ee01b982c",
+  "training_selection": {
+    "best_checkpoint": "/kaggle/working/trocr-pl-run2/checkpoint-375",
+    "best_cer": 0.04856512141280353
+  },
+  "manifest": "benchmarks\\print-pilot-v1\\manifest.jsonl",
+  "manifest_sha256": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990",
+  "source_commit": "02aed457f89f5207f7f7d71ce3c851856e181da7",
+  "device": "cpu",
+  "force_language": "pl",
+  "deskew": true,
+  "correct_text": false,
+  "total_seconds": 458.199
+}

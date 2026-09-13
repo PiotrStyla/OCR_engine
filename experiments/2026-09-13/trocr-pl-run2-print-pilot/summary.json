@@ -1,0 +1,64 @@
+{
+  "pages": 2,
+  "errors_or_missing": 0,
+  "cer_micro": 0.6616520787746171,
+  "wer_micro": 0.8608,
+  "normalization": "Unicode NFC + whitespace only; case and diacritics preserved",
+  "manifest_sha256": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990",
+  "predictions_sha256": "0aac185cc11e5b06efabadc73e21b7b025c5182bd8aac583f57d4861b0f0d0aa",
+  "results": [
+    {
+      "id": "odezwa-12",
+      "status": "ok",
+      "cer": 0.40863787375415284,
+      "wer": 0.6923076923076923,
+      "exact_match": false
+    },
+    {
+      "id": "torun-74",
+      "status": "ok",
+      "cer": 0.8386796838679684,
+      "wer": 0.9708994708994709,
+      "exact_match": false
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "odezwa-12",
+      "reference_lines": 33,
+      "detected_lines": 33,
+      "reference_chars": 1505,
+      "prediction_chars": 1144,
+      "prediction_to_reference_char_ratio": 0.7601328903654485,
+      "replacement_character_count": 2,
+      "mean_token_confidence": 0.6651893072959149,
+      "lines_below_0_7_confidence": 12
+    },
+    {
+      "id": "torun-74",
+      "reference_lines": 42,
+      "detected_lines": 29,
+      "reference_chars": 2151,
+      "prediction_chars": 600,
+      "prediction_to_reference_char_ratio": 0.2789400278940028,
+      "replacement_character_count": 7,
+      "mean_token_confidence": 0.5688702484657024,
+      "lines_below_0_7_confidence": 26
+    }
+  ],
+  "comparison": {
+    "synthetic_validation_checkpoint": {
+      "cer": 0.04856512141280353,
+      "wer": 0.21414728682170542
+    },
+    "tesseract_js_same_pages": {
+      "cer_micro": 0.0079,
+      "wer_micro": 0.0448
+    },
+    "gemini_3_1_flash_lite_same_pages": {
+      "cer_micro": 0.00437636761487965,
+      "wer_micro": 0.0192
+    }
+  },
+  "interpretation": "Full-pipeline result combines OpenCV line detection/cropping and TrOCR recognition; it is not an isolated recognizer score."
+}

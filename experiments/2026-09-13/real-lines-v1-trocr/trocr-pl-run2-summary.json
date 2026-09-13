@@ -1,0 +1,24 @@
+{
+  "model": "trocr-pl-run2",
+  "model_source": "C:\\Users\\Hipek\\OneDrive\\Pulpit\\OCR\\data\\training-runs\\run2-kaggle-v11\\trocr-pl-run2",
+  "lines": 75,
+  "cer_micro": 0.11108010047446273,
+  "wer_micro": 0.3584,
+  "by_page": {
+    "odezwa-12": {
+      "lines": 33,
+      "cer": 0.11541072640868975,
+      "wer": 0.3522267206477733
+    },
+    "torun-74": {
+      "lines": 42,
+      "cer": 0.1080568720379147,
+      "wer": 0.36243386243386244
+    }
+  },
+  "elapsed_seconds": 424.609,
+  "manifest_sha256": "987c89227e5539b104b398ee591dda27835def465b7d82fe8c86ea0e329b8b86",
+  "model_revision": null,
+  "normalization": "jiwer defaults; case and diacritics preserved",
+  "predictions_sha256": "6c9a2b6c20eb3c356e962a32559fd1de69d4bb0cfbffb6d3de99eeaccbb626bd"
+}
