@@ -15,7 +15,6 @@ import subprocess
 import torch
 from transformers import (
     BitsAndBytesConfig,
-    Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
     TrOCRProcessor,
     VisionEncoderDecoderModel,
@@ -23,7 +22,13 @@ from transformers import (
 )
 
 from .dataset import TrOCRLineDataset, load_pairs
-from .protocol import configure_generation, compute_ocr_metrics, pair_manifest, write_json
+from .protocol import (
+    AlignedSeq2SeqTrainer,
+    compute_ocr_metrics,
+    configure_generation,
+    pair_manifest,
+    write_json,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +186,7 @@ def train(
         packages={name:importlib.metadata.version(name) for name in ['torch','transformers','peft','accelerate','jiwer']},
         training_arguments=args.to_dict()))
 
-    trainer = Seq2SeqTrainer(
+    trainer = AlignedSeq2SeqTrainer(
         model=model,
         args=args,
         train_dataset=train_ds,

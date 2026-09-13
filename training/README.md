@@ -89,6 +89,12 @@ Zapisywane są: **scalony pełny model** (od razu ładowany przez silnik) oraz a
 LoRA w podkatalogu `adapter/` (do dalszego treningu / inspekcji).
 Silnik automatycznie go użyje, gdy wykryje język polski.
 
+Trening używa `AlignedSeq2SeqTrainer`: wejście dekodera jest przesuwane raz przez
+`prepare_decoder_input_ids_from_labels`, natomiast strata porównuje logits z etykietami
+na tych samych pozycjach. Zapobiega to podwójnemu przesunięciu etykiet przez domyślną
+`ForCausalLMLoss` w Transformers 4.57.x. Adaptery obejmują `q_proj`, `k_proj`, `v_proj`,
+`out_proj`, `fc1` i `fc2` dekodera TrOCR.
+
 ## Ewaluacja
 
 CER/WER liczone przez `jiwer` (zależność `[train]`):
