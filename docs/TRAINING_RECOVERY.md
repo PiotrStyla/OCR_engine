@@ -21,7 +21,10 @@
 ## Najpierw ponowna ewaluacja — bez treningu
 
 Otwórz na Kaggle `training/kaggle_reevaluate_first_run.ipynb` z GPU.
-Notebook nie potrzebuje HF tokenu: dane i modele są publiczne.
+Dane i modele są publiczne, ale po błędzie HTTP 429 na współdzielonym IP Kaggle
+notebook wymaga HF_TOKEN z Kaggle Secrets. Włącz ten sekret dla notebooka
+w Add-ons > Secrets; jego wartość nie trafia do pliku ani logu.
+Ewaluacja pobiera wyłącznie val/*, z max_workers=2.
 Kaggle API token służy wyłącznie do zewnętrznego uruchomienia notebooka;
 przy uruchomieniu w interfejsie Kaggle nie trzeba go wklejać do notebooka.
 
