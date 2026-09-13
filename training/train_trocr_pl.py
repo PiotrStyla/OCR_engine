@@ -39,29 +39,41 @@ def _collate(batch, processor):
     return {"pixel_values": pixel_values, "labels": labels}
 
 
+def _validate_lora_targets(wrapped, target_modules: list[str]) -> None:
+    for name in target_modules:
+        if not hasattr(wrapped.base_model.model.get_submodule(name), "lora_A"):
+            raise ValueError(f"Adapter was not attached: {name}")
+
+
 def _inject_lora(model, lora_rank: int, lora_alpha: int, include_mlp=False) -> object:
     """Wstrzykuje adaptery LoRA do dekodera modelu (PEFT)."""
     from peft import LoraConfig, TaskType, get_peft_model
 
-    targets = ['q_proj', 'k_proj', 'v_proj', 'out_proj']
+    targets = ["q_proj", "k_proj", "v_proj", "out_proj"]
     if include_mlp:
-        targets += ['fc1', 'fc2']
+        targets += ["fc1", "fc2"]
     names = [name for name, module in model.named_modules() if isinstance(module, torch.nn.Linear)]
-    matched = {target: [name for name in names if name.startswith('decoder.') and name.endswith('.'+target)] for target in targets}
+    matched = {
+        target: [
+            name
+            for name in names
+            if name.startswith("decoder.") and name.endswith("." + target)
+        ]
+        for target in targets
+    }
     if any(not values for values in matched.values()):
-        raise ValueError(f'Missing expected decoder LoRA modules: {matched}')
+        raise ValueError(f"Missing expected decoder LoRA modules: {matched}")
+    target_modules = [name for values in matched.values() for name in values]
     lora_config = LoraConfig(
         r=lora_rank,
         lora_alpha=lora_alpha,
-        target_modules=[name for values in matched.values() for name in values],
+        target_modules=target_modules,
         lora_dropout=0.05,
         bias="none",
         task_type=TaskType.SEQ_2_SEQ_LM,
     )
     wrapped = get_peft_model(model, lora_config)
-    for name in lora_config.target_modules:
-        if not hasattr(wrapped.base_model.model.get_submodule(name), 'lora_A'):
-            raise ValueError(f'Adapter was not attached: {name}')
+    _validate_lora_targets(wrapped, target_modules)
     return wrapped
 
 

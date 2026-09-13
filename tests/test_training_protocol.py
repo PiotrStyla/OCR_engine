@@ -96,6 +96,22 @@ def test_aligned_loss_honors_gradient_accumulation_item_count():
     assert loss.item() == pytest.approx(2 * torch.log(torch.tensor(2.0)).item() / 4)
 
 
+def test_lora_validation_keeps_full_paths_after_peft_mutates_config():
+    from training.train_trocr_pl import _validate_lora_targets
+
+    seen = []
+
+    class Model:
+        def get_submodule(self, name):
+            seen.append(name)
+            return SimpleNamespace(lora_A={})
+
+    wrapped = SimpleNamespace(base_model=SimpleNamespace(model=Model()))
+    paths = ["decoder.model.decoder.layers.0.self_attn.v_proj"]
+    _validate_lora_targets(wrapped, paths)
+    assert seen == paths
+
+
 def test_tiny_lora_training_and_best_checkpoint(tmp_path):
     pytest.importorskip("peft")
     from transformers import (
