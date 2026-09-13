@@ -7,6 +7,7 @@ torch = pytest.importorskip("torch")
 
 from training.protocol import (
     AlignedSeq2SeqTrainer,
+    _decoder_input_preparer,
     aligned_token_loss,
     compute_ocr_metrics,
     configure_generation,
@@ -87,6 +88,13 @@ def test_trainer_shifts_decoder_input_once_but_not_loss_labels():
     assert "labels" not in model.call
     assert model.call["decoder_input_ids"].tolist() == [[0, 2, 3]]
     assert model.call["use_cache"] is False
+
+
+def test_decoder_preparer_unwraps_multi_gpu_module():
+    model = _PerfectModel()
+    wrapped = SimpleNamespace(module=model)
+    labels = torch.tensor([[2, 3, -100]])
+    assert _decoder_input_preparer(wrapped)(labels=labels).tolist() == [[0, 2, 3]]
 
 
 def test_aligned_loss_honors_gradient_accumulation_item_count():

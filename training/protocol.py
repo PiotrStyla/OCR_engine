@@ -101,6 +101,26 @@ def aligned_token_loss(
     return total / denominator.to(device=logits.device, dtype=total.dtype).clamp_min(1)
 
 
+def _decoder_input_preparer(model):
+    candidates = [model]
+    seen = set()
+    while candidates:
+        candidate = candidates.pop(0)
+        if candidate is None or id(candidate) in seen:
+            continue
+        seen.add(id(candidate))
+        prepare = getattr(candidate, "prepare_decoder_input_ids_from_labels", None)
+        if callable(prepare):
+            return prepare
+        module = getattr(candidate, "module", None)
+        if module is not None:
+            candidates.append(module)
+        get_base_model = getattr(candidate, "get_base_model", None)
+        if callable(get_base_model):
+            candidates.append(get_base_model())
+    raise TypeError("Model does not expose prepare_decoder_input_ids_from_labels")
+
+
 class AlignedSeq2SeqTrainer(Seq2SeqTrainer):
     def compute_loss(
         self,
@@ -110,11 +130,9 @@ class AlignedSeq2SeqTrainer(Seq2SeqTrainer):
         num_items_in_batch: torch.Tensor | None = None,
     ):
         labels = inputs["labels"]
-        prepare = getattr(model, "prepare_decoder_input_ids_from_labels", None)
-        if prepare is None and hasattr(model, "get_base_model"):
-            prepare = model.get_base_model().prepare_decoder_input_ids_from_labels
-        if prepare is None:
-            raise TypeError("Model does not expose prepare_decoder_input_ids_from_labels")
+        accelerator = getattr(self, "accelerator", None)
+        unwrapped = accelerator.unwrap_model(model) if accelerator is not None else model
+        prepare = _decoder_input_preparer(unwrapped)
         decoder_input_ids = prepare(labels=labels)
         model_inputs = {key: value for key, value in inputs.items() if key != "labels"}
         outputs = model(**model_inputs, decoder_input_ids=decoder_input_ids, use_cache=False)
