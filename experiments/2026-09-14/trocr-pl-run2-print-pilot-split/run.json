@@ -1,0 +1,15 @@
+{
+  "engine": "trocr-pl-run2",
+  "detector": "opencv+projection-line-split+dedup",
+  "model_path": "C:\\Users\\Hipek\\OneDrive\\Pulpit\\OCR\\data\\training-runs\\run2-kaggle-v11\\trocr-pl-run2",
+  "model_sha256": "c1bc4445e0803f3a0f81bd3f283474eb8b646616db3626dffeb6062ee01b982c",
+  "manifest": "benchmarks/print-pilot-v1/manifest.jsonl",
+  "manifest_sha256": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990",
+  "source_commit_before_detector": "36fc33f2578682bc017bb873ab82c9be49913972",
+  "device": "cpu",
+  "force_language": "pl",
+  "deskew": true,
+  "correct_text": false,
+  "previous_full_page_cer_micro": 0.6616520787746171,
+  "note": "Full pipeline with new horizontal-projection line splitting; recognizer unchanged."
+}

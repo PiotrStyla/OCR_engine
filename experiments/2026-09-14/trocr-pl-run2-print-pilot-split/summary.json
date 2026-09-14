@@ -1,0 +1,25 @@
+{
+  "pages": 2,
+  "errors_or_missing": 0,
+  "cer_micro": 0.19009846827133478,
+  "wer_micro": 0.6112,
+  "normalization": "Unicode NFC + whitespace only; case and diacritics preserved",
+  "manifest_sha256": "f7409df0f6db757c30bce7efc39eaf58ee753b8e74c0c99028ed8edbb22b5990",
+  "predictions_sha256": "b10373de387803b442cfc50c77b9814fa703bca15624e033e769818035eae783",
+  "results": [
+    {
+      "id": "odezwa-12",
+      "status": "ok",
+      "cer": 0.12225913621262459,
+      "wer": 0.4574898785425101,
+      "exact_match": false
+    },
+    {
+      "id": "torun-74",
+      "status": "ok",
+      "cer": 0.23756392375639238,
+      "wer": 0.7116402116402116,
+      "exact_match": false
+    }
+  ]
+}
