@@ -78,7 +78,7 @@ def _inject_lora(model, lora_rank: int, lora_alpha: int, include_mlp=False) -> o
 
 
 def train(
-    train_dir: str,
+    train_dirs: list[str] | str,
     val_dir: str | None,
     base_model: str,
     output_dir: str,
@@ -93,12 +93,15 @@ def train(
     include_mlp: bool = False,
     seed: int = 42,
 ) -> None:
+    if isinstance(train_dirs, str):
+        train_dirs = [train_dirs]
     output = Path(output_dir)
     if output.exists() and any(output.iterdir()):
         raise ValueError('Use a new output directory; preserve previous run')
     if not val_dir:
         raise ValueError('Validation data is required for best-CER checkpoint selection')
-    train_records, val_records = pair_manifest(train_dir), pair_manifest(val_dir)
+    train_records = [r for d in train_dirs for r in pair_manifest(d)]
+    val_records = pair_manifest(val_dir)
     if {r['image_sha256'] for r in train_records} & {r['image_sha256'] for r in val_records}:
         raise ValueError('Exact image overlap between train and validation')
     output.mkdir(parents=True, exist_ok=True)
@@ -152,9 +155,9 @@ def train(
     model = _inject_lora(model, lora_rank, lora_alpha, include_mlp)
     model.print_trainable_parameters()
 
-    train_samples = load_pairs(train_dir)
+    train_samples = [s for d in train_dirs for s in load_pairs(d)]
     if not train_samples:
-        raise SystemExit(f"Brak danych treningowych w {train_dir}")
+        raise SystemExit(f"Brak danych treningowych w {train_dirs}")
     train_ds = TrOCRLineDataset(train_samples, processor)
 
     val_ds = None
@@ -224,7 +227,8 @@ def train(
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Fine-tune TrOCR (PL) — QLoRA")
-    p.add_argument("--train-dir", required=True)
+    p.add_argument("--train-dir", required=True, nargs="+",
+                   help="Jeden lub więcej katalogów par .png/.txt (łączone)")
     p.add_argument("--val-dir", default=None)
     p.add_argument("--base", default="microsoft/trocr-base-printed")
     p.add_argument("--output", default="./ocr/trocr-pl-base")
