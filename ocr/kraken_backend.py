@@ -99,8 +99,8 @@ class KrakenBackend:
         else:
             pil_img = image  # już PIL
 
-        if pil_img.mode != "RGB":
-            pil_img = pil_img.convert("RGB")
+        if pil_img.mode != "L":
+            pil_img = pil_img.convert("L")
 
         # Segmentacja baseline (Kraken używa wbudowanego modelu segmentacji)
         seg = segment(pil_img)
@@ -114,16 +114,17 @@ class KrakenBackend:
             text = record.prediction.strip()
             if not text:
                 continue
-            # BBox z polygonu baselinu — użyj bounding box
-            polygon = record.bounds
+            # BBox z polygonu baselinu — użyj boundary (z BaselineLine)
+            polygon = record.boundary or record.baseline
             xs = [p[0] for p in polygon]
             ys = [p[1] for p in polygon]
             bbox = BBox(
                 int(min(xs)), int(min(ys)),
                 int(max(xs)), int(max(ys)),
             )
-            # Kraken nie raportuje confidence per-linia w prostym API → NaN
-            confidence = float("nan")
+            # Confidence: średnia z confidence per znak (jeśli dostępne)
+            confs = record.confidences or []
+            confidence = float(sum(confs) / len(confs)) if confs else float("nan")
             lines.append(TextLine(
                 text=text,
                 bbox=bbox,

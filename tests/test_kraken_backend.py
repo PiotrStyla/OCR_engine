@@ -90,7 +90,9 @@ def test_kraken_backend_recognize_with_mock(tmp_path):
     mock_seg.lines = [MagicMock()]
     mock_pred_record = MagicMock()
     mock_pred_record.prediction = "Test linia"
-    mock_pred_record.bounds = [(10, 20), (100, 20), (100, 40), (10, 40)]
+    mock_pred_record.boundary = [(10, 20), (100, 20), (100, 40), (10, 40)]
+    mock_pred_record.baseline = [(10, 30), (100, 30)]
+    mock_pred_record.confidences = [0.9, 0.8]
     mock_pred = MagicMock()
     mock_pred.__iter__ = MagicMock(return_value=iter([mock_pred_record]))
 
