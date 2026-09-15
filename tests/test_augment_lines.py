@@ -24,6 +24,25 @@ def test_augment_real_returns_image(tmp_path: Path) -> None:
     assert out.size[0] > 0 and out.size[1] > 0
 
 
+def test_augment_real_strength_light(tmp_path: Path) -> None:
+    """Light strength should not apply gamma/contrast/JPEG (prob=0)."""
+    import random
+    img = Image.new("RGB", (120, 40), (200, 200, 200))
+    rng = random.Random(42)
+    out = _augment_real(img, rng, strength="light")
+    assert isinstance(out, Image.Image)
+    # Light should still return a valid image
+    assert out.size[0] > 0 and out.size[1] > 0
+
+
+def test_augment_real_strength_invalid_raises(tmp_path: Path) -> None:
+    import random
+    img = Image.new("RGB", (120, 40), (200, 200, 200))
+    rng = random.Random(42)
+    with pytest.raises(KeyError):
+        _augment_real(img, rng, strength="nonexistent")
+
+
 def test_augment_real_deterministic_with_seed(tmp_path: Path) -> None:
     import random
     img = Image.new("RGB", (120, 40), (200, 200, 200))
@@ -66,6 +85,22 @@ def test_augment_dir_copies_originals_and_augments(tmp_path: Path) -> None:
     # Augmented text matches original
     assert (dst / "line1_aug0.txt").read_text(encoding="utf-8") == "Ala ma kota"
     assert (dst / "line2_aug2.txt").read_text(encoding="utf-8") == "Zażółć gęśl"
+
+
+def test_augment_dir_strength_light(tmp_path: Path) -> None:
+    """Light strength should produce same count, just gentler augmentations."""
+    src = tmp_path / "src"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    _make_pair(src, "line1", "Ala ma kota")
+
+    total = augment_dir(src, dst, copies=2, seed=42, strength="light")
+
+    # 1 original + 2 augmented = 3
+    assert total == 3
+    assert (dst / "line1.png").exists()
+    assert (dst / "line1_aug0.png").exists()
+    assert (dst / "line1_aug1.png").exists()
 
 
 def test_augment_dir_skips_empty_text(tmp_path: Path) -> None:
