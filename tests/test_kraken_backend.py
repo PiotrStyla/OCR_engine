@@ -63,15 +63,18 @@ def _inject_mock_kraken():
     mock_blla = MagicMock()
     mock_rpred = MagicMock()
     mock_models = MagicMock()
+    mock_binarization = MagicMock()
     mock_lib = MagicMock()
     mock_lib.models = mock_models
     mock_kraken.blla = mock_blla
     mock_kraken.rpred = mock_rpred
+    mock_kraken.binarization = mock_binarization
     mock_kraken.lib = mock_lib
     modules = {
         "kraken": mock_kraken,
         "kraken.blla": mock_blla,
         "kraken.rpred": mock_rpred,
+        "kraken.binarization": mock_binarization,
         "kraken.lib": mock_lib,
         "kraken.lib.models": mock_models,
     }
@@ -99,8 +102,10 @@ def test_kraken_backend_recognize_with_mock(tmp_path):
     with _inject_mock_kraken():
         import kraken.blla as blla_mod
         import kraken.rpred as rpred_mod
+        import kraken.binarization as bin_mod
         blla_mod.segment = MagicMock(return_value=mock_seg)
         rpred_mod.rpred = MagicMock(return_value=mock_pred)
+        bin_mod.nlbin = MagicMock(side_effect=lambda im: im)  # passthrough
 
         # Pre-set _recognizer so _ensure_loaded is a no-op (skip model file load).
         backend._recognizer = MagicMock()
@@ -131,8 +136,10 @@ def test_kraken_backend_empty_segmentation(tmp_path):
     with _inject_mock_kraken():
         import kraken.blla as blla_mod
         import kraken.rpred as rpred_mod
+        import kraken.binarization as bin_mod
         blla_mod.segment = MagicMock(return_value=mock_seg)
         rpred_mod.rpred = MagicMock()
+        bin_mod.nlbin = MagicMock(side_effect=lambda im: im)
 
         # Pre-set _recognizer so _ensure_loaded is a no-op (skip model file load).
         backend._recognizer = MagicMock()

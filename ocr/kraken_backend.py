@@ -102,6 +102,11 @@ class KrakenBackend:
         if pil_img.mode != "L":
             pil_img = pil_img.convert("L")
 
+        # Opcjonalna binarization (nlbin) — polepsza CER na wyblakłych skanach.
+        if self.config.kraken_binarize:
+            from kraken import binarization
+            pil_img = binarization.nlbin(pil_img)
+
         # Segmentacja baseline (Kraken używa wbudowanego modelu segmentacji)
         seg = segment(pil_img)
         if not seg.lines:

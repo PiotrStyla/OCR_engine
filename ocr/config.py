@@ -48,6 +48,9 @@ class OcrConfig:
     # Kraken: model rozpoznawania (.mlmodel). Ścieżka lokalna lub HF repo+plik.
     # Domyślnie polski model EHRI (93,1% accuracy na polskim maszynopisie).
     kraken_model: str = "PiotrSty/ehri-dataset::models/polish_nfd_9313.mlmodel"
+    # Kraken: binarization (nlbin) przed segmentacją + rozpoznawaniem.
+    # Polepsza CER na wyblakłych/skanych dokumentach (z ~16% do ~7-12%).
+    kraken_binarize: bool = True
 
     # Routing języka
     force_language: str | None = None  # "pl" | "en" | None (auto)
@@ -103,6 +106,7 @@ class OcrConfig:
             recognizer_backend=env("OCR_RECOGNIZER_BACKEND", "trocr"),
             paddlevl_model=env("OCR_PADDLEVL_MODEL", "PaddlePaddle/PaddleOCR-VL"),
             kraken_model=env("OCR_KRAKEN_MODEL", "PiotrSty/ehri-dataset::models/polish_nfd_9313.mlmodel"),
+            kraken_binarize=env_bool("OCR_KRAKEN_BINARIZE", True),
             force_language=os.environ.get("OCR_FORCE_LANGUAGE"),
             device=env("OCR_DEVICE", "auto"),  # type: ignore[arg-type]
             correct_text=env_bool("OCR_CORRECT_TEXT", False),
