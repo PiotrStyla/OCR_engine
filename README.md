@@ -24,6 +24,7 @@ obraz → preprocess (deskew) → detekcja linii → routing języka (PL/EN)
 - **Detekcja**: auto-wybór — **CRAFT** (`craft-text-detector`) gdy dostępny,
   w przeciwnym razie **fallback OpenCV** (morfologia + kontury; `ocr/opencv_detector.py`).
 - **Rozpoznawanie**: TrOCR (`microsoft/trocr-base-printed` dla EN; lokalny fine-tune QLoRA dla PL).
+  Opcjonalnie **Kraken** (baseline segmentation + `.mlmodel`) dla maszynopisów/historycznych.
 - **Korekta tekstu**: [Fabryka AI](https://fabryka.ai) — Bielik (polski LLM) naprawia błędy
   OCR (diakrytyki, pocięte słowa, interpunkcja). Opcjonalna, wymaga klucza API.
 - **Routing języka**: heurystyka polskich diakrytyków + `langdetect`. Bez
@@ -46,6 +47,8 @@ pip install -e ".[dev]"
 pip install -e ".[craft]"
 # korekta przez Fabryka API:
 pip install -e ".[correct]"
+# backend Kraken (historyczne dokumenty / maszynopis):
+pip install -e ".[kraken]"
 # trening PL (GPU):
 pip install -e ".[train]"
 ```
@@ -157,7 +160,9 @@ korektor zwróci inną liczbę linii niż wysłano, oryginał zostaje zachowany.
 | `OCR_DEVICE` | `auto` | `auto`/`cpu`/`cuda` |
 | `OCR_CONFIDENCE_THRESHOLD` | `0.0` | próg flagowania niskopewnych linii |
 | `OCR_CORRECT_LOW_ONLY` | `false` | korekta tylko linii poniżej progu |
-| `OCR_RECOGNIZER_BACKEND` | `trocr` | `trocr` lub `paddlevl` (PaddleOCR-VL VLM) |
+| `OCR_RECOGNIZER_BACKEND` | `trocr` | `trocr`, `paddlevl` (PaddleOCR-VL VLM), lub `kraken` |
+| `OCR_KRAKEN_MODEL` | `PiotrSty/ehri-dataset::models/polish_nfd_9313.mlmodel` | model Kraken (.mlmodel) |
+| `OCR_KRAKEN_BINARIZE` | `false` | `true`/`false` — binarization nlbin przed Kraken |
 
 ## Backend PaddleOCR-VL (opcjonalny, SOTA)
 
@@ -175,6 +180,68 @@ python -m training.evaluate --data ./data/pl_lines_val --backend paddlevl
 Uwagi: backend VLM nie raportuje `confidence` (w JSON: `null`), rozpoznaje
 linie po jednej (wolniejsze na CPU). Porównanie head-to-head z TrOCR:
 `python -m training.evaluate --data <zbiór> --backend trocr|paddlevl`.
+
+## Backend Kraken (opcjonalny, historyczne dokumenty / maszynopis)
+
+[Kraken](https://kraken.re/) — system OCR/HTR zoptymalizowany pod dokumenty
+historyczne i maszynopisy. Używa **trainable baseline segmentation** (sieć
+neuronowa wykrywająca linie-bazy) oraz modeli rozpoznawania `.mlmodel` (CTC).
+
+**Kiedy używać:** maszynopisy, dokumenty historyczne, wyblakłe skany — gdzie
+OpenCV+TrOCR zawodzi przez słabą segmentację. Dla czystego druku TrOCR
+pozostaje lepszy.
+
+**Model domyślny:** `polish_nfd_9313.mlmodel` z EHRI (93,1% accuracy na polskim
+maszynopisie).
+
+```bash
+pip install -e ".[kraken]"   # kraken>=5.0
+
+ocr recognize dokument.png --backend kraken
+python -m training.evaluate --data ./data/pl_lines_val --backend kraken
+```
+
+Lub w Pythonie:
+
+```python
+from ocr import OcrEngine, OcrConfig
+
+cfg = OcrConfig(
+    recognizer_backend="kraken",
+    kraken_model="PiotrSty/ehri-dataset::models/polish_nfd_9313.mlmodel",
+    device="cuda",
+)
+with OcrEngine(cfg) as engine:
+    result = engine.recognize("maszynopis.tif")
+    print(result.text)
+```
+
+### Benchmark: Kraken vs OpenCV+TrOCR na polskim maszynopisie EHRI
+
+Pełny benchmark: [`training/kaggle_kraken_benchmark.ipynb`](training/kaggle_kraken_benchmark.ipynb)
+(Kaggle GPU T4). Zbiór: 15 polskich stron EHRI (468 linii GT z ALTO XML).
+
+| Backend | Segmentacja | CER | WER | Linie wykryte |
+|---|---|---:|---:|---:|
+| OpenCV+TrOCR run5 | OpenCV | 82,42% | 94,35% | 179/468 (38%) |
+| **Kraken e2e** | **Kraken** | **14,25%** | **48,49%** | **467/468 (100%)** |
+| Kraken + GT (ALTO) | GT baselines | 10,67% | 32,93% | 468/468 (100%) |
+| Kraken e2e + deskew | Kraken | 14,71% | 48,89% | 467/468 (100%) |
+| Kraken + GT + binarization | GT baselines | 20,26% | 65,16% | 468/468 (100%) |
+
+**Wnioski:**
+
+- **Kraken jest 5,8× lepszy** od OpenCV+TrOCR na maszynopisie (CER 14% vs 82%).
+- **OpenCV gubi 62% linii** na maszynopisie — segmentacja to główna blokada.
+- **Kraken wykrywa 100% linii** — segmentacja baseline działa na maszynopisie.
+- **Binarization szkodzi** — model trenowany na grayscale (CER 14% → 20%).
+- **Deskew nie pomaga** — strony EHRI są już wyrównane.
+- **GT segmentacja poprawia** CER z 14% do 11% — wytrenowanie modelu segmentacji
+  na polskich danych mogłoby poprawić e2e.
+
+**Różnica 14% vs 7% EHRI:** możliwe przyczyny to legacy polygon extractor
+(model nie trenowany z nową metodą), różnica wersji Kraken, oraz brak
+dedykowanego modelu segmentacji dla polskiego maszynopisu.
 
 ## Testy
 
@@ -199,7 +266,8 @@ tests/      # testy jednostkowe (nie wymagają modeli ML)
   brak — zostaje wynik EN (diakrytyki naprawia korekta Bielik).
 - Brak obsługi układów wielokolumnowych / tabel (sortowanie czytania uproszczone).
 - Detektor OpenCV (fallback) jest prostszy od CRAFT — dobry do dokumentów/skanów,
-  słabszy do tekstu w naturze i złożonych tła.
+  słabszy do tekstu w naturze i złożonych tła. **Na maszynopisach zawodzi**
+  (wykrywa 38% linii) — użyj backendu Kraken (`--backend kraken`).
 - Alternatywa bez treningu: PaddleOCR-VL + LoRA RysOCR (lepsza polska diakrytyka od ręki).
 
 Pilot rzeczywistych skanów: [wyniki i odtworzenie](docs/PUBLIC_SCAN_PILOT.md).
