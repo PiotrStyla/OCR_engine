@@ -39,8 +39,8 @@ def _build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--fabryka-model", default=None,
                      help="Model Fabryka do korekty (domyślnie: bielik-11b-v3)")
     rec.add_argument("--device", choices=["auto", "cpu", "cuda"], default=None)
-    rec.add_argument("--backend", choices=["trocr", "paddlevl", "kraken"], default=None,
-                     help="Backend rozpoznawania: trocr, paddlevl (PaddleOCR-VL VLM), lub kraken (maszynopis/historyczne)")
+    rec.add_argument("--backend", choices=["trocr", "paddlevl", "kraken", "auto"], default=None,
+                     help="Backend rozpoznawania: trocr, paddlevl (PaddleOCR-VL VLM), kraken (maszynopis/historyczne), lub auto (heurystyka)")
 
     # check-fabryka
     chk = sub.add_parser("check-fabryka", help="Sprawdź połączenie z Fabryka API")

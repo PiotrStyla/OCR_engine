@@ -39,11 +39,42 @@ class OcrEngine:
         # Kraken backend: end-to-end (segmentacja + rozpoznawanie), bypass TrOCR.
         if self.config.recognizer_backend == "kraken":
             return self._recognize_kraken(image)
+        # Auto-routing: heurystyka OpenCV detection → Kraken dla maszynopisów.
+        if self.config.recognizer_backend == "auto":
+            return self._recognize_auto(image)
         arr = load_image(image)
         if self.config.deskew:
             arr, transform = deskew(arr, return_transform=True)
             return self._source_coordinates(self._recognize_array(arr), transform)
         return self._recognize_array(arr)
+
+    def _recognize_auto(self, image: ImageLike) -> OcrResult:
+        """Auto-routing: sprawdza liczbę linii wykrytych przez OpenCV.
+        Jeśli OpenCV wykrywa mało linii na dużej stronie → Kraken (maszynopis).
+        W przeciwnym razie → TrOCR (czysty druk)."""
+        arr = load_image(image)
+        bboxes = self.detector.detect(arr)
+        h = arr.shape[0]
+        # Heurystyka: mało linii na dużej stronie → maszynopis → Kraken
+        if (h >= self.config.auto_kraken_min_height
+                and len(bboxes) < self.config.auto_kraken_min_lines):
+            logger.info(
+                "Auto-routing → Kraken (OpenCV wykrył %d linii na obrazie %dpx)",
+                len(bboxes), h,
+            )
+            return self._recognize_kraken(image)
+        logger.info(
+            "Auto-routing → TrOCR (OpenCV wykrył %d linii na obrazie %dpx)",
+            len(bboxes), h,
+        )
+        # Kontynuuj normalny pipeline TrOCR z już wykrytymi bboxami
+        if self.config.deskew:
+            arr, transform = deskew(arr, return_transform=True)
+            # Re-detekcja po deskew (współrzędne się zmieniają)
+            bboxes = self.detector.detect(arr)
+            result = self._recognize_array(arr, bboxes)
+            return self._source_coordinates(result, transform)
+        return self._recognize_array(arr, bboxes)
 
     def _recognize_kraken(self, image: ImageLike) -> OcrResult:
         """End-to-end OCR przez Kraken (segmentacja baseline + .mlmodel)."""
@@ -84,9 +115,10 @@ class OcrEngine:
             results.append(replace(self.recognize(arr), page_number=page_no))
         return results
 
-    def _recognize_array(self, arr: np.ndarray) -> OcrResult:
+    def _recognize_array(self, arr: np.ndarray, bboxes: list[BBox] | None = None) -> OcrResult:
         """Właściwy pipeline na array RGB (po preprocessingu)."""
-        bboxes = self.detector.detect(arr)
+        if bboxes is None:
+            bboxes = self.detector.detect(arr)
         if not bboxes:
             return OcrResult(lines=[], image_size=(arr.shape[1], arr.shape[0]))
 

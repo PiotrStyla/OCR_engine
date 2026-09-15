@@ -43,6 +43,7 @@ class OcrConfig:
     # "paddlevl" (PaddleOCR-VL-0.9B, VLM wielojęzyczny, bez fine-tuningu)
     # lub "kraken" (end-to-end Kraken: segmentacja baseline + rozpoznawanie
     # .mlmodel, np. polish_nfd_9313.mlmodel z EHRI — najlepszy dla maszynopisu)
+    # lub "auto" (heurystyka: jeśli OpenCV wykrywa mało linii → Kraken, inaczej TrOCR)
     recognizer_backend: str = "trocr"
     paddlevl_model: str = "PaddlePaddle/PaddleOCR-VL"
     # Kraken: model rozpoznawania (.mlmodel). Ścieżka lokalna lub HF repo+plik.
@@ -53,6 +54,11 @@ class OcrConfig:
     # trenowany na surowych obrazach grayscale, nie na zbinaryzowanych.
     # Wyłączone domyślnie; włącz tylko dla bardzo wyblakłych skanów.
     kraken_binarize: bool = False
+    # Auto-routing: gdy recognizer_backend="auto", użyj Kraken jeśli OpenCV
+    # wykryje mniej niż auto_kraken_min_lines na auto_kraken_min_height pikseli
+    # wysokości obrazu. Heurystyka: OpenCV gubi linie na maszynopisach.
+    auto_kraken_min_lines: int = 5
+    auto_kraken_min_height: int = 500
 
     # Routing języka
     force_language: str | None = None  # "pl" | "en" | None (auto)

@@ -185,3 +185,96 @@ def test_pipeline_routes_to_kraken(tmp_path):
     assert isinstance(result, OcrResult)
     assert len(result.lines) == 1
     assert result.lines[0].text == "kraken linia"
+
+
+def test_pipeline_auto_routes_to_kraken_few_lines(tmp_path):
+    """Auto-routing: OpenCV wykrywa < 5 linii na dużej stronie → Kraken."""
+    from ocr.pipeline import OcrEngine
+    from ocr.kraken_backend import KrakenBackend
+
+    cfg = OcrConfig()
+    cfg.recognizer_backend = "auto"
+    cfg.kraken_model = str(tmp_path / "fake.mlmodel")
+    cfg.deskew = False
+
+    mock_result = OcrResult(
+        lines=[TextLine(text="kraken auto", bbox=BBox(0, 0, 100, 20),
+                       language="pl", confidence=float("nan"))],
+        image_size=(200, 600),
+    )
+
+    # Duży obraz (600px wysoki), OpenCV wykrywa tylko 2 linie → Kraken
+    with patch.object(KrakenBackend, "recognize", return_value=mock_result):
+        engine = OcrEngine(cfg)
+        # Mock detektora: zwróć tylko 2 bboxy
+        engine.detector.detect = MagicMock(return_value=[
+            BBox(0, 0, 100, 20), BBox(0, 30, 100, 50),
+        ])
+        img = np.ones((600, 200, 3), dtype=np.uint8) * 255  # biały obraz 200x600
+        result = engine.recognize(img)
+
+    assert isinstance(result, OcrResult)
+    assert len(result.lines) == 1
+    assert result.lines[0].text == "kraken auto"
+
+
+def test_pipeline_auto_routes_to_trocr_many_lines(tmp_path):
+    """Auto-routing: OpenCV wykrywa >= 5 linii → TrOCR (nie Kraken)."""
+    from ocr.pipeline import OcrEngine
+    from ocr.kraken_backend import KrakenBackend
+
+    cfg = OcrConfig()
+    cfg.recognizer_backend = "auto"
+    cfg.kraken_model = str(tmp_path / "fake.mlmodel")
+    cfg.deskew = False
+
+    # Mock Kraken — nie powinien być wywołany
+    kraken_mock = MagicMock(return_value=OcrResult(
+        lines=[TextLine(text="should not be called", bbox=BBox(0, 0, 1, 1),
+                       language="pl", confidence=float("nan"))],
+        image_size=(200, 600),
+    ))
+
+    # Duży obraz (600px), OpenCV wykrywa 10 linii → TrOCR
+    many_bboxes = [BBox(0, i * 50, 100, i * 50 + 20) for i in range(10)]
+    with patch.object(KrakenBackend, "recognize", kraken_mock):
+        engine = OcrEngine(cfg)
+        engine.detector.detect = MagicMock(return_value=many_bboxes)
+        # Mock recognizera TrOCR — zwróć pusty wynik (nie ważne, liczy się że Kraken nie był wołany)
+        engine.recognizer.recognize_lines = MagicMock(return_value=[("", 0.0)] * 10)
+        img = np.ones((600, 200, 3), dtype=np.uint8) * 255  # biały obraz 200x600
+        result = engine.recognize(img)
+
+    assert isinstance(result, OcrResult)
+    # Kraken nie powinien być wywołany
+    kraken_mock.assert_not_called()
+
+
+def test_pipeline_auto_small_image_uses_trocr(tmp_path):
+    """Auto-routing: mały obraz (< 500px) → TrOCR nawet przy mało liniach."""
+    from ocr.pipeline import OcrEngine
+    from ocr.kraken_backend import KrakenBackend
+
+    cfg = OcrConfig()
+    cfg.recognizer_backend = "auto"
+    cfg.kraken_model = str(tmp_path / "fake.mlmodel")
+    cfg.deskew = False
+
+    kraken_mock = MagicMock(return_value=OcrResult(
+        lines=[TextLine(text="should not be called", bbox=BBox(0, 0, 1, 1),
+                       language="pl", confidence=float("nan"))],
+        image_size=(200, 100),
+    ))
+
+    # Mały obraz (100px), OpenCV wykrywa 2 linie → TrOCR (za mały obraz)
+    with patch.object(KrakenBackend, "recognize", kraken_mock):
+        engine = OcrEngine(cfg)
+        engine.detector.detect = MagicMock(return_value=[
+            BBox(0, 0, 100, 20), BBox(0, 30, 100, 50),
+        ])
+        engine.recognizer.recognize_lines = MagicMock(return_value=[("", 0.0)] * 2)
+        img = np.ones((100, 200, 3), dtype=np.uint8) * 255  # mały biały obraz
+        result = engine.recognize(img)
+
+    assert isinstance(result, OcrResult)
+    kraken_mock.assert_not_called()
