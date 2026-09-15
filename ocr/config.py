@@ -41,8 +41,13 @@ class OcrConfig:
     use_fallback_if_pl_missing: bool = True
     # backend rozpoznawania: "trocr" (detektor→TrOCR per język) lub
     # "paddlevl" (PaddleOCR-VL-0.9B, VLM wielojęzyczny, bez fine-tuningu)
+    # lub "kraken" (end-to-end Kraken: segmentacja baseline + rozpoznawanie
+    # .mlmodel, np. polish_nfd_9313.mlmodel z EHRI — najlepszy dla maszynopisu)
     recognizer_backend: str = "trocr"
     paddlevl_model: str = "PaddlePaddle/PaddleOCR-VL"
+    # Kraken: model rozpoznawania (.mlmodel). Ścieżka lokalna lub HF repo+plik.
+    # Domyślnie polski model EHRI (93,1% accuracy na polskim maszynopisie).
+    kraken_model: str = "PiotrSty/ehri-dataset::models/polish_nfd_9313.mlmodel"
 
     # Routing języka
     force_language: str | None = None  # "pl" | "en" | None (auto)
@@ -97,6 +102,7 @@ class OcrConfig:
             recognizer_fallback=env("OCR_RECOGNIZER_FALLBACK", "microsoft/trocr-base-printed"),
             recognizer_backend=env("OCR_RECOGNIZER_BACKEND", "trocr"),
             paddlevl_model=env("OCR_PADDLEVL_MODEL", "PaddlePaddle/PaddleOCR-VL"),
+            kraken_model=env("OCR_KRAKEN_MODEL", "PiotrSty/ehri-dataset::models/polish_nfd_9313.mlmodel"),
             force_language=os.environ.get("OCR_FORCE_LANGUAGE"),
             device=env("OCR_DEVICE", "auto"),  # type: ignore[arg-type]
             correct_text=env_bool("OCR_CORRECT_TEXT", False),

@@ -36,6 +36,9 @@ vlm = [
     "paddlepaddle>=3.2",
     "paddleocr[doc-parser]>=3.4",
 ]
+kraken = [
+    "kraken>=5.0",
+]
 train = [
     "fonttools>=4.0",
     "datasets>=2.14",

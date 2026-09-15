@@ -36,11 +36,24 @@ class OcrEngine:
 
     def recognize(self, image: ImageLike) -> OcrResult:
         """Rozpoznaje tekst z obrazu (ścieżka lub array RGB)."""
+        # Kraken backend: end-to-end (segmentacja + rozpoznawanie), bypass TrOCR.
+        if self.config.recognizer_backend == "kraken":
+            return self._recognize_kraken(image)
         arr = load_image(image)
         if self.config.deskew:
             arr, transform = deskew(arr, return_transform=True)
             return self._source_coordinates(self._recognize_array(arr), transform)
         return self._recognize_array(arr)
+
+    def _recognize_kraken(self, image: ImageLike) -> OcrResult:
+        """End-to-end OCR przez Kraken (segmentacja baseline + .mlmodel)."""
+        from .kraken_backend import KrakenBackend
+        if not hasattr(self, '_kraken_backend'):
+            self._kraken_backend = KrakenBackend(self.config)
+        result = self._kraken_backend.recognize(image)
+        if self.config.correct_text:
+            result = self._correct_result(result)
+        return result
 
     @staticmethod
     def _source_coordinates(result, transform):
@@ -178,6 +191,8 @@ class OcrEngine:
         self.detector.close()
         self.recognizer.close()
         self.corrector.close()
+        if hasattr(self, '_kraken_backend'):
+            self._kraken_backend.close()
 
     def __enter__(self) -> "OcrEngine":
         return self
