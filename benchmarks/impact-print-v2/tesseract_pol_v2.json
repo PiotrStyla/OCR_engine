@@ -1,0 +1,9 @@
+{
+  "pages": 36,
+  "errors_or_missing": 0,
+  "cer_micro": 0.3311,
+  "wer_micro": 0.8163,
+  "system": "tesseract-ocr pol (tessdata_best)",
+  "split": "impact-print-v2-test",
+  "date": "2026-09-17"
+}
