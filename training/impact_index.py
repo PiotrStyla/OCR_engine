@@ -116,10 +116,18 @@ def main():
     for doc, (col, xml_name) in gt.items():
         targets[col][doc] = xml_name
 
+    allowed_new = set()
+    if args.per_collection_cap:
+        for col in sorted(targets):
+            new_docs = [d for d in sorted(targets[col]) if d not in subset_docs]
+            allowed_new.update(new_docs[:args.per_collection_cap])
+
     def resolve(item):
         col, doc, xml_name = item
         if doc in subset_docs:
             return doc, col, xml_name, anchors_by_col[col]
+        if args.per_collection_cap and doc not in allowed_new:
+            return doc, col, xml_name, []  # cap reached: skip probing
         return doc, col, xml_name, anchors_by_col.get(col) or []
 
     work = [(col, doc, xml_name) for col in sorted(targets) for doc, xml_name in sorted(targets[col].items())]
