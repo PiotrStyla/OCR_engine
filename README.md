@@ -44,6 +44,12 @@ hashy nie wyklucza podobnych skanów ani obecności dokumentów w pretreningu mo
 - [Odtworzenie benchmarku i baseline'u](docs/POLOCRBENCH_REPRODUCTION.md)
 - [Zmiany protokołu ewaluacji](docs/POLOCRBENCH_EVALUATOR_2026-09-19.md)
 - [Zamrożone manifesty PolOCRBench](benchmarks/polocrbench/README.md)
+- [Lokalny panel audytu adnotacji](tools/annotation-review/README.md): skan obok
+  transkrypcji, kolejka podejrzanych znaków i eksport historii propozycji zmian.
+  Panel nie modyfikuje zamrożonych referencji.
+- [Uzgadnianie recenzji i nowa wersja manifestu](tools/annotation-review/README.md#build-a-reviewed-candidate):
+  zgodność dwóch recenzentów, raport konfliktów oraz pełna historia zmian.
+  Wynik jest kandydatem do wydania, bez automatycznej publikacji.
 
 ### Zakres docelowy
 
