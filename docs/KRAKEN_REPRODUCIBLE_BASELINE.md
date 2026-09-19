@@ -1,5 +1,12 @@
 # Kraken full-page baseline and submission validation
 
+Ready-to-import Kaggle notebook:
+[`kaggle_polocrbench_kraken_reproducible.ipynb`](../training/kaggle_polocrbench_kraken_reproducible.ipynb).
+Enable Internet and GPU T4, then Run All. It pins code, data and model revisions,
+checks CUDA, executes one-page smoke before the full run, validates and scores outputs
+and packages evidence as ZIP. Optional `HF_TOKEN` is read from environment or Kaggle
+Secrets without printing it. No training or automatic publication occurs.
+
 This runner reuses the Kraken 7 task API already used in the project's GPU
 notebooks. It is separate from the older library backend and retains every
 page prediction instead of only aggregate scores. No model or dependency is

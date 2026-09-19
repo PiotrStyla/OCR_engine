@@ -53,6 +53,9 @@ hashy nie wyklucza podobnych skanów ani obecności dokumentów w pretreningu mo
 - [Runner Krakena na GPU i walidator zgłoszeń A](docs/KRAKEN_REPRODUCIBLE_BASELINE.md):
   jawne hashe obu modeli, predykcje każdej strony i metadane środowiska.
   Lokalny preflight nie uruchamia modeli; rzeczywisty test CUDA pozostaje do wykonania.
+- [Notebook Kaggle: odtwarzalny baseline Krakena](training/kaggle_polocrbench_kraken_reproducible.ipynb):
+  włącz Internet i GPU T4, uruchom Run All, pobierz ZIP wyników. Notebook wykonuje
+  smoke-test jednej strony przed pełnym pomiarem 36 stron; nie trenuje modelu.
 
 ### Zakres docelowy
 
