@@ -29,6 +29,7 @@ _QUOTE_MAP = str.maketrans({
 _WS_RE = re.compile(r'\s+')
 _HEADING_RE = re.compile(r'^(#{1,6})\s+(.*)$')
 _LIST_RE = re.compile(r'^\s*(?:[-*+]\s+|\d+[.)]\s+)(.*)$')
+PROTOCOL_VERSION = 'polocrbench-transcription-v1.1'
 
 
 def normalize(text):
@@ -102,10 +103,10 @@ def structure_report(ref_md, hyp_md):
 def evaluate(manifest, predictions, with_structure=True):
     from jiwer import cer, wer
     manifest = Path(manifest)
-    records = [json.loads(line) for line in manifest.read_text(encoding='utf-8').splitlines() if line.strip()]
+    records = [json.loads(line) for line in manifest.read_text(encoding='utf-8').split('\n') if line.strip()]
     if not records or len({r['id'] for r in records}) != len(records):
         raise ValueError('Manifest must contain unique nonempty records')
-    rows = [json.loads(line) for line in Path(predictions).read_text(encoding='utf-8').splitlines() if line.strip()]
+    rows = [json.loads(line) for line in Path(predictions).read_text(encoding='utf-8').split('\n') if line.strip()]
     if len({r['id'] for r in rows}) != len(rows):
         raise ValueError('Duplicate predictions')
     supplied = {r['id']: r for r in rows}
@@ -126,18 +127,25 @@ def evaluate(manifest, predictions, with_structure=True):
         hypotheses.append(hypothesis)
         entry = {'id': row['id'], 'status': status, 'cer': cer(reference, hypothesis),
                  'wer': wer(reference, hypothesis), 'exact_match': reference == hypothesis}
-        if with_structure and status == 'ok':
-            entry['structure'] = structure_report(row['text'], prediction['text'])
+        if with_structure:
+            entry['structure'] = structure_report(row['text'], prediction['text'] if status == 'ok' else '')
+            if status != 'ok':
+                # A failed request is not a successful blank-page prediction.
+                entry['structure']['structure_similarity'] = 0.0
+                for detail in entry['structure']['per_kind'].values():
+                    detail['sim'] = 0.0
         output.append(entry)
-    result = {'pages': len(records), 'errors_or_missing': sum(e['status'] != 'ok' for e in output),
+    result = {'protocol_version': PROTOCOL_VERSION,
+              'pages': len(records), 'errors_or_missing': sum(e['status'] != 'ok' for e in output),
               'cer_micro': cer(references, hypotheses), 'wer_micro': wer(references, hypotheses),
               'normalization': 'NFC + typographic quotes -> straight + whitespace; case/diacritics preserved',
               'manifest_sha256': hashlib.sha256(manifest.read_bytes()).hexdigest(),
               'predictions_sha256': hashlib.sha256(Path(predictions).read_bytes()).hexdigest(),
               'results': output}
     if with_structure:
-        sims = [e['structure']['structure_similarity'] for e in output if 'structure' in e]
-        result['structure_similarity'] = sum(sims) / len(sims) if sims else None
+        sims = [e['structure']['structure_similarity'] for e in output]
+        result['structure_similarity'] = sum(sims) / len(sims)
+        result['structure_aggregation'] = 'page macro mean; error/missing pages score zero'
     return result
 
 

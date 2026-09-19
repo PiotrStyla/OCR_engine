@@ -1,4 +1,59 @@
-# OCR Engine
+# OCR Engine / PolOCRBench
+
+Silnik OCR dla polskich dokumentów oraz rozwijane zaplecze **PolOCRBench**:
+publicznego benchmarku transkrypcji całych stron, ekstrakcji tabel i informacji
+z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
+ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
+ani potwierdzonym silnikiem SOTA.**
+
+## Aktualny stan: 19 września 2026
+
+- **Podzadanie A, transkrypcja:** zamrożony historyczny podzbiór IMPACT,
+  36 stron testowych z 3 kolekcji oraz pula 2531 regionów treningowych.
+- **Odtwarzalne dane:** importer przypiętej paczki Hugging Face sprawdza SHA-256,
+  rozdzielenie kolekcji i brak wspólnych hashy obrazów train/test. Osobne kopie
+  PNG zachowują piksele oryginalnych TIFF-ów i mają przenośne ścieżki.
+- **Ewaluator v1.1:** CER/WER oraz przybliżona ocena struktury Markdown;
+  brakujące i błędne odpowiedzi dostają zero punktów za strukturę.
+- **Baseline CPU:** zapisane predykcje wszystkich stron, metadane silnika,
+  hashe wag, wyniki obu protokołów i sumy kontrolne artefaktów.
+- **Weryfikacja:** 17 testów importera, konwertera i ewaluatorów przeszło.
+  To testy tego zakresu zmian, nie deklaracja uruchomienia całego zestawu testów.
+
+### Wynik baseline'u CPU
+
+Tesseract.js 7.0.0, `pol+eng`, OEM 1, PSM 3, jeden worker CPU:
+
+| Zbiór | Strony | CER micro | WER micro |
+| --- | ---: | ---: | ---: |
+| IMPACT historyczny, całość | 36 | **34,94%** | **81,23%** |
+| NA2_FT | 15 | 27,35% | 73,22% |
+| Nowiny_z_Rakuz_FT | 15 | 43,93% | 87,78% |
+| Powodzenia_FT | 6 | 34,83% | 87,94% |
+
+Niższe CER/WER oznacza mniej błędów. Odczyt trwał 392,10 s; wszystkie strony
+zwróciły tekst, ale nie oznacza to poprawnej transkrypcji. Jest to nowy pomiar,
+a nie odtworzenie wcześniejszej konfiguracji natywnego Tesseract `pol tessdata_best`.
+
+**Ograniczenie referencji:** 86 znaków zastępczych U+FFFD na 23 stronach oraz
+624 znaki prywatnego zakresu Unicode na 33 stronach wymagają przeglądu adnotacji.
+Zamrożonych referencji nie poprawiano na podstawie predykcji. Sam brak wspólnych
+hashy nie wyklucza podobnych skanów ani obecności dokumentów w pretreningu modeli.
+
+- [Wyniki, surowe predykcje i metadane](experiments/2026-09-19/impact-tesseractjs-png/README.md)
+- [Odtworzenie benchmarku i baseline'u](docs/POLOCRBENCH_REPRODUCTION.md)
+- [Zmiany protokołu ewaluacji](docs/POLOCRBENCH_EVALUATOR_2026-09-19.md)
+- [Zamrożone manifesty PolOCRBench](benchmarks/polocrbench/README.md)
+
+### Zakres docelowy
+
+Planowane podzadania: **A** transkrypcja do Markdown, **B** tabele do HTML
+z oceną TEDS, **C** pola dokumentu do JSON z oceną field-level F1.
+Podzadania B/C, pełny zbiór współczesnych dokumentów i pisma ręcznego, ukryty
+Test B oraz publiczny leaderboard wymagają dalszej implementacji i anotacji.
+Docelowe tracki to constrained, open i zero-shot/API; nie są jeszcze wdrożone.
+
+## Biblioteka OCR
 
 > Aktualizacja po audycie (2026-09-12): zobacz [plan CPU i zdalnych testów](docs/CPU_REMOTE_PLAN.md).
 > CLI respektuje ENV, a jawne flagi mają pierwszeństwo. Tablice wejściowe muszą być RGB uint8.

@@ -1,0 +1,840 @@
+{
+  "protocol_version": "polocrbench-transcription-v1.1",
+  "pages": 36,
+  "errors_or_missing": 0,
+  "cer_micro": 0.3494192610168194,
+  "wer_micro": 0.8123364485981308,
+  "normalization": "NFC + typographic quotes -> straight + whitespace; case/diacritics preserved",
+  "manifest_sha256": "292654610683473e9bd1b4bf670d1bb3b05a64db89aaa5614aadf41b8aeb02de",
+  "predictions_sha256": "0db1cca5affdd257a5d5a82a4c252838a132c0656c72b170818c636aed289e39",
+  "results": [
+    {
+      "id": "NA2_FT__433927",
+      "status": "ok",
+      "cer": 0.2607561929595828,
+      "wer": 0.8392857142857143,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.702316,
+        "elements": {
+          "ref": 23,
+          "hyp": 26
+        },
+        "per_kind": {
+          "p": {
+            "ref": 23,
+            "hyp": 26,
+            "sim": 0.7023164151814987
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433928",
+      "status": "ok",
+      "cer": 0.4749652294853964,
+      "wer": 0.8020304568527918,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.37654,
+        "elements": {
+          "ref": 53,
+          "hyp": 33
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 53,
+            "hyp": 32,
+            "sim": 0.37654021016053696
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433929",
+      "status": "ok",
+      "cer": 0.29357798165137616,
+      "wer": 0.8833333333333333,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.423779,
+        "elements": {
+          "ref": 14,
+          "hyp": 17
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 14,
+            "hyp": 16,
+            "sim": 0.3877654259749723
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433930",
+      "status": "ok",
+      "cer": 0.37833468067906223,
+      "wer": 0.8140845070422535,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.556295,
+        "elements": {
+          "ref": 37,
+          "hyp": 44
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 37,
+            "hyp": 43,
+            "sim": 0.5459759386537326
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433931",
+      "status": "ok",
+      "cer": 0.17025518341307816,
+      "wer": 0.6403269754768393,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.817473,
+        "elements": {
+          "ref": 38,
+          "hyp": 37
+        },
+        "per_kind": {
+          "p": {
+            "ref": 38,
+            "hyp": 37,
+            "sim": 0.8174727334143418
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433932",
+      "status": "ok",
+      "cer": 0.15314190595089472,
+      "wer": 0.6441176470588236,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.846984,
+        "elements": {
+          "ref": 37,
+          "hyp": 38
+        },
+        "per_kind": {
+          "p": {
+            "ref": 37,
+            "hyp": 38,
+            "sim": 0.8469838298702886
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433933",
+      "status": "ok",
+      "cer": 0.14747899159663866,
+      "wer": 0.5981308411214953,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.786234,
+        "elements": {
+          "ref": 38,
+          "hyp": 39
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 2,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 38,
+            "hyp": 37,
+            "sim": 0.8069244960449251
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433934",
+      "status": "ok",
+      "cer": 0.1517970401691332,
+      "wer": 0.6492307692307693,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.81164,
+        "elements": {
+          "ref": 37,
+          "hyp": 39
+        },
+        "per_kind": {
+          "p": {
+            "ref": 37,
+            "hyp": 39,
+            "sim": 0.8116404914383173
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433935",
+      "status": "ok",
+      "cer": 0.15483071841453344,
+      "wer": 0.569060773480663,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.815252,
+        "elements": {
+          "ref": 37,
+          "hyp": 38
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 37,
+            "hyp": 37,
+            "sim": 0.8102592074142306
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433936",
+      "status": "ok",
+      "cer": 0.1340782122905028,
+      "wer": 0.5497835497835498,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.783653,
+        "elements": {
+          "ref": 28,
+          "hyp": 31
+        },
+        "per_kind": {
+          "p": {
+            "ref": 28,
+            "hyp": 31,
+            "sim": 0.7836529910157032
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433937",
+      "status": "ok",
+      "cer": 0.4468503937007874,
+      "wer": 0.9117647058823529,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.373138,
+        "elements": {
+          "ref": 21,
+          "hyp": 22
+        },
+        "per_kind": {
+          "li": {
+            "ref": 1,
+            "hyp": 0,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 20,
+            "hyp": 22,
+            "sim": 0.4185930239574932
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433938",
+      "status": "ok",
+      "cer": 0.13374583531651593,
+      "wer": 0.483974358974359,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.824723,
+        "elements": {
+          "ref": 36,
+          "hyp": 37
+        },
+        "per_kind": {
+          "p": {
+            "ref": 36,
+            "hyp": 37,
+            "sim": 0.8247226099600539
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__433939",
+      "status": "ok",
+      "cer": 0.16458852867830423,
+      "wer": 0.5498392282958199,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.637687,
+        "elements": {
+          "ref": 37,
+          "hyp": 41
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 3,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 37,
+            "hyp": 38,
+            "sim": 0.6463931999250359
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__434331",
+      "status": "ok",
+      "cer": 0.20501138952164008,
+      "wer": 0.6640625,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.695551,
+        "elements": {
+          "ref": 34,
+          "hyp": 34
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 34,
+            "sim": 0.6955507072123965
+          }
+        }
+      }
+    },
+    {
+      "id": "NA2_FT__434735",
+      "status": "ok",
+      "cer": 411.25,
+      "wer": 311.0,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.006757,
+        "elements": {
+          "ref": 1,
+          "hyp": 111
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 18,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 1,
+            "hyp": 93,
+            "sim": 0.008064516129032251
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436609",
+      "status": "ok",
+      "cer": 1.0,
+      "wer": 1.0,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.0,
+        "elements": {
+          "ref": 5,
+          "hyp": 1
+        },
+        "per_kind": {
+          "p": {
+            "ref": 5,
+            "hyp": 1,
+            "sim": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436610",
+      "status": "ok",
+      "cer": 0.548926014319809,
+      "wer": 0.9202898550724637,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.415252,
+        "elements": {
+          "ref": 24,
+          "hyp": 22
+        },
+        "per_kind": {
+          "li": {
+            "ref": 1,
+            "hyp": 1,
+            "sim": 0.19444444444444442
+          },
+          "p": {
+            "ref": 23,
+            "hyp": 21,
+            "sim": 0.3898282331273065
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436611",
+      "status": "ok",
+      "cer": 0.5176132278936018,
+      "wer": 0.8597285067873304,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.428594,
+        "elements": {
+          "ref": 32,
+          "hyp": 21
+        },
+        "per_kind": {
+          "p": {
+            "ref": 32,
+            "hyp": 21,
+            "sim": 0.42859418017870166
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436612",
+      "status": "ok",
+      "cer": 0.4114219114219114,
+      "wer": 0.8776978417266187,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.573026,
+        "elements": {
+          "ref": 34,
+          "hyp": 34
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 34,
+            "sim": 0.5730261374424086
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436613",
+      "status": "ok",
+      "cer": 0.43391812865497076,
+      "wer": 0.9104477611940298,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.536261,
+        "elements": {
+          "ref": 35,
+          "hyp": 37
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 35,
+            "hyp": 36,
+            "sim": 0.523378928398343
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436614",
+      "status": "ok",
+      "cer": 0.30083234244946494,
+      "wer": 0.8627450980392157,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.680645,
+        "elements": {
+          "ref": 34,
+          "hyp": 36
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 36,
+            "sim": 0.6806445194850141
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436615",
+      "status": "ok",
+      "cer": 0.508,
+      "wer": 0.9233576642335767,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.475806,
+        "elements": {
+          "ref": 34,
+          "hyp": 29
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 29,
+            "sim": 0.47580610031392157
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436616",
+      "status": "ok",
+      "cer": 0.6345821325648415,
+      "wer": 0.9354838709677419,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.363303,
+        "elements": {
+          "ref": 34,
+          "hyp": 25
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 25,
+            "sim": 0.3633031960513564
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436617",
+      "status": "ok",
+      "cer": 0.7701080432172869,
+      "wer": 0.9438202247191011,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.223538,
+        "elements": {
+          "ref": 34,
+          "hyp": 12
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 12,
+            "sim": 0.22353823413655616
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436618",
+      "status": "ok",
+      "cer": 0.30679837303893087,
+      "wer": 0.8551236749116607,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.674218,
+        "elements": {
+          "ref": 34,
+          "hyp": 36
+        },
+        "per_kind": {
+          "p": {
+            "ref": 34,
+            "hyp": 36,
+            "sim": 0.6742178941468657
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436619",
+      "status": "ok",
+      "cer": 0.3244228432563791,
+      "wer": 0.8156028368794326,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.6712,
+        "elements": {
+          "ref": 35,
+          "hyp": 34
+        },
+        "per_kind": {
+          "p": {
+            "ref": 35,
+            "hyp": 34,
+            "sim": 0.6712000131774603
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436620",
+      "status": "ok",
+      "cer": 0.3537117903930131,
+      "wer": 0.8597122302158273,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.601261,
+        "elements": {
+          "ref": 35,
+          "hyp": 34
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 3,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 35,
+            "hyp": 31,
+            "sim": 0.6012614887821999
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436621",
+      "status": "ok",
+      "cer": 0.3746186699206833,
+      "wer": 0.8745247148288974,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.576436,
+        "elements": {
+          "ref": 35,
+          "hyp": 37
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 35,
+            "hyp": 36,
+            "sim": 0.5854804460414466
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436622",
+      "status": "ok",
+      "cer": 0.27023581899298915,
+      "wer": 0.7890625,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.69618,
+        "elements": {
+          "ref": 35,
+          "hyp": 34
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 35,
+            "hyp": 33,
+            "sim": 0.6961800809878682
+          }
+        }
+      }
+    },
+    {
+      "id": "Nowiny_z_Rakuz_FT__436635",
+      "status": "ok",
+      "cer": 0.3397212543554007,
+      "wer": 0.8529411764705882,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.43057,
+        "elements": {
+          "ref": 15,
+          "hyp": 22
+        },
+        "per_kind": {
+          "p": {
+            "ref": 15,
+            "hyp": 22,
+            "sim": 0.43056993696566936
+          }
+        }
+      }
+    },
+    {
+      "id": "Powodzenia_FT__436636",
+      "status": "ok",
+      "cer": 0.9432314410480349,
+      "wer": 2.71875,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.31784,
+        "elements": {
+          "ref": 12,
+          "hyp": 28
+        },
+        "per_kind": {
+          "p": {
+            "ref": 12,
+            "hyp": 28,
+            "sim": 0.31784031127771606
+          }
+        }
+      }
+    },
+    {
+      "id": "Powodzenia_FT__436637",
+      "status": "ok",
+      "cer": 0.3738095238095238,
+      "wer": 0.8688524590163934,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.61638,
+        "elements": {
+          "ref": 11,
+          "hyp": 12
+        },
+        "per_kind": {
+          "p": {
+            "ref": 11,
+            "hyp": 12,
+            "sim": 0.6163795535510128
+          }
+        }
+      }
+    },
+    {
+      "id": "Powodzenia_FT__436638",
+      "status": "ok",
+      "cer": 0.32344213649851633,
+      "wer": 0.8404907975460123,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.584352,
+        "elements": {
+          "ref": 29,
+          "hyp": 29
+        },
+        "per_kind": {
+          "li": {
+            "ref": 0,
+            "hyp": 1,
+            "sim": 0.0
+          },
+          "p": {
+            "ref": 29,
+            "hyp": 28,
+            "sim": 0.5843519272836164
+          }
+        }
+      }
+    },
+    {
+      "id": "Powodzenia_FT__436639",
+      "status": "ok",
+      "cer": 0.3258584442887176,
+      "wer": 0.78099173553719,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.696222,
+        "elements": {
+          "ref": 33,
+          "hyp": 33
+        },
+        "per_kind": {
+          "p": {
+            "ref": 33,
+            "hyp": 33,
+            "sim": 0.6962221350537768
+          }
+        }
+      }
+    },
+    {
+      "id": "Powodzenia_FT__436640",
+      "status": "ok",
+      "cer": 0.30434782608695654,
+      "wer": 0.7888446215139442,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.727226,
+        "elements": {
+          "ref": 33,
+          "hyp": 33
+        },
+        "per_kind": {
+          "p": {
+            "ref": 33,
+            "hyp": 33,
+            "sim": 0.727225587884206
+          }
+        }
+      }
+    },
+    {
+      "id": "Powodzenia_FT__436641",
+      "status": "ok",
+      "cer": 0.32596232596232594,
+      "wer": 0.8520408163265306,
+      "exact_match": false,
+      "structure": {
+        "structure_similarity": 0.714196,
+        "elements": {
+          "ref": 28,
+          "hyp": 28
+        },
+        "per_kind": {
+          "p": {
+            "ref": 28,
+            "hyp": 28,
+            "sim": 0.7141956306014856
+          }
+        }
+      }
+    }
+  ],
+  "structure_similarity": 0.568348,
+  "structure_aggregation": "page macro mean; error/missing pages score zero"
+}
