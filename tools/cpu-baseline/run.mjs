@@ -5,9 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import os from 'node:os';
+import { createRequire } from 'node:module';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
+const require = createRequire(import.meta.url);
+const corePackagePath = require.resolve('tesseract.js-core/package.json', {
+  paths: [dirname(require.resolve('tesseract.js'))],
+});
 const [sampleDirectory, outputDirectory] = process.argv.slice(2);
 if (!sampleDirectory || !outputDirectory) throw new Error('Usage: node run.mjs SAMPLE_DIRECTORY OUTPUT_DIRECTORY');
 const output = resolve(outputDirectory);
@@ -31,8 +36,11 @@ writeFileSync(join(output, 'manifest.json'), JSON.stringify(cases, null, 2));
 const cachePath = join(here, 'cache');
 mkdirSync(cachePath, { recursive: true });
 const start = performance.now();
-const worker = await createWorker('pol+eng', 1, { cachePath });
+// Rejected page jobs are recorded below; avoid the worker's uncaught rethrow.
+const worker = await createWorker('pol+eng', 1, { cachePath, errorHandler: () => {} });
 const startupSeconds = (performance.now() - start) / 1000;
+let completedPages = 0;
+let errorPages = 0;
 try {
   for (const item of cases) {
     const psm = item.kind === 'line' ? PSM.SINGLE_LINE : PSM.AUTO;
@@ -47,10 +55,12 @@ try {
         confidence: empty ? null : data.confidence, raw_engine_confidence: data.confidence,
         psm, elapsed_seconds: (performance.now() - began) / 1000 };
     } catch (error) {
-      result = { ...item, path: undefined, status: 'error', text: '', error_type: error.name,
+      result = { ...item, path: undefined, status: 'error', text: '', error_type: error?.name || 'RecognitionError',
         psm, elapsed_seconds: (performance.now() - began) / 1000 };
     }
     appendFileSync(join(output, 'predictions.jsonl'), JSON.stringify(result) + '\n');
+    completedPages += 1;
+    if (result.status === 'error') errorPages += 1;
     console.log(`${item.id}: ${result.status} (${result.elapsed_seconds.toFixed(2)}s)`);
   }
 } finally {
@@ -60,6 +70,10 @@ const weights = Object.fromEntries(readdirSync(cachePath).filter(f => f.endsWith
   .map(f => [f, hash(readFileSync(join(cachePath, f)))]));
 writeFileSync(join(output, 'run.json'), JSON.stringify({ engine: 'tesseract.js',
   package: JSON.parse(readFileSync(join(here, 'node_modules/tesseract.js/package.json'))).version,
+  core_package: JSON.parse(readFileSync(corePackagePath)).version,
+  runner_sha256: hash(readFileSync(fileURLToPath(import.meta.url))),
+  pages_expected: cases.length, pages_completed: completedPages, pages_error: errorPages,
+  preprocessing: 'original image bytes; no external resizing or enhancement',
   lock_sha256: hash(readFileSync(join(here, 'pnpm-lock.yaml'))), languages: 'pol+eng', oem: 1,
   workers: 1, startup_seconds: startupSeconds, model_hashes: weights,
   node: process.version, cpu: os.cpus()[0].model, platform: process.platform,

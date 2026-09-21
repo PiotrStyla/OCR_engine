@@ -1,0 +1,30 @@
+{
+  "collections": {
+    "NA2_FT": {
+      "pages": 15,
+      "cer_micro": 0.27349273174994043,
+      "wer_micro": 0.7321724709784412
+    },
+    "Nowiny_z_Rakuz_FT": {
+      "pages": 15,
+      "cer_micro": 0.4392711602416975,
+      "wer_micro": 0.8778162911611785
+    },
+    "Powodzenia_FT": {
+      "pages": 6,
+      "cer_micro": 0.3482734565748169,
+      "wer_micro": 0.8793650793650793
+    }
+  },
+  "total_recognition_seconds": 392.09797479999986,
+  "reference_quality": {
+    "replacement_characters": 86,
+    "pages_with_replacement_characters": 23,
+    "private_use_characters": 624
+  },
+  "scoring_packages": {
+    "jiwer": "4.0.0",
+    "rapidfuzz": "3.14.6",
+    "Pillow": "12.3.0"
+  }
+}

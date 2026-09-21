@@ -1,0 +1,8 @@
+{
+  "tools/cpu-baseline/run.mjs": "b66f203e88955ec0e5fed1f41e713b9e192b3a4ee85c6891455647de08feada4",
+  "tools/cpu-baseline/pnpm-lock.yaml": "74643c241786b23d2dc2e302ff1ac17d519af77fa1e6c0b9bd22aaf79e7e27a2",
+  "training/transcription_eval.py": "4a6abdff02cc2e0aedb33003b162c91beae50a9d8a1e3c8224f803a6ace76af7",
+  "training/benchmark_pages.py": "016e1efc26fa7c741b41653ff875a6d96d5a7057694a907aae9ed5ffdf299c71",
+  "training/prepare_ocr_images.py": "73b05bafb48c498e378261da46bfa6780eec0e9e76508cef0d9c177c8ede8d3f",
+  "training/stage_impact_benchmark.py": "53945ed4aa8a7a1d1798ddd5f18fd73c58dee1f7c85d7946426bb9d7ca8925e1"
+}

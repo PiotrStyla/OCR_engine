@@ -1,4 +1,135 @@
-# OCR Engine
+# OCR Engine / PolOCRBench
+
+Silnik OCR dla polskich dokumentów oraz rozwijane zaplecze **PolOCRBench**:
+publicznego benchmarku transkrypcji całych stron, ekstrakcji tabel i informacji
+z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
+ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
+ani potwierdzonym silnikiem SOTA.**
+
+## Aktualny stan: 21 września 2026
+
+- **Podzadanie A, transkrypcja:** zamrożony historyczny podzbiór IMPACT,
+  36 stron testowych z 3 kolekcji oraz pula 2531 regionów treningowych.
+- **Odtwarzalne dane:** importer przypiętej paczki Hugging Face sprawdza SHA-256,
+  rozdzielenie kolekcji i brak wspólnych hashy obrazów train/test. Osobne kopie
+  PNG zachowują piksele oryginalnych TIFF-ów i mają przenośne ścieżki.
+- **Ewaluator v1.1:** CER/WER oraz przybliżona ocena struktury Markdown;
+  brakujące i błędne odpowiedzi dostają zero punktów za strukturę.
+- **Baseline CPU:** zapisane predykcje wszystkich stron, metadane silnika,
+  hashe wag, wyniki obu protokołów i sumy kontrolne artefaktów.
+- **Weryfikacja:** 17 testów importera, konwertera i ewaluatorów przeszło.
+  To testy tego zakresu zmian, nie deklaracja uruchomienia całego zestawu testów.
+
+### Wynik baseline'u CPU
+
+Tesseract.js 7.0.0, `pol+eng`, OEM 1, PSM 3, jeden worker CPU:
+
+| Zbiór | Strony | CER micro | WER micro |
+| --- | ---: | ---: | ---: |
+| IMPACT historyczny, całość | 36 | **34,94%** | **81,23%** |
+| NA2_FT | 15 | 27,35% | 73,22% |
+| Nowiny_z_Rakuz_FT | 15 | 43,93% | 87,78% |
+| Powodzenia_FT | 6 | 34,83% | 87,94% |
+
+Niższe CER/WER oznacza mniej błędów. Odczyt trwał 392,10 s; wszystkie strony
+zwróciły tekst, ale nie oznacza to poprawnej transkrypcji. Jest to nowy pomiar,
+a nie odtworzenie wcześniejszej konfiguracji natywnego Tesseract `pol tessdata_best`.
+
+**Ograniczenie referencji:** 86 znaków zastępczych U+FFFD na 23 stronach oraz
+624 znaki prywatnego zakresu Unicode na 33 stronach wymagają przeglądu adnotacji.
+Zamrożonych referencji nie poprawiano na podstawie predykcji. Sam brak wspólnych
+hashy nie wyklucza podobnych skanów ani obecności dokumentów w pretreningu modeli.
+
+- [Wyniki, surowe predykcje i metadane](experiments/2026-09-19/impact-tesseractjs-png/README.md)
+- [Odtworzenie benchmarku i baseline'u](docs/POLOCRBENCH_REPRODUCTION.md)
+- [Zmiany protokołu ewaluacji](docs/POLOCRBENCH_EVALUATOR_2026-09-19.md)
+- [Zamrożone manifesty PolOCRBench](benchmarks/polocrbench/README.md)
+- [Lokalny panel audytu adnotacji](tools/annotation-review/README.md): skan obok
+  transkrypcji, kolejka podejrzanych znaków i eksport historii propozycji zmian.
+  Panel nie modyfikuje zamrożonych referencji.
+- [Uzgadnianie recenzji i nowa wersja manifestu](tools/annotation-review/README.md#build-a-reviewed-candidate):
+  zgodność dwóch recenzentów, raport konfliktów oraz pełna historia zmian.
+  Wynik jest kandydatem do wydania, bez automatycznej publikacji.
+- [Runner Krakena na GPU i walidator zgłoszeń A](docs/KRAKEN_REPRODUCIBLE_BASELINE.md):
+  jawne hashe obu modeli, predykcje każdej strony i metadane środowiska.
+  Test CUDA na Kaggle Tesla T4 zakończył się: 36/36 stron, bez błędów wykonania.
+- [Notebook Kaggle: odtwarzalny baseline Krakena](training/kaggle_polocrbench_kraken_reproducible.ipynb):
+  włącz Internet i GPU T4, uruchom Run All, pobierz ZIP wyników. Notebook wykonuje
+  smoke-test jednej strony przed pełnym pomiarem 36 stron; nie trenuje modelu.
+
+### Wynik Krakena i diagnostyka GPU
+
+Kraken 7.1.1 z recognizerem i segmenterem fine-tunowanymi na EHRI osiągnął
+**CER 79,56% / WER 107,61%**, wobec **34,94% / 81,23%** dla Tesseracta.
+Referencje i hashe zdekodowanych pikseli są zgodne między przebiegami.
+WER może przekraczać 100% przez nadmiarowe słowa. To wynik konkretnej
+konfiguracji, nie ocena wszystkich modeli Krakena.
+
+- [Raport przebiegu Kaggle](docs/KRAKEN_KAGGLE_RESULT_20260921.md).
+- [Diagnoza segmentacji i wycinków](docs/KRAKEN_DIAGNOSTICS_20260921.md).
+- [Kontrola wejścia recognizera i alfabetu](docs/KRAKEN_INPUT_CHECK_20260921.md).
+- [Notebook diagnostyczny v2](training/kaggle_kraken_diagnostics.ipynb)
+  oraz [pełny kod komórki](training/kaggle_kraken_diagnostics.py): uruchom kod
+  jako jedną nową komórkę w tej samej sesji Kaggle po zakończonym baseline.
+  Nie uruchamiaj ponownie Run All. Wymagane są zachowane obrazy i wyniki
+  w `/kaggle/working/polocrbench-kraken-*/`. Wynik: `kraken-input-check-*.zip`.
+
+Diagnostyka trzech stron tytułowych potwierdza błędy segmentacji i rozpoznawania.
+175 rzeczywistych wycinków zgadza się z wcześniejszym eksportem; sprawdzone
+podglądy po normalizacji zachowują czytelny tekst. Alfabet modelu nie obejmuje
+części znaków historycznego druku. Nie wykluczono problemów checkpointu ani
+całej ścieżki inferencji. Poniższa kontrola EHRI osłabia hipotezę globalnie
+uszkodzonego checkpointu, ale nie dowodzi poprawności wszystkich konfiguracji.
+
+### Kontrole EHRI i historycznego druku
+
+- **EHRI, jedna strona:** CER **2,81%** z geometrią ALTO i **7,60%**
+  z przewidywaną segmentacją. Możliwe nakładanie z treningiem lub walidacją;
+  to kontrola działania, nie niezależny benchmark.
+  [Raport](docs/EHRI_CONTROL_RESULT_20260921.md) i
+  [notebook](training/kaggle_ehri_control.ipynb).
+- **TrOCR, 15 regionów deweloperskich:** Microsoft base-printed uzyskał
+  CER **69,41%**, a PiotrSty mixed-v3 **23,42%**. Duża część różnicy wynika
+  z wielkości liter: dodatkowy pomiar po zamianie na małe litery daje
+  odpowiednio **25,95%** i **20,25%**. Podstawowych wyników nie zastępujemy
+  tym pomiarem diagnostycznym.
+  [Raport](docs/PRINTED_DEV_RESULT_20260921.md),
+  [instrukcja](docs/PRINTED_DEV_CONTROL.md) i
+  [notebook Kaggle](training/kaggle_printed_dev_control.ipynb).
+
+Próbka druku obejmuje głównie nagłówki z trzech stron; referencje zawierają
+problematyczne znaki Unicode. Wyników regionów nie porównujemy bezpośrednio
+z benchmarkiem całych stron. Następny krok: większy zestaw deweloperski
+zwykłych wierszy tekstu, ze sprawdzoną geometrią i transkrypcjami oraz podziałem
+na dokumenty. Zamrożony test pozostaje poza doborem modeli i treningiem.
+
+[Przygotowanie przeglądu zwykłego tekstu](docs/BODY_DEV_REVIEW.md): lokalna
+próbka 19 regionów z 10 stron zawiera 96 wierszy referencyjnych. Powstały 63
+niezweryfikowane propozycje wycinków; 8 regionów wymaga ręcznego podziału.
+To materiał do przeglądu adnotacji, jeszcze nie nowy zbiór do ewaluacji.
+
+### Lokalne próby gazet
+
+- `training/sample_us_pd_newspapers.py`: mała próbka tekstowego datasetu,
+  zachowanie surowego OCR, diagnostyka Unicode i pochodzenie danych.
+- `training/probe_newspaper_correction.py`: ograniczona próba dwóch stron
+  przez OpenRouter, domyślnie dry-run; wykonanie wymaga `--execute` i klucza.
+  Używa płatnego modelu `openai/gpt-4o-mini`, nie wariantu `:free`.
+- `training/segment_newspaper_columns.py`: podział według ręcznie określonych
+  granic kolumn, wycinki bez zmiany pikseli i diagnostyka separatorów OpenCV.
+  Nie jest automatyczną segmentacją artykułów.
+
+Lokalne skany, wycinki i odpowiedzi API pozostają poza repozytorium (`data/`).
+
+### Zakres docelowy
+
+Planowane podzadania: **A** transkrypcja do Markdown, **B** tabele do HTML
+z oceną TEDS, **C** pola dokumentu do JSON z oceną field-level F1.
+Podzadania B/C, pełny zbiór współczesnych dokumentów i pisma ręcznego, ukryty
+Test B oraz publiczny leaderboard wymagają dalszej implementacji i anotacji.
+Docelowe tracki to constrained, open i zero-shot/API; nie są jeszcze wdrożone.
+
+## Biblioteka OCR
 
 > Aktualizacja po audycie (2026-09-12): zobacz [plan CPU i zdalnych testów](docs/CPU_REMOTE_PLAN.md).
 > CLI respektuje ENV, a jawne flagi mają pierwszeństwo. Tablice wejściowe muszą być RGB uint8.

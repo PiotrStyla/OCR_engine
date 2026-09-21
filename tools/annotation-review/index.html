@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PolOCRBench | Audyt adnotacji</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div><strong>PolOCRBench</strong><span>Audyt adnotacji</span></div>
+<div class="actions"><button id="import">Importuj historię</button><button id="export">Eksportuj historię</button>
+<input id="import-file" type="file" accept="application/json,.json" hidden></div></header>
+<div id="message" role="status" aria-live="polite"></div>
+<div class="workspace">
+<aside aria-label="Kolejka stron"><div class="queue-head"><h1>Strony</h1><span id="progress"></span></div>
+<label for="search">Dokument</label><input id="search" type="search" placeholder="Szukaj identyfikatora">
+<label for="filter">Status</label><select id="filter"><option value="all">Wszystkie strony</option><option value="flagged">Podejrzane znaki</option><option value="pending">Bez decyzji</option><option value="reviewed">Zapisane decyzje</option></select>
+<div id="queue"></div><footer><span>Źródło</span><code id="source-hash"></code></footer></aside>
+<main><div class="page-bar"><div><h2 id="page-id"></h2><span id="page-state"></span></div>
+<div class="actions"><button id="previous" title="Poprzednia strona" aria-label="Poprzednia strona">←</button><button id="next" title="Następna strona" aria-label="Następna strona">→</button></div></div>
+<div class="review-grid"><section class="scan" aria-label="Skan źródłowy"><div class="section-bar"><h3>Skan źródłowy</h3><label>Powiększenie <select id="zoom"><option value="100">Dopasuj</option><option value="150">150%</option><option value="200">200%</option><option value="300">300%</option></select></label></div>
+<div class="image-scroll"><img id="scan" alt="Skan strony do weryfikacji"></div></section>
+<section class="annotation" aria-label="Transkrypcja"><div class="section-bar"><h3>Transkrypcja</h3><button id="restore">Przywróć źródło</button></div>
+<details id="original"><summary>Tekst źródłowy</summary><pre id="original-text"></pre></details>
+<label class="sr-only" for="text">Proponowana transkrypcja</label><textarea id="text" spellcheck="false"></textarea>
+<div class="issue-heading"><h3>Podejrzane znaki <span id="issue-count"></span></h3><span id="dirty"></span></div>
+<div id="issues" aria-label="Podejrzane znaki"></div>
+<form id="decision-form"><div class="decision-fields"><label>Recenzent<input id="reviewer" required maxlength="100" autocomplete="name"></label>
+<label>Decyzja<select id="decision"><option value="needs-review">Do wyjaśnienia</option><option value="proposed">Propozycja korekty</option><option value="verified">Zweryfikowano wzrokowo</option></select></label></div>
+<label>Uwagi<textarea id="note" rows="2" maxlength="2000"></textarea></label>
+<button id="save" class="primary" type="submit">Zapisz decyzję</button></form>
+<details id="history"><summary>Historia strony <span id="history-count"></span></summary><ol id="history-list"></ol></details>
+</section></div></main></div>
+<script id="source-data" type="application/json"><!-- SOURCE_DATA --></script><script src="app.js"></script>
+</body></html>
