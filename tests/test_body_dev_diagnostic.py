@@ -36,6 +36,22 @@ def test_lowercase_is_separate():
     assert result['lowercase_cer_diagnostic'] == 0
 
 
+def test_historical_acute_is_not_stripped():
+    reference = 'W \u015bwietne b\u0142\u00e1waty.'
+    prediction = 'W \u015bwietne b\u0142awaty.'
+    result = metrics([row(text=reference)], [{'id': 'a', 'text': prediction, 'status': 'ok'}])['all_draft_lines']
+    assert result['cer'] == pytest.approx(1 / 18)
+    assert result['lowercase_cer_diagnostic'] == pytest.approx(1 / 18)
+    composed = reference.replace('\u00e1', 'a\u0301')
+    assert metrics([row(text=reference)], [{'id': 'a', 'text': composed, 'status': 'ok'}])['all_draft_lines']['cer'] == 0
+
+
+def test_long_s_is_not_modernized():
+    result = metrics([row(text='\u017f')], [{'id': 'a', 'text': 's', 'status': 'ok'}])['all_draft_lines']
+    assert result['cer'] == 1
+    assert result['lowercase_cer_diagnostic'] == 1
+
+
 def test_empty_subset_and_alignment():
     assert metrics([row(decision='needs-review')], [{'id': 'a', 'text': '', 'status': 'error'}])['without_needs_review']['cer'] is None
     with pytest.raises(ValueError):
