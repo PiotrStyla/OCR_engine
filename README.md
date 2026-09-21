@@ -103,6 +103,11 @@ z benchmarkiem całych stron. Następny krok: większy zestaw deweloperski
 zwykłych wierszy tekstu, ze sprawdzoną geometrią i transkrypcjami oraz podziałem
 na dokumenty. Zamrożony test pozostaje poza doborem modeli i treningiem.
 
+[Przygotowanie przeglądu zwykłego tekstu](docs/BODY_DEV_REVIEW.md): lokalna
+próbka 19 regionów z 10 stron zawiera 96 wierszy referencyjnych. Powstały 63
+niezweryfikowane propozycje wycinków; 8 regionów wymaga ręcznego podziału.
+To materiał do przeglądu adnotacji, jeszcze nie nowy zbiór do ewaluacji.
+
 ### Lokalne próby gazet
 
 - `training/sample_us_pd_newspapers.py`: mała próbka tekstowego datasetu,
