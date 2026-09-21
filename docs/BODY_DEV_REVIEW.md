@@ -97,6 +97,13 @@ original history and all geometry concerns remain available for review.
 
 ## Diagnostic run without repeat review
 
+**Update:** the user explicitly authorized publishing the complete input ZIP.
+The public `training/kaggle_body_dev_diagnostic.ipynb` now automatically downloads
+the archive from a pinned GitHub commit and verifies SHA-256. Import only this
+small notebook into Kaggle, enable Internet and GPU, then Run All. No manual
+dataset upload is needed. The private embedded-notebook method below remains an
+alternative, but its file is too large for Kaggle's 1 MB notebook-import limit.
+
 The user explicitly chose to skip another review. Draft status is retained;
 this does not create approved benchmark labels. Build a PRIVATE Kaggle notebook:
 
