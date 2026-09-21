@@ -78,8 +78,30 @@ Diagnostyka trzech stron tytułowych potwierdza błędy segmentacji i rozpoznawa
 175 rzeczywistych wycinków zgadza się z wcześniejszym eksportem; sprawdzone
 podglądy po normalizacji zachowują czytelny tekst. Alfabet modelu nie obejmuje
 części znaków historycznego druku. Nie wykluczono problemów checkpointu ani
-całej ścieżki inferencji. Następny krok to kontrola na dokumentach EHRI, nie
-kolejny trening na podstawie wyników zamrożonego testu.
+całej ścieżki inferencji. Poniższa kontrola EHRI osłabia hipotezę globalnie
+uszkodzonego checkpointu, ale nie dowodzi poprawności wszystkich konfiguracji.
+
+### Kontrole EHRI i historycznego druku
+
+- **EHRI, jedna strona:** CER **2,81%** z geometrią ALTO i **7,60%**
+  z przewidywaną segmentacją. Możliwe nakładanie z treningiem lub walidacją;
+  to kontrola działania, nie niezależny benchmark.
+  [Raport](docs/EHRI_CONTROL_RESULT_20260921.md) i
+  [notebook](training/kaggle_ehri_control.ipynb).
+- **TrOCR, 15 regionów deweloperskich:** Microsoft base-printed uzyskał
+  CER **69,41%**, a PiotrSty mixed-v3 **23,42%**. Duża część różnicy wynika
+  z wielkości liter: dodatkowy pomiar po zamianie na małe litery daje
+  odpowiednio **25,95%** i **20,25%**. Podstawowych wyników nie zastępujemy
+  tym pomiarem diagnostycznym.
+  [Raport](docs/PRINTED_DEV_RESULT_20260921.md),
+  [instrukcja](docs/PRINTED_DEV_CONTROL.md) i
+  [notebook Kaggle](training/kaggle_printed_dev_control.ipynb).
+
+Próbka druku obejmuje głównie nagłówki z trzech stron; referencje zawierają
+problematyczne znaki Unicode. Wyników regionów nie porównujemy bezpośrednio
+z benchmarkiem całych stron. Następny krok: większy zestaw deweloperski
+zwykłych wierszy tekstu, ze sprawdzoną geometrią i transkrypcjami oraz podziałem
+na dokumenty. Zamrożony test pozostaje poza doborem modeli i treningiem.
 
 ### Lokalne próby gazet
 
