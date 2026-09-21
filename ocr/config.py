@@ -83,6 +83,19 @@ class OcrConfig:
     confidence_threshold: float = 0.0
     correct_low_confidence_only: bool = False  # korekta tylko linii o niskim confidence
 
+    # Jev (TypeSafe AI) — model decyzyjny do scoringu, routingu i walidacji
+    jev_api_key: str | None = None  # lub z env TYPESAFE_API_KEY
+    jev_model: str = "jev-latest"
+    jev_timeout: float = 10.0  # sekundy
+    # Jev: routing backendu (wybiera trocr/kraken/paddlevl na podstawie statystyk)
+    jev_route_backend: bool = False
+    # Jev: scoring jakości linii OCR (flaguje linie do korekty)
+    jev_score_lines: bool = False
+    # Jev: walidacja korekty Fabryka (sprawdza czy poprawiony tekst jest lepszy)
+    jev_validate_correction: bool = False
+    # Próg jakości Jev (0-2): linie ze score < progu są flagowane do korekty
+    jev_quality_threshold: float = 1.0
+
     def resolved_device(self) -> str:
         return _resolve_device(self.device)
 
@@ -123,4 +136,11 @@ class OcrConfig:
             fabryka_model=env("FABRYKA_MODEL", "bielik-11b-v3"),
             confidence_threshold=env_float("OCR_CONFIDENCE_THRESHOLD", 0.0),
             correct_low_confidence_only=env_bool("OCR_CORRECT_LOW_ONLY", False),
+            jev_api_key=os.environ.get("TYPESAFE_API_KEY"),
+            jev_model=env("TYPESAFE_MODEL", "jev-latest"),
+            jev_timeout=env_float("TYPESAFE_TIMEOUT", 10.0),
+            jev_route_backend=env_bool("OCR_JEV_ROUTE_BACKEND", False),
+            jev_score_lines=env_bool("OCR_JEV_SCORE_LINES", False),
+            jev_validate_correction=env_bool("OCR_JEV_VALIDATE", False),
+            jev_quality_threshold=env_float("OCR_JEV_QUALITY_THRESHOLD", 1.0),
         )

@@ -41,6 +41,15 @@ def _build_parser() -> argparse.ArgumentParser:
     rec.add_argument("--device", choices=["auto", "cpu", "cuda"], default=None)
     rec.add_argument("--backend", choices=["trocr", "paddlevl", "kraken", "auto"], default=None,
                      help="Backend rozpoznawania: trocr, paddlevl (PaddleOCR-VL VLM), kraken (maszynopis/historyczne), lub auto (heurystyka)")
+    # Jev (TypeSafe AI)
+    rec.add_argument("--jev-route", action=argparse.BooleanOptionalAction, default=None,
+                     help="Jev routing backendu (wymaga TYPESAFE_API_KEY)")
+    rec.add_argument("--jev-score", action=argparse.BooleanOptionalAction, default=None,
+                     help="Jev scoring jakości linii OCR")
+    rec.add_argument("--jev-validate", action=argparse.BooleanOptionalAction, default=None,
+                     help="Jev walidacja korekty Fabryka")
+    rec.add_argument("--jev-quality-threshold", type=float, default=None,
+                     help="Próg jakości Jev (0-2) do flagowania linii")
 
     # check-fabryka
     chk = sub.add_parser("check-fabryka", help="Sprawdź połączenie z Fabryka API")
@@ -58,7 +67,11 @@ def _cmd_recognize(args) -> int:
                        ("correct_low_only", "correct_low_confidence_only"),
                        ("confidence_threshold", "confidence_threshold"),
                        ("fabryka_model", "fabryka_model"), ("device", "device"),
-                       ("backend", "recognizer_backend")):
+                       ("backend", "recognizer_backend"),
+                       ("jev_route", "jev_route_backend"),
+                       ("jev_score", "jev_score_lines"),
+                       ("jev_validate", "jev_validate_correction"),
+                       ("jev_quality_threshold", "jev_quality_threshold")):
         value = getattr(args, arg)
         if value is not None:
             setattr(config, field, value)

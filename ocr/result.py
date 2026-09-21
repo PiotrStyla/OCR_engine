@@ -54,6 +54,7 @@ class TextLine:
     raw_text: str | None = None
     raw_confidence: float | None = None
     source_polygon: tuple[tuple[float, float], ...] | None = None
+    jev_score: float | None = None  # ocena jakości Jev (0-2), None = nieocenione
 
     def __post_init__(self) -> None:
         if math.isnan(self.confidence):
@@ -110,6 +111,8 @@ class OcrResult:
                        if confidence_threshold > 0
                        and not math.isnan(line.confidence)
                        and line.confidence < confidence_threshold else {}),
+                    **({"jev_score": line.jev_score}
+                       if line.jev_score is not None else {}),
                 }
                 for line in self.lines
             ],

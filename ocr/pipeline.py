@@ -14,6 +14,7 @@ import numpy as np
 
 from .config import OcrConfig
 from .detector import TextDetector
+from .jev import JevClient
 from .lang import detect_language
 from .postprocess import TextCorrector
 from .preprocess import deskew, load_image
@@ -33,6 +34,11 @@ class OcrEngine:
         self.detector = TextDetector(self.config)
         self.recognizer = Recognizer(self.config)
         self.corrector = TextCorrector(self.config)
+        self.jev = JevClient(
+            api_key=self.config.jev_api_key or "",
+            model=self.config.jev_model,
+            timeout=self.config.jev_timeout,
+        )
 
     def recognize(self, image: ImageLike) -> OcrResult:
         """Rozpoznaje tekst z obrazu (ścieżka lub array RGB)."""
@@ -49,12 +55,25 @@ class OcrEngine:
         return self._recognize_array(arr)
 
     def _recognize_auto(self, image: ImageLike) -> OcrResult:
-        """Auto-routing: sprawdza liczbę linii wykrytych przez OpenCV.
-        Jeśli OpenCV wykrywa mało linii na dużej stronie → Kraken (maszynopis).
-        W przeciwnym razie → TrOCR (czysty druk)."""
+        """Auto-routing: Jev (jeśli włączony) lub heurystyka OpenCV."""
         arr = load_image(image)
         bboxes = self.detector.detect(arr)
         h = arr.shape[0]
+
+        # Jev routing (opcjonalny, wymaga TYPESAFE_API_KEY)
+        if self.config.jev_route_backend and self.jev.enabled:
+            backend = self._jev_route_backend(arr, bboxes)
+            if backend == "kraken":
+                logger.info("Jev routing → Kraken")
+                return self._recognize_kraken(image)
+            elif backend == "paddlevl":
+                logger.info("Jev routing → PaddleOCR-VL (niezaimplementowany, używam TrOCR)")
+                # PaddleVL nie jest jeszcze w pełni zintegrowany — fallback TrOCR
+                return self._recognize_array(arr, bboxes)
+            else:
+                logger.info("Jev routing → TrOCR")
+                return self._recognize_array(arr, bboxes)
+
         # Heurystyka: mało linii na dużej stronie → maszynopis → Kraken
         if (h >= self.config.auto_kraken_min_height
                 and len(bboxes) < self.config.auto_kraken_min_lines):
@@ -75,6 +94,32 @@ class OcrEngine:
             result = self._recognize_array(arr, bboxes)
             return self._source_coordinates(result, transform)
         return self._recognize_array(arr, bboxes)
+
+    def _jev_route_backend(self, arr: np.ndarray, bboxes: list[BBox]) -> str:
+        """Używa Jev do wyboru backendu OCR na podstawie statystyk + preview.
+
+        Strategia: OCR pierwszych 3 linii przez TrOCR (szybki preview), potem
+        Jev ocenia jakość + statystyki dokumentu → wybiera backend.
+        """
+        # Statystyki dokumentu jako tekst dla Jev
+        w, h = arr.shape[1], arr.shape[0]
+        stats_parts = [
+            f"Document: {w}x{h}px, {len(bboxes)} text regions",
+            f"avg region height: {np.mean([b.height for b in bboxes]):.0f}px" if bboxes else "no regions",
+        ]
+        # Preview OCR: pierwsze 3 linie przez TrOCR (tanio)
+        if bboxes:
+            preview = self.recognizer.recognize_lines(arr, bboxes[:3])
+            sample = " | ".join(t for t, _ in preview if t)[:300]
+            stats_parts.append(f"OCR preview: {sample}")
+        stats_text = ". ".join(stats_parts)
+
+        backend = self.jev.route_backend(stats_text)
+        if backend is None:
+            logger.warning("Jev routing failed — fallback to TrOCR")
+            return "trocr"
+        logger.info("Jev backend routing: %s (stats: %s)", backend, stats_text[:100])
+        return backend
 
     def _recognize_kraken(self, image: ImageLike) -> OcrResult:
         """End-to-end OCR przez Kraken (segmentacja baseline + .mlmodel)."""
@@ -159,9 +204,28 @@ class OcrEngine:
                     )
 
         result = OcrResult(lines=lines, image_size=(arr.shape[1], arr.shape[0]))
+        # Jev: scoring jakości linii OCR (opcjonalny)
+        if self.config.jev_score_lines and self.jev.enabled and result.lines:
+            result = self._jev_score_lines(result)
         if self.config.correct_text:
             result = self._correct_result(result)
         return result
+
+    def _jev_score_lines(self, result: OcrResult) -> OcrResult:
+        """Ocenia jakość każdej linii OCR przez Jev (Score 0-2).
+        Linie ze score < jev_quality_threshold dostają jev_score i są
+        flagowane do korekty. Jedno zapytanie Jev na całą stronę (oszczędność)."""
+        state = "\n".join(l.text for l in result.lines)
+        score = self.jev.score_quality(state)
+        if score is None:
+            return result
+        val, conf = score
+        logger.info("Jev page quality: %.2f (confidence: %.2f)", val, conf)
+        new_lines = []
+        for line in result.lines:
+            # Przypisz page-level score do każdej linii (Jev nie robi per-line)
+            new_lines.append(replace(line, jev_score=val))
+        return replace(result, lines=new_lines)
 
     def _correct_result(self, result: OcrResult) -> OcrResult:
         """Stosuje korektę tekstu przez Fabryka API (jeśli włączona i dostępna).
@@ -189,6 +253,17 @@ class OcrEngine:
         corrected = self.corrector.correct(joined)
         if not corrected or corrected == joined:
             return result
+
+        # Jev: walidacja korekty — czy poprawiony tekst jest lepszy?
+        if self.config.jev_validate_correction and self.jev.enabled:
+            better = self.jev.validate_correction(joined, corrected)
+            if better is False:
+                logger.info("Jev walidacja: poprawiony tekst nie jest lepszy — zachowuję oryginał")
+                return result
+            elif better is True:
+                logger.info("Jev walidacja: poprawiony tekst jest lepszy — zastosowuję korektę")
+            # better is None → Jev niedostępny, zachowaj oryginalną logikę (zastosuj korektę)
+
         corrected_lines = corrected.split("\n")
 
         if len(corrected_lines) == len(idx):
@@ -223,6 +298,7 @@ class OcrEngine:
         self.detector.close()
         self.recognizer.close()
         self.corrector.close()
+        self.jev.close()
         if hasattr(self, '_kraken_backend'):
             self._kraken_backend.close()
 
