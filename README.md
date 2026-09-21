@@ -6,7 +6,7 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 19 września 2026
+## Aktualny stan: 21 września 2026
 
 - **Podzadanie A, transkrypcja:** zamrożony historyczny podzbiór IMPACT,
   36 stron testowych z 3 kolekcji oraz pula 2531 regionów treningowych.
@@ -52,10 +52,47 @@ hashy nie wyklucza podobnych skanów ani obecności dokumentów w pretreningu mo
   Wynik jest kandydatem do wydania, bez automatycznej publikacji.
 - [Runner Krakena na GPU i walidator zgłoszeń A](docs/KRAKEN_REPRODUCIBLE_BASELINE.md):
   jawne hashe obu modeli, predykcje każdej strony i metadane środowiska.
-  Lokalny preflight nie uruchamia modeli; rzeczywisty test CUDA pozostaje do wykonania.
+  Test CUDA na Kaggle Tesla T4 zakończył się: 36/36 stron, bez błędów wykonania.
 - [Notebook Kaggle: odtwarzalny baseline Krakena](training/kaggle_polocrbench_kraken_reproducible.ipynb):
   włącz Internet i GPU T4, uruchom Run All, pobierz ZIP wyników. Notebook wykonuje
   smoke-test jednej strony przed pełnym pomiarem 36 stron; nie trenuje modelu.
+
+### Wynik Krakena i diagnostyka GPU
+
+Kraken 7.1.1 z recognizerem i segmenterem fine-tunowanymi na EHRI osiągnął
+**CER 79,56% / WER 107,61%**, wobec **34,94% / 81,23%** dla Tesseracta.
+Referencje i hashe zdekodowanych pikseli są zgodne między przebiegami.
+WER może przekraczać 100% przez nadmiarowe słowa. To wynik konkretnej
+konfiguracji, nie ocena wszystkich modeli Krakena.
+
+- [Raport przebiegu Kaggle](docs/KRAKEN_KAGGLE_RESULT_20260921.md).
+- [Diagnoza segmentacji i wycinków](docs/KRAKEN_DIAGNOSTICS_20260921.md).
+- [Kontrola wejścia recognizera i alfabetu](docs/KRAKEN_INPUT_CHECK_20260921.md).
+- [Notebook diagnostyczny v2](training/kaggle_kraken_diagnostics.ipynb)
+  oraz [pełny kod komórki](training/kaggle_kraken_diagnostics.py): uruchom kod
+  jako jedną nową komórkę w tej samej sesji Kaggle po zakończonym baseline.
+  Nie uruchamiaj ponownie Run All. Wymagane są zachowane obrazy i wyniki
+  w `/kaggle/working/polocrbench-kraken-*/`. Wynik: `kraken-input-check-*.zip`.
+
+Diagnostyka trzech stron tytułowych potwierdza błędy segmentacji i rozpoznawania.
+175 rzeczywistych wycinków zgadza się z wcześniejszym eksportem; sprawdzone
+podglądy po normalizacji zachowują czytelny tekst. Alfabet modelu nie obejmuje
+części znaków historycznego druku. Nie wykluczono problemów checkpointu ani
+całej ścieżki inferencji. Następny krok to kontrola na dokumentach EHRI, nie
+kolejny trening na podstawie wyników zamrożonego testu.
+
+### Lokalne próby gazet
+
+- `training/sample_us_pd_newspapers.py`: mała próbka tekstowego datasetu,
+  zachowanie surowego OCR, diagnostyka Unicode i pochodzenie danych.
+- `training/probe_newspaper_correction.py`: ograniczona próba dwóch stron
+  przez OpenRouter, domyślnie dry-run; wykonanie wymaga `--execute` i klucza.
+  Używa płatnego modelu `openai/gpt-4o-mini`, nie wariantu `:free`.
+- `training/segment_newspaper_columns.py`: podział według ręcznie określonych
+  granic kolumn, wycinki bez zmiany pikseli i diagnostyka separatorów OpenCV.
+  Nie jest automatyczną segmentacją artykułów.
+
+Lokalne skany, wycinki i odpowiedzi API pozostają poza repozytorium (`data/`).
 
 ### Zakres docelowy
 
