@@ -120,8 +120,12 @@ def _load_4bit():
         quantization_config=BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
             llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
+    print('4-bit weights loaded', flush=True)
     model = prepare_model_for_kbit_training(model)
-    model.visual.to(torch.float16)  # prepare casts it to fp32; fp16 is enough
+    print('kbit prepared', flush=True)
+    vision = getattr(model, 'visual', None)  # name differs across transformers builds
+    if vision is not None:
+        vision.to(torch.float16)  # prepare casts it to fp32; fp16 is enough
     return model
 
 
