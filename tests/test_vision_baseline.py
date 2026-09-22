@@ -206,6 +206,9 @@ def test_api_key_resolution_matches_endpoint():
     assert resolve_api_key('https://api.openai.com/v1', env) == ('o', 'OPENAI_API_KEY')
     assert resolve_api_key('https://generativelanguage.googleapis.com/v1beta/openai/',
                            {'GEMINI_API_KEY': 'g'}) == ('g', 'GEMINI_API_KEY')
+    assert resolve_api_key('https://fabryka.ai/v1',
+                           {'FABRYKA_API_KEY': 'f', 'OPENAI_API_KEY': 'o'}) == \
+        ('f', 'FABRYKA_API_KEY')
     assert resolve_api_key('https://inny.host/v1', {'OPENAI_API_KEY': 'o'}) == ('o', 'OPENAI_API_KEY')
     with pytest.raises(ValueError, match='No API key'):
         resolve_api_key('https://openrouter.ai/api/v1', {})

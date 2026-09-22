@@ -43,10 +43,11 @@ PROMPT_FILE = (Path(__file__).resolve().parent.parent / 'benchmarks' / 'polocrbe
                / 'prompts' / 'zero_shot_prompt_v1.md')
 PAYLOAD_KEYS = {'A': 'text', 'B': 'html', 'C': 'fields'}
 _FENCE = re.compile(r'^```[a-zA-Z]*\n(.*?)\n?```$', re.S)
-_KEY_ENVS = ('GEMINI_API_KEY', 'OPENAI_API_KEY', 'OPENROUTER_API_KEY')
+_KEY_ENVS = ('GEMINI_API_KEY', 'OPENAI_API_KEY', 'OPENROUTER_API_KEY', 'FABRYKA_API_KEY')
 _URL_KEYS = (('generativelanguage.googleapis.com', 'GEMINI_API_KEY'),
              ('openrouter.ai', 'OPENROUTER_API_KEY'),
-             ('openai.com', 'OPENAI_API_KEY'))
+             ('openai.com', 'OPENAI_API_KEY'),
+             ('fabryka.ai', 'FABRYKA_API_KEY'))
 
 
 def load_templates(path=PROMPT_FILE):

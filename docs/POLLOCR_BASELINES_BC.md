@@ -10,10 +10,35 @@ są zero-shot (bez fine-tuning) z **zamrożonym promptem**
 | Surya OCR 2 (open-weight, 0,65B) | A, B (C poza zakresem modelu) | lokalnie (llama.cpp) lub GPU (vllm) | `training/run_surya_benchmark.py` |
 | Qwen2.5-VL-7B-Instruct 4-bit (open-weight) | A, B, C | Kaggle T4 | `training/kaggle_qwen_vl_bc.py` |
 | API `openai/gpt-4o-mini` przez OpenRouter | A, B, C | dowolny host z kluczem | `training/run_vision_baseline.py` |
+| Dwustopniowy: Tesseract.js + Bielik (`fabryka.ai`) | A, B, C | lokalnie CPU + API | `training/run_two_stage_baseline.py` |
 
 Surya nie ekstrahuje pól kluczowych (KIE) — podzadanie C obsługują Qwen-VL i
 modele API. Wszystkie runnery domyślnie robią dry-run/preflight (tylko
 biblioteka standardowa); sieć uruchamia `--execute`.
+
+## System dwustopniowy (track `open`, polski akcent)
+
+Stopień 1 dowolny — tekst stron z istniejących predykcji podzadania A
+(Tesseract.js `tools/cpu-baseline`, Surya, Qwen-VL, API). Stopień 2: Fabryka AI
+(`bielik-11b-v3`, prompt `polocrbench-two-stage-prompt-v1` — wariant tekstowy;
+zamrożony `zero_shot_prompt_v1` dotyczy wejścia obrazowego w tracku zero-shot).
+Strona bez tekstu z OCR-a (`UpstreamOCR`) kończy się wierszem `error`.
+
+```bash
+node tools/cpu-baseline/run.mjs manifest-A.jsonl runs/tesseract-A
+python -m training.run_two_stage_baseline --subtask B --manifest manifest-B.jsonl \
+    --text-run runs/tesseract-A/predictions.jsonl --output runs/bielik-B --execute
+python -m training.run_two_stage_baseline --subtask C --manifest manifest-C.jsonl \
+    --text-run runs/tesseract-A/predictions.jsonl --output runs/bielik-C --execute
+```
+
+Stan API Fabryka (2026-09-22): endpoint `https://fabryka.ai/v1` jest
+OpenAI-compatible, zwraca `usage` (tokeny), ale **nie przyjmuje obrazów** —
+`messages.content` musi być stringiem (422 na częściach obrazowych dla
+wszystkich 7 modeli: `bielik-11b-v3`, `qwen3.8-27b`, `qwen-bielik-hybrid`,
+`muse-glimmer`, `gollem-v4-250m-pl`, `slayerlab-sub150-32m-completion`, `auto`).
+Do pomiarów zawsze jawna nazwa modelu (`auto` routuje). Klucz: `FABRYKA_API_KEY`
+(dobierany do hosta `base_url` jak pozostałe endpointy).
 
 ## Uruchomienie
 
@@ -65,6 +90,25 @@ Pierwszy wniosek: nawet na czystych stronach syntetycznych najtrudniejsze są
 tabele (dokładne HTML-e z colspan) — spójnie z tezą zadania, że obecne modele
 wykładają się na strukturze. Pomiar jest punktem kontrolnym pipeline'u
 (small-n, strony syntetyczne), nie rankingiem modeli.
+
+## Drugi pomiar (2026-09-22): system dwustopniowy Tesseract.js + Bielik
+
+Te same 4 czyste strony syntetyczne, track `open`:
+
+| Podzadanie | Wynik | Koszt |
+| --- | --- | --- |
+| A — transkrypcja (Tesseract.js `pol+eng`) | CER **8,97%**, WER 8,09%, struktura 0,668 | 1,7–3,1 s/str. (CPU lokalnie) |
+| B — tabele (Bielik z transkrypcji) | TEDS **0,849** (= struct 0,849) | 24,5 s/str., 4 141 tok. |
+| C — KIE (Bielik z transkrypcji) | F1 **0,971** | 8,5 s/str., 3 359 tok. |
+| **Wynik zbiorczy** | **0,910** | 0 błędów |
+
+Porównanie z baseline'em API (te same strony): composite **0,910 vs 0,781** —
+dwustopniowy system wygrywa zwłaszcza na tabelach (TEDS 0,849 vs 0,595):
+ekstrakcja HTML z czystej transkrypcji tekstem jest łatwiejsza niż generowanie
+go z obrazu. Tokeny wejściowe: ~1 tys./str. vs ~149 tys./str. (obraz).
+Wyniki TEDS == TEDS-struct wskazują, że Bielik trafił treść komórek, a błędy
+zostały w strukturze (kolspany). To wciąż small-n na czystym syntetyku —
+kolejne pomiary na degradacjach i realiach zmienią obraz.
 
 ## Znane ograniczenia
 
