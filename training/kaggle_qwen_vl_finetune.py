@@ -179,7 +179,8 @@ def tokenize_example(item):
     labels[:, :inputs['input_ids'].shape[1]] = -100  # loss on the payload only
     return {'input_ids': input_ids[0], 'attention_mask':
             torch.cat([inputs['attention_mask'], answer['attention_mask']], dim=1)[0],
-            'labels': labels[0], 'pixel_values': inputs['pixel_values'][0],
+            'labels': labels[0],
+            'pixel_values': inputs['pixel_values'],  # (patches, dim) - no batch axis!
             'image_grid_thw': inputs['image_grid_thw'][0]}
 
 
