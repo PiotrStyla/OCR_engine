@@ -61,8 +61,7 @@ import torch  # noqa: E402
 from PIL import Image  # noqa: E402
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training  # noqa: E402
 from transformers import (AutoProcessor, BitsAndBytesConfig,  # noqa: E402
-                          Qwen2_5_VLForConditionalGeneration, Trainer,
-                          TrainingArguments)
+                          Qwen2_5_VLForConditionalGeneration)
 
 from training.generate_documents import generate  # noqa: E402
 from training.kie_eval import evaluate as kie_evaluate  # noqa: E402
@@ -121,7 +120,9 @@ def _load_4bit():
         quantization_config=BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
             llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
-    return prepare_model_for_kbit_training(model)
+    model = prepare_model_for_kbit_training(model)
+    model.visual.to(torch.float16)  # prepare casts it to fp32; fp16 is enough
+    return model
 
 
 def load_backbone():
@@ -213,17 +214,42 @@ def collate(batch):
             'image_grid_thw': torch.stack([row['image_grid_thw'] for row in batch])}
 
 
+def train(model, dataset, steps=STEPS, learning_rate=1e-4, accumulation=8):
+    """Plain loop: Trainer/DataParallel replicates the whole model per device."""
+    model.train()
+    model.config.use_cache = False
+    model.gradient_checkpointing_enable()
+    model.enable_input_require_grads()
+    optimizer = torch.optim.AdamW((p for p in model.parameters() if p.requires_grad),
+                                  lr=learning_rate)
+    use_fp16 = not torch.cuda.is_bf16_supported()
+    scaler = torch.amp.GradScaler('cuda', enabled=use_fp16)
+    generator = torch.Generator().manual_seed(SEED)
+    order = torch.randperm(len(dataset), generator=generator).tolist()
+    losses, cursor = [], 0
+    for step in range(1, steps + 1):
+        optimizer.zero_grad()
+        for _ in range(accumulation):
+            if cursor >= len(order):
+                order = torch.randperm(len(dataset), generator=generator).tolist()
+                cursor = 0
+            batch = {key: value.to('cuda')
+                     for key, value in collate([dataset[order[cursor]]]).items()}
+            cursor += 1
+            with torch.amp.autocast('cuda', dtype=torch.float16, enabled=use_fp16):
+                loss = model(**batch).loss / accumulation
+            scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        losses.append(round(float(loss.detach()) * accumulation, 4))
+        if step % 10 == 0:
+            print(f'step {step}/{steps} loss {losses[-1]:.4f} '
+                  f'| gpu {torch.cuda.memory_allocated() / 1e9:.1f} GB', flush=True)
+    return losses
+
+
 started = time.perf_counter()
-Trainer(model=model,
-        args=TrainingArguments(
-            output_dir=str(WORKDIR / 'checkpoints'), max_steps=STEPS,
-            per_device_train_batch_size=1, gradient_accumulation_steps=8,
-            learning_rate=1e-4, lr_scheduler_type='cosine', warmup_steps=20,
-            logging_steps=10, save_strategy='no', report_to=[],
-            gradient_checkpointing=True,
-            bf16=torch.cuda.is_bf16_supported(), fp16=not torch.cuda.is_bf16_supported()),
-        train_dataset=ExampleDataset(train_examples),
-        data_collator=collate).train()
+losses = train(model, ExampleDataset(train_examples))
 training_seconds = time.perf_counter() - started
 model.save_pretrained(WORKDIR / 'adapter')
 
@@ -289,6 +315,7 @@ summary = composite(scores)
     'eval_examples': len(eval_examples), 'steps': STEPS,
     'train_degradations': TRAIN_DEGRADATIONS, 'eval_degradations': EVAL_DEGRADATIONS,
     'seed': SEED, 'training_seconds': round(training_seconds, 1),
+    'loss_first': losses[0], 'loss_final': losses[-1], 'loss_min': min(losses),
     'eval_completed': completed, 'eval_errors': errors,
     'mean_seconds_per_example': round(elapsed_total / max(1, completed), 3),
     'device': torch.cuda.get_device_name(0)}, indent=2), encoding='utf-8', newline='\n')
