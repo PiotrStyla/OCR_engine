@@ -68,9 +68,10 @@ torch.cuda.empty_cache()
 try:
     import bitsandbytes  # noqa: F401
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        MODEL, device_map='cuda',
-        quantization_config=BitsAndBytesConfig(load_in_4bit=True,
-                                               bnb_4bit_compute_dtype=torch.bfloat16))
+        MODEL, device_map='cuda', torch_dtype=torch.float16,
+        quantization_config=BitsAndBytesConfig(
+            load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
+            llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
 except Exception as error:  # noqa: BLE001 - quantization is optional
     print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
     MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'

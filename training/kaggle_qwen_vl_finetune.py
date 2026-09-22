@@ -116,9 +116,10 @@ def load_backbone():
         import bitsandbytes
         print('bitsandbytes', bitsandbytes.__version__, bitsandbytes.__file__)
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            MODEL, device_map='cuda',
-            quantization_config=BitsAndBytesConfig(load_in_4bit=True,
-                                                   bnb_4bit_compute_dtype=torch.bfloat16))
+            MODEL, device_map='cuda', torch_dtype=torch.float16,
+            quantization_config=BitsAndBytesConfig(
+                load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
+                llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
         return MODEL, '4bit-lora', prepare_model_for_kbit_training(model)
     except Exception as error:  # noqa: BLE001 - quantization is optional
         print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
@@ -206,6 +207,7 @@ Trainer(model=model,
             per_device_train_batch_size=1, gradient_accumulation_steps=8,
             learning_rate=1e-4, lr_scheduler_type='cosine', warmup_steps=20,
             logging_steps=10, save_strategy='no', report_to=[],
+            gradient_checkpointing=True,
             bf16=torch.cuda.is_bf16_supported(), fp16=not torch.cuda.is_bf16_supported()),
         train_dataset=ExampleDataset(train_examples),
         data_collator=collate).train()
