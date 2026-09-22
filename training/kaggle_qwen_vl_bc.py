@@ -31,9 +31,11 @@ WORKDIR = Path('/kaggle/working/polocrbench-qwen-bc')
 
 # --- 1. environment ----------------------------------------------------------
 
-subprocess.run(['git', 'clone', '--depth', '1', REPO, str(WORKDIR / 'repo')], check=True)
+if not (WORKDIR / 'repo' / 'training').exists():
+    subprocess.run(['git', 'clone', '--depth', '1', REPO, str(WORKDIR / 'repo')], check=True)
 sys.path.insert(0, str(WORKDIR / 'repo'))
-subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'jiwer'], check=True)
+subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-U',
+                'jiwer', 'bitsandbytes>=0.46.1'], check=True)
 
 import torch  # noqa: E402
 from PIL import Image  # noqa: E402
@@ -47,7 +49,10 @@ from training.run_vision_baseline import load_templates  # noqa: E402
 # --- 2. deterministic synthetic pages ---------------------------------------
 
 data = WORKDIR / 'data'
-report = generate(data, count=COUNT, seed=SEED, split='baseline-smoke')
+if not (data / 'manifest-A.jsonl').exists():
+    report = generate(data, count=COUNT, seed=SEED, split='baseline-smoke')
+else:
+    report = json.loads((data / 'generation.json').read_text(encoding='utf-8'))
 print(json.dumps({key: report[key] for key in ('seed', 'count', 'types', 'degradations')}))
 
 # --- 3. model and frozen prompt ---------------------------------------------

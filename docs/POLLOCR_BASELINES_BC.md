@@ -11,6 +11,7 @@ są zero-shot (bez fine-tuning) z **zamrożonym promptem**
 | Qwen2.5-VL-7B-Instruct 4-bit (open-weight) | A, B, C | Kaggle T4 | `training/kaggle_qwen_vl_bc.py` |
 | API `openai/gpt-4o-mini` przez OpenRouter | A, B, C | dowolny host z kluczem | `training/run_vision_baseline.py` |
 | Dwustopniowy: Tesseract.js + Bielik (`fabryka.ai`) | A, B, C | lokalnie CPU + API | `training/run_two_stage_baseline.py` |
+| LoRA Qwen2.5-VL na danych organizatora (track `constrained`) | A, B, C | Kaggle T4 | `training/kaggle_qwen_vl_finetune.py` |
 
 Surya nie ekstrahuje pól kluczowych (KIE) — podzadanie C obsługują Qwen-VL i
 modele API. Wszystkie runnery domyślnie robią dry-run/preflight (tylko
@@ -39,6 +40,19 @@ wszystkich 7 modeli: `bielik-11b-v3`, `qwen3.8-27b`, `qwen-bielik-hybrid`,
 `muse-glimmer`, `gollem-v4-250m-pl`, `slayerlab-sub150-32m-completion`, `auto`).
 Do pomiarów zawsze jawna nazwa modelu (`auto` routuje). Klucz: `FABRYKA_API_KEY`
 (dobierany do hosta `base_url` jak pozostałe endpointy).
+
+## Baseline tracku `constrained` (fine-tune na danych organizatora)
+
+`training/kaggle_qwen_vl_finetune.py` (jedna komórka na Kaggle T4, Internet on)
+zamyka wymóg „baseline'y w każdym tracku": LoRA Qwen2.5-VL trenowane **wyłącznie
+na syntetycznym treningu z generatora organizatora** (zamrożony prompt zero-shot
+v1 na wejściu, więc system zostaje kompatybilny z promptem toru zero-shot/API).
+Trzy podzadania idą w jednym adapterze (A/B/C). Ewaluacja na wydzielonym plasterku
+generatora z innym seedem i degradacjami zawierającymi `photo` — plaster zastępuje
+test A do czasu anotacji realiów i mierzy generalizację poza degradacje z treningu
+(`photo` celowo wyjęte z treningu jako oś holdout Test B). Skrypt zapisuje
+adapter LoRA, predykcje A/B/C, wyniki przez publiczne ewaluatory, `run.json`
+z budżetem kroków i czasami oraz ZIP do pobrania.
 
 ## Uruchomienie
 
