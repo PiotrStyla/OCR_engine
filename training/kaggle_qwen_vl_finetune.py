@@ -20,9 +20,11 @@ Self-contained on a Kaggle T4 notebook (Internet on):
 This is a baseline recipe (small step budget), not a tuned result: adjust
 MODEL/COUNT/STEPS for stronger runs.
 """
+import gc
 import importlib
 import io
 import json
+import os
 import subprocess
 import sys
 import time
@@ -54,6 +56,7 @@ subprocess.run([sys.executable, '-c',
                 'print("versions: bnb", m.version("bitsandbytes"), '
                 '"| peft", m.version("peft"), "| torch", torch.__version__)'])
 
+os.environ.setdefault('PYTORCH_ALLOC_CONF', 'expandable_segments:True')
 import torch  # noqa: E402
 from PIL import Image  # noqa: E402
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training  # noqa: E402
@@ -109,18 +112,23 @@ print('train examples:', len(train_examples), '| eval examples:', len(eval_examp
 # --- 3. model and LoRA (4-bit when bitsandbytes works, else fp16 3B) ---------
 
 
+def _load_4bit():
+    """Runs in its own frame so a failure frees its half-loaded model at once."""
+    import bitsandbytes
+    print('bitsandbytes', bitsandbytes.__version__, bitsandbytes.__file__)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        MODEL, device_map='cuda', torch_dtype=torch.float16,
+        quantization_config=BitsAndBytesConfig(
+            load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
+            llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
+    return prepare_model_for_kbit_training(model)
+
+
 def load_backbone():
     """bitsandbytes can be present-but-broken on Kaggle images: probe for real."""
     importlib.invalidate_caches()
     try:
-        import bitsandbytes
-        print('bitsandbytes', bitsandbytes.__version__, bitsandbytes.__file__)
-        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            MODEL, device_map='cuda', torch_dtype=torch.float16,
-            quantization_config=BitsAndBytesConfig(
-                load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
-                llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
-        return MODEL, '4bit-lora', prepare_model_for_kbit_training(model)
+        return MODEL, '4bit-lora', _load_4bit()
     except Exception as error:  # noqa: BLE001 - quantization is optional
         print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
         try:
@@ -130,14 +138,17 @@ def load_backbone():
                   inspect.getsource(import_utils.is_bitsandbytes_available)[:600])
         except Exception:  # noqa: BLE001 - diagnostics only
             pass
-        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            FALLBACK_MODEL, torch_dtype=torch.float16, device_map='cuda')
-        return FALLBACK_MODEL, 'fp16-lora', model
+    gc.collect()
+    torch.cuda.empty_cache()
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        FALLBACK_MODEL, torch_dtype=torch.float16, device_map='cuda')
+    return FALLBACK_MODEL, 'fp16-lora', model
 
 
 if 'model' in globals():
     del model  # stale model from an earlier attempt keeps the GPU full
-import gc
+import sys
+sys.last_traceback = sys.last_exc = None  # Jupyter keeps dead frames (and their VRAM)
 gc.collect()
 torch.cuda.empty_cache()
 

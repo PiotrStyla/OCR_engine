@@ -62,19 +62,30 @@ print(json.dumps({key: report[key] for key in ('seed', 'count', 'types', 'degrad
 if 'model' in globals():
     del model  # stale model from an earlier attempt keeps the GPU full
 import gc
+import sys
+sys.last_traceback = sys.last_exc = None  # Jupyter keeps dead frames (and their VRAM)
 gc.collect()
 torch.cuda.empty_cache()
 
-try:
+
+def _load_4bit():
+    """Own frame: a failure frees its half-loaded model at once."""
     import bitsandbytes  # noqa: F401
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
         MODEL, device_map='cuda', torch_dtype=torch.float16,
         quantization_config=BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
             llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
+    return model
+
+
+try:
+    model = _load_4bit()
 except Exception as error:  # noqa: BLE001 - quantization is optional
     print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
     MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'
+    gc.collect()
+    torch.cuda.empty_cache()
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
         MODEL, torch_dtype=torch.float16, device_map='cuda')
 processor = AutoProcessor.from_pretrained(MODEL, min_pixels=256 * 28 * 28,
