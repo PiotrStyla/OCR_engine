@@ -62,10 +62,25 @@ def load_cases(manifest, limit, render_dir=None):
     return cases
 
 
-def run_cases(cases, parser, output):
-    """Attempt every page; a failure is recorded as an empty hypothesis and the run continues."""
+def _parse_with_backoff(parser, send, retries, base_sleep):
+    """Retry only transient rate/availability errors (429/503); free-tier limits RPM."""
+    transient = ('RateLimitError', 'InternalServerError', 'APITimeoutError', 'APIConnectionError')
+    for attempt in range(retries + 1):
+        try:
+            return parser.parse(send)
+        except Exception as error:
+            if type(error).__name__ not in transient or attempt == retries:
+                raise
+            time.sleep(base_sleep * (2 ** attempt))
+
+
+def run_cases(cases, parser, output, sleep=4.0, retries=5):
+    """Attempt every page; a failure is recorded as an empty hypothesis and the run continues.
+
+    A base delay plus exponential backoff keeps the run under free-tier RPM limits.
+    """
     predictions = output / 'predictions.jsonl'
-    for case in cases:
+    for i, case in enumerate(cases):
         started = time.perf_counter()
         row = {'id': case['id'], 'source_sha256': case['sha256']}
         try:
@@ -73,7 +88,7 @@ def run_cases(cases, parser, output):
             if hashlib.sha256(case['path'].read_bytes()).hexdigest() != case['sha256']:
                 raise ValueError('Image changed after preflight')
             send = case.get('send', case['path'])
-            result = parser.parse(send).to_dict()
+            result = _parse_with_backoff(parser, send, retries, sleep).to_dict()
             if hashlib.sha256(case['path'].read_bytes()).hexdigest() != case['sha256']:
                 raise ValueError('Image changed during request')
             row.update(result)
@@ -88,6 +103,8 @@ def run_cases(cases, parser, output):
         with predictions.open('a', encoding='utf-8') as stream:
             stream.write(json.dumps(row, ensure_ascii=False) + '\n')
         print(f'{case["id"]}: {row["status"]}')
+        if sleep and i < len(cases) - 1:
+            time.sleep(sleep)  # base spacing between requests
     return predictions
 
 
@@ -99,6 +116,10 @@ def main(argv=None):
     ap.add_argument('--output', required=True, type=Path)
     ap.add_argument('--limit', type=int, default=0, help='0 = all pages (default)')
     ap.add_argument('--max-tokens', type=int, default=8192)
+    ap.add_argument('--sleep', type=float, default=4.0,
+                    help='Base seconds between requests (free-tier RPM throttle)')
+    ap.add_argument('--retries', type=int, default=5,
+                    help='Retries with exponential backoff on 429/503')
     ap.add_argument('--execute', action='store_true')
     args = ap.parse_args(argv)
     if args.limit < 0 or not 1 <= args.max_tokens <= 16384 or not args.model.strip():
@@ -113,7 +134,8 @@ def main(argv=None):
             'manifest_sha256': hashlib.sha256(args.manifest.read_bytes()).hexdigest(),
             'time_utc': datetime.now(timezone.utc).isoformat(),
             'references_sent': False, 'billing_verified': False,
-            'stops_on_error': False, 'tesseract_baseline': TESSERACT_BASELINE}
+            'stops_on_error': False, 'base_sleep_seconds': args.sleep,
+            'retries_on_429_503': args.retries, 'tesseract_baseline': TESSERACT_BASELINE}
     if not args.execute:
         print(json.dumps(plan, ensure_ascii=False, indent=2))
         return
@@ -130,7 +152,8 @@ def main(argv=None):
     (args.output / 'run.json').write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding='utf-8')
     with OpenAI(api_key=key, base_url=BASE_URL, max_retries=0, timeout=60,
                 http_client=httpx.Client(follow_redirects=False, timeout=60)) as client:
-        predictions = run_cases(cases, RemotePageParser(client, args.model, args.max_tokens), args.output)
+        predictions = run_cases(cases, RemotePageParser(client, args.model, args.max_tokens),
+                                args.output, sleep=args.sleep, retries=args.retries)
     # Score against the same staged manifest with the shared page scorer.
     from training.benchmark_pages import evaluate
     summary = evaluate(args.manifest, predictions)

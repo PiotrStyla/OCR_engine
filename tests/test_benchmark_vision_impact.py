@@ -61,11 +61,36 @@ def test_run_attempts_all_pages_despite_errors(tmp_path):
         calls.append(path)
         raise RuntimeError('credential-should-never-appear')
 
-    run_cases(cases, SimpleNamespace(parse=parse), tmp_path)
+    run_cases(cases, SimpleNamespace(parse=parse), tmp_path, sleep=0, retries=0)
     saved = [json.loads(l) for l in (tmp_path / 'predictions.jsonl').read_text().splitlines()]
     assert len(calls) == 3
     assert all(r['status'] == 'error' for r in saved)
     assert 'credential-should-never-appear' not in json.dumps(saved)
+
+
+def test_transient_error_is_retried(tmp_path):
+    """429/503 (by class name) retry; a non-transient error is not retried."""
+    from training.benchmark_vision_impact import _parse_with_backoff
+
+    class RateLimitError(Exception):
+        pass
+
+    attempts = {'n': 0}
+
+    def flaky(path):
+        attempts['n'] += 1
+        if attempts['n'] < 3:
+            raise RateLimitError('slow down')
+        return SimpleNamespace(to_dict=lambda: {'text': 'ok'})
+
+    result = _parse_with_backoff(SimpleNamespace(parse=flaky), 'p', retries=5, base_sleep=0)
+    assert result.to_dict()['text'] == 'ok' and attempts['n'] == 3
+
+    def fatal(path):
+        raise ValueError('bad request')
+
+    with pytest.raises(ValueError):
+        _parse_with_backoff(SimpleNamespace(parse=fatal), 'p', retries=5, base_sleep=0)
 
 
 def test_ok_output_recorded(tmp_path):
@@ -76,7 +101,7 @@ def test_ok_output_recorded(tmp_path):
         return SimpleNamespace(to_dict=lambda: {'text': 'hello', 'source_sha256':
                                next(c['sha256'] for c in cases if c['path'] == path)})
 
-    run_cases(cases, SimpleNamespace(parse=parse), tmp_path)
+    run_cases(cases, SimpleNamespace(parse=parse), tmp_path, sleep=0, retries=0)
     rows = [json.loads(l) for l in (tmp_path / 'predictions.jsonl').read_text().splitlines()]
     assert len(rows) == 2 and all(r['status'] == 'ok' for r in rows)
     assert 'SECRET REFERENCE' not in json.dumps(rows)

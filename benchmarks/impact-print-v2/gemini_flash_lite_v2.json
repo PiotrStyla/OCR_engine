@@ -1,0 +1,12 @@
+{
+  "pages": 36,
+  "errors_or_missing": 0,
+  "cer_micro": 0.1450,
+  "wer_micro": 0.4842,
+  "system": "gemini vision (gemini-flash-lite-latest)",
+  "split": "impact-print-v2-test",
+  "date": "2026-09-22",
+  "normalization": "Unicode NFC + whitespace only; case and diacritics preserved",
+  "notes": "Free-tier Google AI Studio; images rendered TIFF->PNG; fixed transcription prompt, references never sent. Baselines: tesseract pol 33.11%/81.63%; kraken rec_v2 e2e 57.30%/103.86%.",
+  "reproduce": "python -m training.benchmark_vision_impact --manifest <staged>/manifest.jsonl --model gemini-flash-lite-latest --output <out> --sleep 3 --retries 6 --execute"
+}
