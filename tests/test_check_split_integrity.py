@@ -89,7 +89,7 @@ def test_cross_split_copies_are_flagged(tmp_path):
     pair = report['pairs'][0]
     assert pair['near_image'] == [{'a': 't1', 'b': 'a1', 'distance': 0}]
     assert pair['near_text'][0]['containment'] > 0.5
-    assert report['violations'] == 2
+    assert pair['violations'] == 1 and pair['warnings'] == 1  # text leak hard, look-alike soft
 
 
 def test_exact_text_and_image_duplicates_are_flagged(tmp_path):
@@ -104,6 +104,20 @@ def test_exact_text_and_image_duplicates_are_flagged(tmp_path):
     assert report['pairs'][0]['exact_image'] == [['t1', 'b1']]
     assert report['pairs'][0]['exact_text'] == [['t1', 'b1']]
     assert report['violations'] == 2
+
+
+def test_record_ids_shared_between_splits_are_violations(tmp_path):
+    first = page(tmp_path, 'id-a.png')
+    second = page(tmp_path, 'id-b.png', invert=True)
+    splits = [
+        load_split('train', write_manifest(tmp_path, 'train.jsonl',
+                                           [row_for(first, 'formularz-3', 'Pierwszy', tmp_path)])),
+        load_split('testB', write_manifest(tmp_path, 'testB.jsonl',
+                                           [row_for(second, 'formularz-3', 'Drugi', tmp_path)])),
+    ]
+    report = check(splits)
+    assert report['pairs'][0]['shared_ids'] == ['formularz-3']
+    assert report['violations'] == 1
 
 
 def test_missing_images_are_counted_but_text_checks_run(tmp_path):

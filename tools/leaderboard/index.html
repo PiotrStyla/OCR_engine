@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PolOCRBench — leaderboard</title>
+<style>
+  body { font-family: Georgia, 'Times New Roman', serif; margin: 2rem auto; max-width: 60rem;
+         color: #1a1a1a; line-height: 1.5; padding: 0 1rem; }
+  h1 { border-bottom: 2px solid #1a1a1a; padding-bottom: .4rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #999; padding: .45rem .6rem; text-align: left; }
+  th { background: #eee; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { font-size: .9rem; color: #555; }
+  code { background: #f2f2f2; padding: 0 .25rem; }
+</style>
+</head>
+<body>
+<h1>PolOCRBench — polskie rozumienie dokumentów</h1>
+<p>Wspólny punkt odniesienia dla trudnych polskich dokumentów: <b>A</b> transkrypcja
+strony do Markdown (CER), <b>B</b> ekstrakcja tabel do HTML (TEDS), <b>C</b> ekstrakcja
+informacji kluczowych do JSON (field-level F1). Wynik zbiorczy to średnia
+(1 − CER, TEDS, F1). Ewaluacja automatyczna i deterministyczna, bez sędziów LLM;
+zgłoszenia w formacie AmuEval (<code>out.tsv</code> w kolejności <code>in.tsv</code>).</p>
+
+<h2>Ranking</h2>
+<p class="note">Stan: pomiary kontrolne pipeline'u (4 czyste strony syntetyczne, wersja 0.1);
+docelowe rankingi na Test A (development) i Test B (ranking główny, ukryty do końca
+konkursu). Osobne tablice dla tracków: <b>constrained</b> (trening tylko na danych
+organizatora, modele open-weight), <b>open</b> (dowolne dane i modele),
+<b>zero-shot / API</b> (bez fine-tuningu, jednolity prompt organizatora).</p>
+
+<table>
+  <thead>
+    <tr><th>Model / system</th><th>Track</th><th>A (1−CER)</th><th>B (TEDS)</th>
+        <th>C (F1)</th><th>Wynik zbiorczy</th><th>Koszt / str.</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Tesseract.js + Bielik-11b-v3 (dwustopniowy)</td><td>open</td>
+        <td class="num">0,910</td><td class="num">0,849</td><td class="num">0,971</td>
+        <td class="num"><b>0,910</b></td><td>~1 tys. tok. + CPU</td></tr>
+    <tr><td>openai/gpt-4o-mini (prompt zero-shot v1)</td><td>zero-shot / API</td>
+        <td class="num">0,895</td><td class="num">0,595</td><td class="num">0,853</td>
+        <td class="num"><b>0,781</b></td><td>~149 tys. tok.</td></tr>
+  </tbody>
+</table>
+
+<h2>Jak zgłosić wynik</h2>
+<ol>
+  <li>Przeczytaj protokół ewaluacji (formaty, normalizacja, miary) w repozytorium projektu.</li>
+  <li>Uruchom publiczny skrypt ewaluacyjny lokalnie na zbiorze treningowym.</li>
+  <li>Wyślij <code>out.tsv</code> (per podzadanie) oraz <code>submission_meta.json</code>
+      z deklaracją tracku, modeli i promptu na adres wskazany przy konkursie.</li>
+</ol>
+
+<p class="note">Zbiór: HuggingFace (SlayerLab/PiotrSty). Skrypty ewaluacyjne: MIT,
+dane: CC BY 4.0. Strona to stub — pełny leaderboard z rankingiem Test A/B
+zostanie podłączony do zgłoszeń AmuEval.</p>
+</body>
+</html>

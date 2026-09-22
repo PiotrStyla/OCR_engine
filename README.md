@@ -153,6 +153,9 @@ i raport kosztów per strona: [docs/POLLOCR_BASELINES_BC.md](docs/POLLOCR_BASELI
 — pierwszy pomiar `gpt-4o-mini` na 4 stronach syntetycznych: composite 0,781.
 Podziały train/test A/Test B, bramka integralności (`training/check_split_integrity.py`)
 i wykryty nakład tekstu train↔testA: [docs/POLLOCR_SPLIT_POLICY.md](docs/POLLOCR_SPLIT_POLICY.md).
+Wydanie zbioru (HuggingFace + pakiety AmuEval + stub leaderboardu):
+[docs/POLLOCR_RELEASE.md](docs/POLLOCR_RELEASE.md), budowniczy `training/build_release.py`,
+strona `tools/leaderboard/index.html`.
 
 ### Generator dokumentów syntetycznych (A+B+C)
 

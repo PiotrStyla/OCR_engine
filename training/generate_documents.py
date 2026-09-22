@@ -335,7 +335,7 @@ def generate(output, count, seed, split='train', types=DOC_TYPES,
         doc = build_document(rng, doc_type)
         image = render_page(doc, rng, fonts)
         image, recipe = DEGRADATIONS[degradation](image, rng)
-        sample_id = f'{doc_type}-{index:05d}'
+        sample_id = f'{doc_type}-{seed}-{index:05d}'
         image_path = output / 'images' / f'{sample_id}.png'
         image.save(image_path)
         relative = f'images/{sample_id}.png'

@@ -3,14 +3,16 @@
 Deterministic gate over two or more split manifests (standard library plus PIL
 for perceptual hashes):
 
-- exact duplicates: page image SHA-256 and reference-text SHA-256 across splits;
-- near-duplicates: 64-bit difference hash (dHash) Hamming distance on page
-  images (``--near-image-distance``, default 6) and word 3-gram similarity on
-  references (``--near-text-similarity``, default 0.9) — both Jaccard and
-  containment are considered, so re-scans, formatting-only copies and a train
-  region copied from a test page are all caught (the open question in
-  ``benchmarks/polocrbench/README.md``: shared hashes alone rule out none of
-  these);
+- exact duplicates: page image SHA-256, reference-text SHA-256 and record ids
+  shared between splits (violations);
+- near-duplicates: word 3-gram similarity on references (violations) and 64-bit
+  difference hash (dHash) Hamming distance on page images (warnings — same
+  template pages legitimately share a layout; a duplicated document always
+  shares its reference text) — ``--near-image-distance`` (default 6),
+  ``--near-text-similarity`` (default 0.9) over Jaccard and containment, so
+  re-scans, formatting-only copies and a train region copied from a test page
+  are all caught (the open question in ``benchmarks/polocrbench/README.md``:
+  shared hashes alone rule out none of these);
 - holdout claims: ``--holdout-field`` with ``--holdout-split`` verifies that
   the Test B values of that row/metadata field are disjoint from every other
   split (Test B must contain document types and degradations absent from
@@ -142,14 +144,23 @@ def check(splits, holdout_field=None, holdout_split=None,
                 entry['dhash'] = dhash(entry['image_path'].read_bytes())
     pairs = []
     violations = 0
+    warnings = 0
     for first, second in itertools.combinations(splits, 2):
         found = compare(first['samples'], second['samples'],
                         near_image_distance, near_text_similarity)
-        count = sum(len(hits) for hits in found.values())
-        violations += count
+        shared_ids = sorted({entry['id'] for entry in first['samples']} &
+                            {entry['id'] for entry in second['samples']})
+        # Image look-alikes are warnings: same-template pages legitimately share a
+        # layout. A duplicated document always shares its reference text, so the
+        # text signals and id collisions are hard violations.
+        hard = (len(found['exact_image']) + len(found['exact_text'])
+                + len(found['near_text']) + len(shared_ids))
+        violations += hard
+        warnings += len(found['near_image'])
         pairs.append({'a': first['name'], 'b': second['name'],
                       **{key: value for key, value in found.items()},
-                      'violations': count})
+                      'shared_ids': shared_ids,
+                      'violations': hard, 'warnings': len(found['near_image'])})
     holdout = None
     if holdout_field:
         if holdout_split not in {split['name'] for split in splits}:
@@ -179,7 +190,8 @@ def check(splits, holdout_field=None, holdout_split=None,
                        for split in splits},
             'thresholds': {'near_image_distance': near_image_distance,
                            'near_text_similarity': near_text_similarity},
-            'pairs': pairs, 'holdout': holdout, 'violations': violations}
+            'pairs': pairs, 'holdout': holdout,
+            'violations': violations, 'warnings': warnings}
 
 
 def main():
@@ -210,7 +222,8 @@ def main():
         Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=2),
                                      encoding='utf-8', newline='\n')
     print(json.dumps({'splits': {name: data['records'] for name, data in report['splits'].items()},
-                      'violations': report['violations']}, indent=2))
+                      'violations': report['violations'],
+                      'warnings': report['warnings']}, indent=2))
     sys.exit(1 if report['violations'] else 0)
 
 

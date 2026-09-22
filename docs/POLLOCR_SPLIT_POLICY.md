@@ -31,14 +31,24 @@ python -m training.check_split_integrity \
 
 Sprawdzenia (deterministyczne, exit 1 przy naruszeniach):
 
-- **duplikaty dokładne**: SHA-256 obrazu i SHA-256 tekstu referencyjnego między
-  podziałami;
-- **duplikaty bliskie**: dHash obrazów (odległość Hamminga ≤ 6 domyślnie) oraz
-  shingle słowne 3-gram (Jaccard lub **containment** ≥ 0,9) — containment łapie
-  region treningowy skopiowany ze strony testowej, którego Jaccard jest mały;
+- **duplikaty dokładne**: SHA-256 obrazu, SHA-256 tekstu referencyjnego oraz
+  **wspólne `id` rekordów** między podziałami — wszystkie trzy to naruszenia;
+- **duplikaty bliskie wg tekstu**: shingle słowne 3-gram (Jaccard albo
+  **containment** ≥ 0,9) — containment łapie region treningowy skopiowany ze
+  strony testowej, którego Jaccard jest mały; to naruszenie (zdublowany
+  dokument zawsze dzieli treść referencji);
+- **podobieństwo obrazów** (dHash, odległość Hamminga ≤ 6): **ostrzeżenie do
+  przeglądu, nie naruszenie** — strony tego samego szablonu (dwie faktury, dwa
+  egemplarze tego samego formularza) legalnie mają prawie identyczny layout;
+  dopiero zgodność tekstu/identyfikatorów przesądza o wycieku;
 - **holdout Test B**: wartości pola (`degradation`, `doc_type`, `subset`) w
   teście B muszą być rozłączne z pozostałymi podziałami; wartości czytane
   z wierszy manifestu albo z `generation.json` obok manifestu.
+
+Identyfikatory próbek syntetycznych zawierają seed
+(`faktura-<seed>-<index>`), więc są unikalne między przebiegami generatora —
+kontrola `shared_ids` wyłapuje każdy przypadek, w którym dwa przebiegi jednak
+się zderzą.
 
 Pola bez wartości nie wywalają bramki (raportowane jako `rows_without_value`).
 Obrazy niedostępne lokalnie są pomijane przy dHash i liczone w
