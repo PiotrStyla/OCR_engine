@@ -28,7 +28,15 @@ BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/'
 TESSERACT_BASELINE = {'cer_micro': 0.3311, 'wer_micro': 0.8163}
 
 
-def load_cases(manifest, limit):
+def render_png(source, dest):
+    """Re-encode any PIL-readable page (the frozen set is TIFF) to PNG for the vision API."""
+    from PIL import Image
+    with Image.open(source) as im:
+        im.convert('RGB').save(dest, format='PNG')
+    return dest
+
+
+def load_cases(manifest, limit, render_dir=None):
     manifest = Path(manifest)
     rows = [json.loads(line) for line in manifest.read_text(encoding='utf-8').splitlines() if line.strip()]
     ids = [r['id'] for r in rows]
@@ -42,8 +50,15 @@ def load_cases(manifest, limit):
             raise ValueError(f'Image exceeds 10 MB limit: {row["id"]}')
         if hashlib.sha256(data).hexdigest() != row['sha256']:
             raise ValueError(f'Image checksum mismatch: {row["id"]}')
-        image_message(path)  # validate PNG/JPEG before constructing any client
-        cases.append({'id': row['id'], 'path': path, 'sha256': row['sha256']})
+        # The frozen images are TIFF; the vision endpoint accepts PNG/JPEG only.
+        # Send a PNG render but keep integrity anchored to the original sha256.
+        # Rendering (and format validation) happens only on the execute path so
+        # the dry-run plan stays stdlib-only.
+        send = path
+        if render_dir is not None:
+            send = render_png(path, Path(render_dir) / f"{row['id']}.png")
+            image_message(send)  # validate PNG/JPEG before constructing any client
+        cases.append({'id': row['id'], 'path': path, 'sha256': row['sha256'], 'send': send})
     return cases
 
 
@@ -54,12 +69,16 @@ def run_cases(cases, parser, output):
         started = time.perf_counter()
         row = {'id': case['id'], 'source_sha256': case['sha256']}
         try:
+            # Integrity is anchored to the original page; the sent PNG is a render of it.
             if hashlib.sha256(case['path'].read_bytes()).hexdigest() != case['sha256']:
                 raise ValueError('Image changed after preflight')
-            result = parser.parse(case['path']).to_dict()
-            if result['source_sha256'] != case['sha256']:
+            send = case.get('send', case['path'])
+            result = parser.parse(send).to_dict()
+            if hashlib.sha256(case['path'].read_bytes()).hexdigest() != case['sha256']:
                 raise ValueError('Image changed during request')
             row.update(result)
+            # Keep integrity anchored to the original page, not the sent PNG render.
+            row['source_sha256'] = case['sha256']
             row['status'] = 'ok'
             row['empty_output'] = not result['text'].strip()
         except Exception as error:
@@ -84,7 +103,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.limit < 0 or not 1 <= args.max_tokens <= 16384 or not args.model.strip():
         ap.error('Require limit >= 0, max-tokens 1..16384 and explicit model')
-    cases = load_cases(args.manifest, args.limit)
+    cases = load_cases(args.manifest, args.limit)  # dry-run: no render, stdlib only
     plan = {'mode': 'execute' if args.execute else 'dry-run', 'provider': 'gemini',
             'base_url': BASE_URL, 'model': args.model, 'pages': len(cases),
             'ids': [c['id'] for c in cases], 'max_requests': len(cases),
@@ -104,6 +123,10 @@ def main(argv=None):
     from openai import OpenAI
     import httpx
     args.output.mkdir(parents=True, exist_ok=False)
+    render_dir = args.output / 'render'
+    render_dir.mkdir()
+    # Re-load with rendering: converts each TIFF to PNG and validates the sent format.
+    cases = load_cases(args.manifest, args.limit, render_dir=render_dir)
     (args.output / 'run.json').write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding='utf-8')
     with OpenAI(api_key=key, base_url=BASE_URL, max_retries=0, timeout=60,
                 http_client=httpx.Client(follow_redirects=False, timeout=60)) as client:
