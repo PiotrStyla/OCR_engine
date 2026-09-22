@@ -167,7 +167,23 @@ class ExampleDataset(torch.utils.data.Dataset):
 
 
 def collate(batch):
-    return {key: torch.stack([row[key] for row in batch]) for key in batch[0]}
+    """Pad sequences; Qwen-VL pixel_values concatenate across the batch."""
+    pad_id = processor.tokenizer.pad_token_id or processor.tokenizer.eos_token_id
+    longest = max(row['input_ids'].shape[0] for row in batch)
+    input_ids, attention, labels = [], [], []
+    for row in batch:
+        pad = longest - row['input_ids'].shape[0]
+        input_ids.append(torch.cat([row['input_ids'],
+                                    torch.full((pad,), pad_id, dtype=row['input_ids'].dtype)]))
+        attention.append(torch.cat([row['attention_mask'],
+                                    torch.zeros(pad, dtype=row['attention_mask'].dtype)]))
+        labels.append(torch.cat([row['labels'],
+                                 torch.full((pad,), -100, dtype=row['labels'].dtype)]))
+    return {'input_ids': torch.stack(input_ids),
+            'attention_mask': torch.stack(attention),
+            'labels': torch.stack(labels),
+            'pixel_values': torch.cat([row['pixel_values'] for row in batch], dim=0),
+            'image_grid_thw': torch.stack([row['image_grid_thw'] for row in batch])}
 
 
 started = time.perf_counter()
@@ -175,7 +191,7 @@ Trainer(model=model,
         args=TrainingArguments(
             output_dir=str(WORKDIR / 'checkpoints'), max_steps=STEPS,
             per_device_train_batch_size=1, gradient_accumulation_steps=8,
-            learning_rate=1e-4, lr_scheduler_type='cosine', warmup_ratio=0.03,
+            learning_rate=1e-4, lr_scheduler_type='cosine', warmup_steps=20,
             logging_steps=10, save_strategy='no', report_to=[],
             bf16=torch.cuda.is_bf16_supported(), fp16=not torch.cuda.is_bf16_supported()),
         train_dataset=ExampleDataset(train_examples),
