@@ -123,11 +123,31 @@ Lokalne skany, wycinki i odpowiedzi API pozostają poza repozytorium (`data/`).
 
 ### Zakres docelowy
 
-Planowane podzadania: **A** transkrypcja do Markdown, **B** tabele do HTML
-z oceną TEDS, **C** pola dokumentu do JSON z oceną field-level F1.
-Podzadania B/C, pełny zbiór współczesnych dokumentów i pisma ręcznego, ukryty
-Test B oraz publiczny leaderboard wymagają dalszej implementacji i anotacji.
-Docelowe tracki to constrained, open i zero-shot/API; nie są jeszcze wdrożone.
+Podzadania: **A** transkrypcja do Markdown, **B** tabele do HTML z oceną
+TEDS, **C** pola dokumentu do JSON z oceną field-level F1. Ewaluatory A/B/C,
+wynik zbiorczy, format zgłoszeń zgodny z AmuEval (`out.tsv`) oraz walidacja
+deklaracji tracków (constrained, open, zero-shot/API) są zaimplementowane —
+zobacz [protokół ewaluacji](docs/POLOCRBENCH_SUBTASKS_BC.md) i
+[zamrożony prompt tracku zero-shot](benchmarks/polocrbench/prompts/zero_shot_prompt_v1.md).
+Dalszej pracy wymagają: zbiory podzadania B/C (współczesne dokumenty, pismo
+ręczne, pełne strony z tabelami i polami) wraz z anotacją, ukryty Test B oraz
+publiczny leaderboard. Zaimplementowane miary nie są jeszcze zwalidowane jako
+ostateczne metryki rankingowe.
+
+### Podzadania B/C, wynik zbiorczy i tracki
+
+```bash
+python -m training.table_eval --manifest tables.jsonl --predictions run-b.jsonl --output b.json
+python -m training.kie_eval --manifest kie.jsonl --predictions run-c.jsonl --output c.json   # --dump-schemas wypisuje schemat
+python -m training.composite_score --report-a a.json --report-b b.json --report-c c.json --output composite.json
+python -m training.submission_tsv --mode pack --subtask A --in-tsv in.tsv --predictions run.jsonl --out-tsv out.tsv
+python -m training.validate_submission --manifest M.jsonl --predictions run.jsonl --subtask C --meta submission_meta.json
+```
+
+Wynik zbiorczy to średnia znormalizowanych wyników zgłoszonych podzadań
+(1 − CER, TEDS, F1); testy normalizacji i miar: `tests/test_table_eval.py`,
+`tests/test_kie_eval.py`, `tests/test_composite_score.py`,
+`tests/test_submission_tsv.py`.
 
 ## Biblioteka OCR
 
