@@ -57,12 +57,19 @@ print(json.dumps({key: report[key] for key in ('seed', 'count', 'types', 'degrad
 
 # --- 3. model and frozen prompt ---------------------------------------------
 
-quantization = BitsAndBytesConfig(load_in_4bit=True,
-                                  bnb_4bit_compute_dtype=torch.bfloat16)
+try:
+    import bitsandbytes  # noqa: F401
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        MODEL, device_map='cuda',
+        quantization_config=BitsAndBytesConfig(load_in_4bit=True,
+                                               bnb_4bit_compute_dtype=torch.bfloat16))
+except Exception as error:  # noqa: BLE001 - quantization is optional
+    print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
+    MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        MODEL, torch_dtype=torch.float16, device_map='cuda')
 processor = AutoProcessor.from_pretrained(MODEL, min_pixels=256 * 28 * 28,
                                           max_pixels=1280 * 28 * 28)
-model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-    MODEL, quantization_config=quantization, device_map='cuda')
 templates = load_templates(data.parent / 'repo' / 'benchmarks' / 'polocrbench'
                            / 'prompts' / 'zero_shot_prompt_v1.md')
 

@@ -20,6 +20,7 @@ Self-contained on a Kaggle T4 notebook (Internet on):
 This is a baseline recipe (small step budget), not a tuned result: adjust
 MODEL/COUNT/STEPS for stronger runs.
 """
+import importlib
 import io
 import json
 import subprocess
@@ -30,6 +31,7 @@ from pathlib import Path
 
 REPO = 'https://github.com/PiotrStyla/OCR_engine.git'
 MODEL = 'Qwen/Qwen2.5-VL-7B-Instruct'
+FALLBACK_MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'  # fp16 when bitsandbytes is unusable
 SEED = 20260922
 COUNT = 300
 EVAL_COUNT = 40
@@ -98,15 +100,30 @@ train_examples = examples(train_dir)
 eval_examples = examples(eval_dir)
 print('train examples:', len(train_examples), '| eval examples:', len(eval_examples))
 
-# --- 3. model and LoRA ------------------------------------------------------
+# --- 3. model and LoRA (4-bit when bitsandbytes works, else fp16 3B) ---------
 
-quantization = BitsAndBytesConfig(load_in_4bit=True,
-                                  bnb_4bit_compute_dtype=torch.bfloat16)
+
+def load_backbone():
+    """bitsandbytes can be present-but-broken on Kaggle images: probe for real."""
+    importlib.invalidate_caches()
+    try:
+        import bitsandbytes  # noqa: F401
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            MODEL, device_map='cuda',
+            quantization_config=BitsAndBytesConfig(load_in_4bit=True,
+                                                   bnb_4bit_compute_dtype=torch.bfloat16))
+        return MODEL, '4bit-lora', prepare_model_for_kbit_training(model)
+    except Exception as error:  # noqa: BLE001 - quantization is optional
+        print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            FALLBACK_MODEL, torch_dtype=torch.float16, device_map='cuda')
+        return FALLBACK_MODEL, 'fp16-lora', model
+
+
+MODEL, QUANTIZATION, model = load_backbone()
+print('backbone:', MODEL, '|', QUANTIZATION)
 processor = AutoProcessor.from_pretrained(MODEL, min_pixels=256 * 28 * 28,
                                           max_pixels=1280 * 28 * 28)
-model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-    MODEL, quantization_config=quantization, device_map='cuda')
-model = prepare_model_for_kbit_training(model)
 model = get_peft_model(model, LoraConfig(
     r=16, lora_alpha=32, lora_dropout=0.05, task_type='CAUSAL_LM',
     target_modules='all-linear'))
@@ -216,7 +233,8 @@ summary = composite(scores)
 (run_dir / 'composite.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2),
                                         encoding='utf-8', newline='\n')
 (run_dir / 'run.json').write_text(json.dumps({
-    'track': 'constrained', 'model': MODEL, 'train_examples': len(train_examples),
+    'track': 'constrained', 'model': MODEL, 'quantization': QUANTIZATION,
+    'train_examples': len(train_examples),
     'eval_examples': len(eval_examples), 'steps': STEPS,
     'train_degradations': TRAIN_DEGRADATIONS, 'eval_degradations': EVAL_DEGRADATIONS,
     'seed': SEED, 'training_seconds': round(training_seconds, 1),
