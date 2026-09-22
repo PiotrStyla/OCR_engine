@@ -148,6 +148,9 @@ Wynik zbiorczy to średnia znormalizowanych wyników zgłoszonych podzadań
 (1 − CER, TEDS, F1); testy normalizacji i miar: `tests/test_table_eval.py`,
 `tests/test_kie_eval.py`, `tests/test_composite_score.py`,
 `tests/test_submission_tsv.py`.
+Baseline'y (Surya 2, Qwen-VL na Kaggle, model API z promptem zero-shot v1)
+i raport kosztów per strona: [docs/POLLOCR_BASELINES_BC.md](docs/POLLOCR_BASELINES_BC.md)
+— pierwszy pomiar `gpt-4o-mini` na 4 stronach syntetycznych: composite 0,781.
 
 ### Generator dokumentów syntetycznych (A+B+C)
 

@@ -154,6 +154,27 @@ def _char_sim(a, b):
     return max(0.0, 1.0 - _levenshtein(a, b) / max(len(a), len(b)))
 
 
+def row_texts(html):
+    """One line per <tr>: leaf cell texts joined with single spaces."""
+    root = parse_table_html(html)
+    lines = []
+    stack = list(reversed(root.children))
+    while stack:
+        node = stack.pop()
+        if node.tag == 'tr':
+            cells, queue = [], list(node.children)
+            while queue:
+                current = queue.pop(0)
+                if current.tag in _CELL_TAGS and current.text:
+                    cells.append(current.text)
+                queue[:0] = current.children
+            if cells:
+                lines.append(' '.join(cells))
+        else:
+            stack.extend(reversed(node.children))
+    return lines
+
+
 def _update_cost(a, b, structure_only=False):
     if a.tag != b.tag:
         return 1.0

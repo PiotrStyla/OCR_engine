@@ -28,7 +28,7 @@ class PageTranscription:
         return asdict(self)
 
 
-def image_message(path):
+def image_message(path, prompt=PROMPT):
     path = Path(path)
     content = path.read_bytes()
     if content.startswith(b'\x89PNG\r\n\x1a\n'):
@@ -37,7 +37,7 @@ def image_message(path):
         mime = 'image/jpeg'
     else:
         raise ValueError('Expected PNG or JPEG; render PDF pages first')
-    return [{'type':'text','text':PROMPT},
+    return [{'type':'text','text':prompt},
             {'type':'image_url','image_url':{'url':f'data:{mime};base64,' + base64.b64encode(content).decode('ascii')}}]
 
 
