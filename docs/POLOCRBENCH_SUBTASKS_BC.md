@@ -30,6 +30,11 @@ pusty payload; brakujący `id` jest dozwolony tylko przy walidacji z
 `--allow-missing`, a w obu przypadkach pozostaje w mianowniku z wynikiem 0.
 Ewaluatory weryfikują sumy SHA-256 obrazów wskazanych w manifeście.
 
+Dane syntetyczne (`training.generate_documents`) zapisują manifesty w tym samym
+formacie. Konwencja podzadania A dla treści tabel w referencjach syntetycznych:
+jeden wiersz na linię, komórki rozdzielone pojedynczą spacją, bez znaczników
+Markdown/HTML — punktacja CER nie może być zdominowana wyborem znaczników.
+
 ## Metryki
 
 ### A — transkrypcja (zamrożona)

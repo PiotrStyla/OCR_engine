@@ -149,6 +149,23 @@ Wynik zbiorczy to średnia znormalizowanych wyników zgłoszonych podzadań
 `tests/test_kie_eval.py`, `tests/test_composite_score.py`,
 `tests/test_submission_tsv.py`.
 
+### Generator dokumentów syntetycznych (A+B+C)
+
+```bash
+python -m training.generate_documents --output data/polocrbench-synth-v1 --count 1200 --seed 20260922 --split train
+```
+
+Generuje strony faktur, umów, pism urzędowych i formularzy z kompletnym ground
+truth dla trzech podzadań naraz (`manifest-A/B/C.jsonl`): transkrypcja
+Markdown, HTML-e tabel (z colspan) i pola KIE zgodne ze schematami
+`training.kie_eval.SCHEMAS`. Szablony treści (`training/document_templates.py`)
+są czyste i deterministyczne (NIP/PESEL z poprawnymi sumami kontrolnymi, kwoty
+spójne arytmetycznie z pozycjami); degradacje: `clean`, `scan`, `photo`,
+`print_scan`, `compress`, z parametrami w `generation.json`. Test B może
+wstrzymać typy i degradacje przez `--types`/`--degradations`. Ten sam seed
+odtwarza identyczne pliki. Testy: `tests/test_generate_documents.py`
+(m.in. samopunktacja wygenerowanego zbioru przez wszystkie ewaluatory = 1.0).
+
 ## Biblioteka OCR
 
 > Aktualizacja po audycie (2026-09-12): zobacz [plan CPU i zdalnych testów](docs/CPU_REMOTE_PLAN.md).
