@@ -36,6 +36,8 @@ if not (WORKDIR / 'repo' / 'training').exists():
 sys.path.insert(0, str(WORKDIR / 'repo'))
 subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-U',
                 'jiwer', 'bitsandbytes>=0.46.1'], check=True)
+# image torchao 0.10 crashes new peft's availability checks
+subprocess.run([sys.executable, '-m', 'pip', 'uninstall', '-y', 'torchao'], check=False)
 
 import torch  # noqa: E402
 from PIL import Image  # noqa: E402

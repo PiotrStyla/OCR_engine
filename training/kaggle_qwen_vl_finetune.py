@@ -47,6 +47,12 @@ if not (WORKDIR / 'repo' / 'training').exists():
 sys.path.insert(0, str(WORKDIR / 'repo'))
 subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-U',
                 'peft', 'bitsandbytes>=0.46.1'], check=True)
+# image torchao 0.10 crashes new peft's LoRA dispatcher availability check
+subprocess.run([sys.executable, '-m', 'pip', 'uninstall', '-y', 'torchao'], check=False)
+subprocess.run([sys.executable, '-c',
+                'import importlib.metadata as m, torch; '
+                'print("versions: bnb", m.version("bitsandbytes"), '
+                '"| peft", m.version("peft"), "| torch", torch.__version__)'])
 
 import torch  # noqa: E402
 from PIL import Image  # noqa: E402
@@ -107,7 +113,8 @@ def load_backbone():
     """bitsandbytes can be present-but-broken on Kaggle images: probe for real."""
     importlib.invalidate_caches()
     try:
-        import bitsandbytes  # noqa: F401
+        import bitsandbytes
+        print('bitsandbytes', bitsandbytes.__version__, bitsandbytes.__file__)
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             MODEL, device_map='cuda',
             quantization_config=BitsAndBytesConfig(load_in_4bit=True,
