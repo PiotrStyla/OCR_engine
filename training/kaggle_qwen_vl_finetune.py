@@ -122,10 +122,23 @@ def load_backbone():
         return MODEL, '4bit-lora', prepare_model_for_kbit_training(model)
     except Exception as error:  # noqa: BLE001 - quantization is optional
         print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
+        try:
+            import inspect
+            from transformers.utils import import_utils
+            print('is_bitsandbytes_available source:\n',
+                  inspect.getsource(import_utils.is_bitsandbytes_available)[:600])
+        except Exception:  # noqa: BLE001 - diagnostics only
+            pass
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             FALLBACK_MODEL, torch_dtype=torch.float16, device_map='cuda')
         return FALLBACK_MODEL, 'fp16-lora', model
 
+
+if 'model' in globals():
+    del model  # stale model from an earlier attempt keeps the GPU full
+import gc
+gc.collect()
+torch.cuda.empty_cache()
 
 MODEL, QUANTIZATION, model = load_backbone()
 print('backbone:', MODEL, '|', QUANTIZATION)

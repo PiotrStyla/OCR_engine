@@ -59,6 +59,12 @@ print(json.dumps({key: report[key] for key in ('seed', 'count', 'types', 'degrad
 
 # --- 3. model and frozen prompt ---------------------------------------------
 
+if 'model' in globals():
+    del model  # stale model from an earlier attempt keeps the GPU full
+import gc
+gc.collect()
+torch.cuda.empty_cache()
+
 try:
     import bitsandbytes  # noqa: F401
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
