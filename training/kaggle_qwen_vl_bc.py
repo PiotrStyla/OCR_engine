@@ -81,6 +81,8 @@ def _load_4bit():
 
 try:
     model = _load_4bit()
+except torch.cuda.OutOfMemoryError:
+    raise  # a full GPU needs a session restart, not a different model
 except Exception as error:  # noqa: BLE001 - quantization is optional
     print('4-bit path unusable, falling back to fp16 3B:', repr(error)[:300])
     MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'
