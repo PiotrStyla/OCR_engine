@@ -151,6 +151,8 @@ Wynik zbiorczy to średnia znormalizowanych wyników zgłoszonych podzadań
 Baseline'y (Surya 2, Qwen-VL na Kaggle, model API z promptem zero-shot v1)
 i raport kosztów per strona: [docs/POLLOCR_BASELINES_BC.md](docs/POLLOCR_BASELINES_BC.md)
 — pierwszy pomiar `gpt-4o-mini` na 4 stronach syntetycznych: composite 0,781.
+Podziały train/test A/Test B, bramka integralności (`training/check_split_integrity.py`)
+i wykryty nakład tekstu train↔testA: [docs/POLLOCR_SPLIT_POLICY.md](docs/POLLOCR_SPLIT_POLICY.md).
 
 ### Generator dokumentów syntetycznych (A+B+C)
 
