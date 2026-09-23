@@ -75,7 +75,7 @@ def _load_4bit():
         MODEL, device_map='cuda', torch_dtype=torch.float16,
         quantization_config=BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
-            llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
+            llm_int8_skip_modules=['visual', 'lm_head']))  # fp16 layers keep quant_state under LoRA
     return model
 
 

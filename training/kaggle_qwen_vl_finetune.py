@@ -125,7 +125,7 @@ def _load_4bit():
         MODEL, device_map='cuda', torch_dtype=torch.float16,
         quantization_config=BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
-            llm_int8_skip_modules=['visual']))  # vision tower must stay floating point
+            llm_int8_skip_modules=['visual', 'lm_head']))  # fp16 layers keep quant_state under LoRA
     print('4-bit weights loaded', flush=True)
     model = prepare_model_for_kbit_training(model)
     print('kbit prepared', flush=True)
@@ -171,7 +171,8 @@ processor = AutoProcessor.from_pretrained(MODEL, min_pixels=256 * 28 * 28,
                                           max_pixels=1280 * 28 * 28)
 model = get_peft_model(model, LoraConfig(
     r=16, lora_alpha=32, lora_dropout=0.05, task_type='CAUSAL_LM',
-    target_modules='all-linear'))
+    target_modules=['q_proj', 'k_proj', 'v_proj', 'o_proj',
+                    'gate_proj', 'up_proj', 'down_proj']))  # never adapt lm_head
 model.print_trainable_parameters()
 
 
