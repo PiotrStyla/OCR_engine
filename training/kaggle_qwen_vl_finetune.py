@@ -37,7 +37,8 @@ import zipfile
 from pathlib import Path
 
 REPO = 'https://github.com/PiotrStyla/OCR_engine.git'
-MODEL = 'Qwen/Qwen2.5-VL-7B-Instruct'
+# Wariant oszczędny (limit GPU): 3B. Dla toru 7B zamień na 'Qwen/Qwen2.5-VL-7B-Instruct'.
+MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'
 FALLBACK_MODEL = 'Qwen/Qwen2.5-VL-3B-Instruct'  # fp16 when bitsandbytes is unusable
 SEED = 20260922
 COUNT = 300
