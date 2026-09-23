@@ -19,6 +19,11 @@ Self-contained on a Kaggle T4 notebook (Internet on):
 
 This is a baseline recipe (small step budget), not a tuned result: adjust
 MODEL/COUNT/STEPS for stronger runs.
+
+Run it via ``Save Version`` (background commit), not as a draft session: draft
+sessions die with the browser and lose ``/kaggle/working``, while a committed
+run survives disconnects and keeps its output (ZIP with adapter, predictions
+and scores) for download afterwards.
 """
 import gc
 import importlib
@@ -257,6 +262,7 @@ started = time.perf_counter()
 losses = train(model, ExampleDataset(train_examples))
 training_seconds = time.perf_counter() - started
 model.save_pretrained(WORKDIR / 'adapter')
+print('adapter saved', flush=True)
 
 # --- 4. predict and score the held-out slice ---------------------------------
 
@@ -281,8 +287,10 @@ def ask(item):
 run_dir = WORKDIR / 'runs'
 predictions = {'A': {}, 'B': {}, 'C': {}}
 elapsed_total, completed, errors = 0.0, 0, 0
-for item in eval_examples:
+for index, item in enumerate(eval_examples, 1):
     subtask, row, _, _, _ = item
+    if index % 10 == 0:
+        print(f'eval {index}/{len(eval_examples)}', flush=True)
     try:
         payload, elapsed = ask(item)
         predictions[subtask][row['id']] = {'id': row['id'], 'status': 'ok',
