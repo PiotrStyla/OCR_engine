@@ -8,6 +8,19 @@ ani potwierdzonym silnikiem SOTA.**
 
 ## Aktualny stan: 21 września 2026
 
+### Google Colab (dodano 24 września)
+
+- [Otwórz test 63 linii w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_body_dev_diagnostic.ipynb).
+- [Otwórz kontrolę geometrii A/B w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_body_crop_ab.ipynb).
+
+Wybierz środowisko GPU i uruchom wszystkie komórki. Dane są pobierane automatycznie
+lub osadzone; nie dodawaj osobnego datasetu. Ostatnia komórka pobiera ZIP wyników,
+który pozostaje też w `/content`. Zachowano modele, dane i metryki z Kaggle,
+w tym historyczną pisownię. To diagnostyka, nie trening. Wersje Colab sprawdzono
+lokalnie testami struktury i metryk; inferencja GPU wymaga uruchomienia w Colab.
+
+### Dane i ewaluacja
+
 - **Podzadanie A, transkrypcja:** zamrożony historyczny podzbiór IMPACT,
   36 stron testowych z 3 kolekcji oraz pula 2531 regionów treningowych.
 - **Odtwarzalne dane:** importer przypiętej paczki Hugging Face sprawdza SHA-256,
