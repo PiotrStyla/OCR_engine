@@ -2,7 +2,7 @@
 from statistics import median
 
 
-def detect_lines(image):
+def detect_lines(image, *, follow_lines=False):
     """Return proposed boxes without accepting reference text, counts or line IDs."""
     import cv2
     import numpy as np
@@ -54,6 +54,11 @@ def detect_lines(image):
             rejected += 1
             continue
         kept.append({'parts': parts[:], 'anchor_box': box})
+    for group in kept:
+        xs = [p[0] + p[2] / 2 for p in group['parts']]
+        ys = [p[1] + p[3] / 2 for p in group['parts']]
+        slope = float(np.clip(np.polyfit(xs, ys, 1)[0], -.2, .2)) if len(set(xs)) > 1 else 0.0
+        group['fit'] = (slope, float(median([y - slope * x for x, y in zip(xs, ys)])))
     anchor_set = set(anchors)
     for c in components:
         x, y, w, h, area = c
@@ -64,8 +69,13 @@ def detect_lines(image):
         choices = []
         for i, group in enumerate(kept):
             a, b, d, e = group['anchor_box']
-            if x + w < a - .25 * ch or x > d + .25 * ch:
+            margin = .8 * ch if follow_lines else .25 * ch
+            if x + w < a - margin or x > d + margin:
                 continue
+            if follow_lines:
+                slope, intercept = group['fit']
+                center = slope * (x + w / 2) + intercept
+                b, e = center - ch / 2, center + ch / 2
             gap = max(b - (y + h), y - e, 0)
             limit = .2 * ch if y >= e else .55 * ch
             if gap <= limit:
@@ -84,7 +94,44 @@ def detect_lines(image):
         roi = labels[b:e, a:d]
         ink = int(np.count_nonzero(roi))
         own = int(np.count_nonzero(np.isin(roi, [component_labels[c] for c in group['parts']])))
-        proposals.append((box, (ink - own) / ink if ink else 1.0))
+        proposals.append((box, (ink - own) / ink if ink else 1.0, group))
     proposals.sort(key=lambda p: ((p[0][1] + p[0][3]) / 2, p[0][0]))
-    return {'boxes': [p[0] for p in proposals], 'foreign_ink_fraction': [p[1] for p in proposals],
-            'character_height': ch, 'rejected_edge_groups': rejected}
+    result = {'boxes': [p[0] for p in proposals], 'foreign_ink_fraction': [p[1] for p in proposals],
+              'character_height': ch, 'rejected_edge_groups': rejected}
+    if follow_lines:
+        bands = []
+        for index, (box, _, group) in enumerate(proposals):
+            a, b, d, e = box
+            xs = np.arange(a, d)
+            slope, intercept = group['fit']
+            centers = slope * xs + intercept
+            top = np.full(d - a, b, dtype=int)
+            bottom = np.full(d - a, e, dtype=int)
+            if index:
+                s, t = proposals[index - 1][2]['fit']
+                top = np.maximum(top, np.ceil((centers + s * xs + t) / 2).astype(int))
+            if index + 1 < len(proposals):
+                s, t = proposals[index + 1][2]['fit']
+                bottom = np.minimum(bottom, np.floor((centers + s * xs + t) / 2).astype(int))
+            # Never trim an assigned component, including detached accents.
+            for x, y, w, h, _ in group['parts']:
+                left, right = max(a, x - padding) - a, min(d, x + w + padding) - a
+                top[left:right] = np.minimum(top[left:right], max(b, y - padding))
+                bottom[left:right] = np.maximum(bottom[left:right], min(e, y + h + padding))
+            bands.append({'top': top.clip(b, e).tolist(), 'bottom': bottom.clip(b, e).tolist()})
+        result['line_bands'] = bands
+    return result
+
+
+def crop_line_band(image, box, band):
+    """Whiten outside a proposed band; preserve source pixels inside it."""
+    import numpy as np
+    from PIL import Image
+    a, b, d, e = box
+    top, bottom = np.asarray(band['top']), np.asarray(band['bottom'])
+    if top.shape != (d - a,) or bottom.shape != (d - a,) or np.any(top > bottom):
+        raise ValueError('Invalid line band')
+    pixels = np.array(image.convert('RGB').crop(box))
+    ys = np.arange(b, e)[:, None]
+    pixels[(ys < top) | (ys >= bottom)] = 255
+    return Image.fromarray(pixels)

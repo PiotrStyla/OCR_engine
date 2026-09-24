@@ -5,13 +5,13 @@ import json
 from pathlib import Path
 import zipfile
 
-from training.body_line_geometry import detect_lines
+from training.body_line_geometry import detect_lines, crop_line_band
 from training.kaggle_body_dev_diagnostic import digest, load_input
 
 INPUT_HASH = '913ded2bd5d742099567a2652460baaf3c4a8bb16625492d0931607396dbdd55'
 
 
-def prepare(input_zip, region_manifest, output):
+def prepare(input_zip, region_manifest, output, *, follow_lines=False):
     from PIL import Image
     output = Path(output)
     if output.exists():
@@ -27,7 +27,7 @@ def prepare(input_zip, region_manifest, output):
         if not path.is_relative_to(region_manifest.parent.resolve()) or digest(path.read_bytes()) != row['sha256']:
             raise ValueError('Source region checksum/path mismatch')
         with Image.open(path) as image:
-            result = detect_lines(image)
+            result = detect_lines(image, follow_lines=follow_lines)
             boxes = result['boxes']
             records = [r for r in original if r['id'].rsplit('__line', 1)[0] == row['id']]
             ordered = sorted(records, key=lambda r: r['id'])
@@ -40,11 +40,12 @@ def prepare(input_zip, region_manifest, output):
                              'baseline_lines': len(ordered), 'reference_lines': len(row['text'].splitlines()),
                              'overlapping_boxes': overlap, 'status': status})
             if usable:
-                for record, box, foreign in zip(ordered, boxes, result['foreign_ink_fraction']):
+                for index, (record, box, foreign) in enumerate(zip(ordered, boxes, result['foreign_ink_fraction'])):
                     if foreign > .10:
                         continue
                     data = io.BytesIO()
-                    image.crop(box).save(data, format='PNG')
+                    crop = crop_line_band(image, box, result['line_bands'][index]) if follow_lines else image.crop(box)
+                    crop.save(data, format='PNG')
                     replacements[record['id']] = (data.getvalue(), box)
         print(row['id'], status, len(boxes), flush=True)
     rows = []
@@ -56,6 +57,8 @@ def prepare(input_zip, region_manifest, output):
                      'baseline_sha256': row['sha256'], 'bbox_in_region': box,
                      'geometry_status': 'auto-proposal' if box else 'fallback-original'})
     report = {'scope': 'diagnostic-only', 'method': 'image-only connected components; no reference text/count in detection',
+              'follow_lines': follow_lines,
+              'pixel_operation': 'RGB conversion; outside-band pixels whitened' if follow_lines else 'unchanged source crop',
               'baseline_input_sha256': INPUT_HASH, 'lines': len(rows), 'regions': len(sources),
               'auto_lines': len(replacements), 'fallback_lines': len(rows) - len(replacements),
               'detector_sha256': digest(Path(__file__).with_name('body_line_geometry.py').read_bytes()),
@@ -78,5 +81,6 @@ if __name__ == '__main__':
     parser.add_argument('--input-zip', required=True)
     parser.add_argument('--region-manifest', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--follow-lines', action='store_true')
     args = parser.parse_args()
-    prepare(args.input_zip, args.region_manifest, args.output)
+    prepare(args.input_zip, args.region_manifest, args.output, follow_lines=args.follow_lines)
