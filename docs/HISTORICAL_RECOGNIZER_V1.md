@@ -56,6 +56,8 @@ The Colab notebook must also verify exact tokenizer round-trip for every label
 before training. Primary text normalization is NFC plus whitespace only. It may
 not modernize `á`, `ſ`, ligatures or other historical forms.
 
+[Open the pinned training notebook in Google Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_recognizer_v1.ipynb).
+
 ## Promotion gates
 
 The candidate remains experimental unless all of these hold:
