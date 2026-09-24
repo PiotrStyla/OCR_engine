@@ -10,6 +10,9 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Google Colab (dodano 24 września)
 
+- **Następny eksperyment:** [porównanie automatycznych ramek na 63 liniach](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_auto_geometry.ipynb).
+  31 propozycji nowych wycinków i 32 jawne powroty do oryginału; obie wersje
+  porównywane na tych samych referencjach. [Metoda i ograniczenia](docs/AUTO_LINE_GEOMETRY_20260924.md).
 - [Otwórz test 63 linii w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_body_dev_diagnostic.ipynb).
 - [Otwórz kontrolę geometrii A/B w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_body_crop_ab.ipynb).
 

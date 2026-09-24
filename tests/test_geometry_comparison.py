@@ -39,3 +39,20 @@ def test_fallback_must_retain_pixels():
         return [{**fixture(), 'geometry_status': 'fallback-original'}], [data], {}
     with pytest.raises(ValueError):
         pair_inputs(b'old', 'a', b'changed', 'b', loader)
+
+
+def test_notebook_is_reproducible_and_small(tmp_path):
+    from pathlib import Path
+    from training.build_geometry_colab import build
+    target = tmp_path / 'colab_auto_geometry.ipynb'
+    build(target)
+    root = Path(__file__).resolve().parents[1]
+    assert target.read_bytes() == (root / 'training/colab_auto_geometry.ipynb').read_bytes()
+    assert target.stat().st_size < 1_000_000
+    nb = json.loads(target.read_text(encoding='utf-8'))
+    for cell in nb['cells']:
+        if cell['cell_type'] == 'code':
+            assert cell['outputs'] == []
+            source = ''.join(cell['source'])
+            if not source.startswith('%pip'):
+                compile(source, '<cell>', 'exec')
