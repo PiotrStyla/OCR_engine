@@ -1,0 +1,320 @@
+{
+  "scope": "aggregate error profile; raw OCR text excluded",
+  "model": "PiotrSty/trocr-pl-mixed-v3",
+  "model_revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+  "variant": "rectangle",
+  "evidence_zip_sha256": "6f786d9f01b17b6c19c52e6003b75454b6518bae99f30a9c81b2032d70c84d21",
+  "manifest_sha256": "0b5459ea56d352de532b2cdc2284bd701b1c98458c67afd9f2220b6f0a6a7b18",
+  "normalization": "NFC and whitespace only; historical spelling retained",
+  "regions": 12,
+  "reference_characters": 3486,
+  "total_character_edits": 1322,
+  "operation_counts": {
+    "S": 1027,
+    "M": 2344,
+    "I": 180,
+    "D": 115
+  },
+  "error_categories": {
+    "other": 943,
+    "diacritic": 84,
+    "punctuation": 70,
+    "private_use_reference": 45,
+    "long_s_or_s": 83,
+    "whitespace": 71,
+    "case_only": 26
+  },
+  "top_reference_characters_in_errors": [
+    [
+      "U+00E1 á",
+      118
+    ],
+    [
+      "U+0065 e",
+      80
+    ],
+    [
+      "U+0064 d",
+      55
+    ],
+    [
+      "U+0020  ",
+      52
+    ],
+    [
+      "U+017F ſ",
+      49
+    ],
+    [
+      "U+006E n",
+      48
+    ],
+    [
+      "U+0069 i",
+      45
+    ],
+    [
+      "U+007A z",
+      41
+    ],
+    [
+      "U+006B k",
+      38
+    ],
+    [
+      "U+0074 t",
+      37
+    ],
+    [
+      "U+0077 w",
+      34
+    ],
+    [
+      "U+0247 ɇ",
+      29
+    ],
+    [
+      "U+EADA ",
+      27
+    ],
+    [
+      "U+006F o",
+      27
+    ],
+    [
+      "U+0061 a",
+      22
+    ],
+    [
+      "U+0063 c",
+      21
+    ],
+    [
+      "U+0075 u",
+      20
+    ],
+    [
+      "U+00DF ß",
+      20
+    ],
+    [
+      "U+2C65 ⱥ",
+      20
+    ],
+    [
+      "U+0142 ł",
+      19
+    ]
+  ],
+  "top_inserted_characters": [
+    [
+      "U+0066 f",
+      17
+    ],
+    [
+      "U+0072 r",
+      16
+    ],
+    [
+      "U+0020  ",
+      15
+    ],
+    [
+      "U+0063 c",
+      11
+    ],
+    [
+      "U+005A Z",
+      10
+    ],
+    [
+      "U+007A z",
+      9
+    ],
+    [
+      "U+006F o",
+      8
+    ],
+    [
+      "U+0069 i",
+      7
+    ],
+    [
+      "U+006E n",
+      6
+    ],
+    [
+      "U+006D m",
+      5
+    ],
+    [
+      "U+017C ż",
+      5
+    ],
+    [
+      "U+00F3 ó",
+      5
+    ],
+    [
+      "U+0074 t",
+      5
+    ],
+    [
+      "U+0061 a",
+      4
+    ],
+    [
+      "U+0079 y",
+      3
+    ],
+    [
+      "U+0105 ą",
+      3
+    ],
+    [
+      "U+0033 3",
+      3
+    ],
+    [
+      "U+0064 d",
+      3
+    ],
+    [
+      "U+002E .",
+      3
+    ],
+    [
+      "U+006C l",
+      3
+    ]
+  ],
+  "per_region": [
+    {
+      "id": "Zalosne_FT__436608__r001",
+      "collection": "Zalosne_FT",
+      "reference_characters": 410,
+      "character_edits": 195,
+      "cer": 0.47560975609756095,
+      "reference_lines": 8,
+      "detected_lines": 8,
+      "reference_private_use_count": 5
+    },
+    {
+      "id": "Relacja_chwalebnej_FT__437015__r001",
+      "collection": "Relacja_chwalebnej_FT",
+      "reference_characters": 254,
+      "character_edits": 119,
+      "cer": 0.468503937007874,
+      "reference_lines": 5,
+      "detected_lines": 5,
+      "reference_private_use_count": 10
+    },
+    {
+      "id": "Ceremonie_FT__436723__r005",
+      "collection": "Ceremonie_FT",
+      "reference_characters": 104,
+      "character_edits": 46,
+      "cer": 0.4423076923076923,
+      "reference_lines": 3,
+      "detected_lines": 3,
+      "reference_private_use_count": 1
+    },
+    {
+      "id": "Nowe_nowiny_z_Czech_FT__436793__r002",
+      "collection": "Nowe_nowiny_z_Czech_FT",
+      "reference_characters": 631,
+      "character_edits": 273,
+      "cer": 0.4326465927099842,
+      "reference_lines": 11,
+      "detected_lines": 11,
+      "reference_private_use_count": 8
+    },
+    {
+      "id": "Nowiny_z_Inflant_FT__436660__r001",
+      "collection": "Nowiny_z_Inflant_FT",
+      "reference_characters": 293,
+      "character_edits": 125,
+      "cer": 0.42662116040955633,
+      "reference_lines": 6,
+      "detected_lines": 6,
+      "reference_private_use_count": 3
+    },
+    {
+      "id": "Diariusz_FT__436661__r004",
+      "collection": "Diariusz_FT",
+      "reference_characters": 131,
+      "character_edits": 55,
+      "cer": 0.4198473282442748,
+      "reference_lines": 3,
+      "detected_lines": 3,
+      "reference_private_use_count": 2
+    },
+    {
+      "id": "Relacja_spraw_FT__437088__r001",
+      "collection": "Relacja_spraw_FT",
+      "reference_characters": 213,
+      "character_edits": 88,
+      "cer": 0.4131455399061033,
+      "reference_lines": 5,
+      "detected_lines": 5,
+      "reference_private_use_count": 2
+    },
+    {
+      "id": "Prawdziwa_relacja_FT__436999__r004",
+      "collection": "Prawdziwa_relacja_FT",
+      "reference_characters": 148,
+      "character_edits": 59,
+      "cer": 0.39864864864864863,
+      "reference_lines": 3,
+      "detected_lines": 3,
+      "reference_private_use_count": 3
+    },
+    {
+      "id": "Relacja_prawdziwa_FT__436828__r001",
+      "collection": "Relacja_prawdziwa_FT",
+      "reference_characters": 337,
+      "character_edits": 131,
+      "cer": 0.3887240356083086,
+      "reference_lines": 6,
+      "detected_lines": 6,
+      "reference_private_use_count": 3
+    },
+    {
+      "id": "Wyprawa_2_FT__436963__r000",
+      "collection": "Wyprawa_2_FT",
+      "reference_characters": 370,
+      "character_edits": 118,
+      "cer": 0.31891891891891894,
+      "reference_lines": 6,
+      "detected_lines": 7,
+      "reference_private_use_count": 2
+    },
+    {
+      "id": "NA4_FT__435794__r003",
+      "collection": "NA4_FT",
+      "reference_characters": 225,
+      "character_edits": 47,
+      "cer": 0.2088888888888889,
+      "reference_lines": 4,
+      "detected_lines": 4,
+      "reference_private_use_count": 0
+    },
+    {
+      "id": "List_FT__436651__r000",
+      "collection": "List_FT",
+      "reference_characters": 370,
+      "character_edits": 66,
+      "cer": 0.1783783783783784,
+      "reference_lines": 7,
+      "detected_lines": 7,
+      "reference_private_use_count": 6
+    }
+  ],
+  "data_quality": {
+    "regions_with_private_use_references": 11,
+    "private_use_reference_characters": 45,
+    "regions_with_line_count_mismatch": 1,
+    "upstream_references_manually_reviewed": false
+  },
+  "policy": "All categories remain errors in primary CER. Diacritic and long-s diagnostics never modernize the reference."
+}

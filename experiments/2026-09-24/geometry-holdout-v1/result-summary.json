@@ -1,0 +1,243 @@
+{
+  "scope": "geometry holdout diagnostic; not benchmark or model holdout",
+  "evidence_zip_sha256": "6f786d9f01b17b6c19c52e6003b75454b6518bae99f30a9c81b2032d70c84d21",
+  "manifest_sha256": "0b5459ea56d352de532b2cdc2284bd701b1c98458c67afd9f2220b6f0a6a7b18",
+  "environment": {
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6",
+    "Pillow": "11.3.0",
+    "jiwer": "4.0.0",
+    "huggingface_hub": "0.36.0",
+    "opencv-python-headless": "4.12.0.88"
+  },
+  "regions": 12,
+  "collections": 12,
+  "reference_lines": 67,
+  "reference_private_use_characters": 45,
+  "selection_frozen_before_ocr": true,
+  "all_regions_retained": true,
+  "results": {
+    "microsoft/trocr-base-printed": {
+      "metrics": {
+        "rectangle": {
+          "all_regions": {
+            "regions": 12,
+            "reference_characters": 3486,
+            "cer": 0.8373493975903614,
+            "wer": 0.9726495726495726,
+            "lowercase_cer_diagnostic": 0.4397590361445783,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 68
+          },
+          "without_private_use_references": {
+            "regions": 1,
+            "reference_characters": 225,
+            "cer": 0.7422222222222222,
+            "wer": 0.9354838709677419,
+            "lowercase_cer_diagnostic": 0.22666666666666666,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 4
+          },
+          "per_region_character_edits": {
+            "Relacja_chwalebnej_FT__437015__r001": 228,
+            "Ceremonie_FT__436723__r005": 87,
+            "List_FT__436651__r000": 304,
+            "Wyprawa_2_FT__436963__r000": 314,
+            "Zalosne_FT__436608__r001": 361,
+            "Relacja_spraw_FT__437088__r001": 184,
+            "Diariusz_FT__436661__r004": 109,
+            "NA4_FT__435794__r003": 167,
+            "Nowe_nowiny_z_Czech_FT__436793__r002": 523,
+            "Prawdziwa_relacja_FT__436999__r004": 121,
+            "Relacja_prawdziwa_FT__436828__r001": 277,
+            "Nowiny_z_Inflant_FT__436660__r001": 244
+          }
+        },
+        "line_band": {
+          "all_regions": {
+            "regions": 12,
+            "reference_characters": 3486,
+            "cer": 0.8350545037292025,
+            "wer": 0.9692307692307692,
+            "lowercase_cer_diagnostic": 0.42627653471026966,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 68
+          },
+          "without_private_use_references": {
+            "regions": 1,
+            "reference_characters": 225,
+            "cer": 0.7333333333333333,
+            "wer": 0.9354838709677419,
+            "lowercase_cer_diagnostic": 0.24,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 4
+          },
+          "per_region_character_edits": {
+            "Relacja_chwalebnej_FT__437015__r001": 231,
+            "Ceremonie_FT__436723__r005": 90,
+            "List_FT__436651__r000": 305,
+            "Wyprawa_2_FT__436963__r000": 308,
+            "Zalosne_FT__436608__r001": 366,
+            "Relacja_spraw_FT__437088__r001": 184,
+            "Diariusz_FT__436661__r004": 104,
+            "NA4_FT__435794__r003": 165,
+            "Nowe_nowiny_z_Czech_FT__436793__r002": 516,
+            "Prawdziwa_relacja_FT__436999__r004": 120,
+            "Relacja_prawdziwa_FT__436828__r001": 281,
+            "Nowiny_z_Inflant_FT__436660__r001": 241
+          }
+        }
+      },
+      "comparison": {
+        "improved": 6,
+        "regressed": 5,
+        "tied": 1,
+        "net_character_edit_change": -8,
+        "deltas": {
+          "Relacja_chwalebnej_FT__437015__r001": 3,
+          "Ceremonie_FT__436723__r005": 3,
+          "List_FT__436651__r000": 1,
+          "Wyprawa_2_FT__436963__r000": -6,
+          "Zalosne_FT__436608__r001": 5,
+          "Relacja_spraw_FT__437088__r001": 0,
+          "Diariusz_FT__436661__r004": -5,
+          "NA4_FT__435794__r003": -2,
+          "Nowe_nowiny_z_Czech_FT__436793__r002": -7,
+          "Prawdziwa_relacja_FT__436999__r004": -1,
+          "Relacja_prawdziwa_FT__436828__r001": 4,
+          "Nowiny_z_Inflant_FT__436660__r001": -3
+        }
+      },
+      "possibly_truncated_lines": {
+        "rectangle": 0,
+        "line_band": 0
+      },
+      "paired_bootstrap": {
+        "unit": "region",
+        "samples": 20000,
+        "seed": 20260924,
+        "cer_delta_line_band_minus_rectangle": -0.0022948938611588865,
+        "percentile_95_interval": [
+          -0.009416195856873822,
+          0.005355230274901821
+        ],
+        "bootstrap_fraction_line_band_better": 0.7073
+      }
+    },
+    "PiotrSty/trocr-pl-mixed-v3": {
+      "metrics": {
+        "rectangle": {
+          "all_regions": {
+            "regions": 12,
+            "reference_characters": 3486,
+            "cer": 0.37923121055651177,
+            "wer": 0.8444444444444444,
+            "lowercase_cer_diagnostic": 0.37119908204245555,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 68
+          },
+          "without_private_use_references": {
+            "regions": 1,
+            "reference_characters": 225,
+            "cer": 0.2088888888888889,
+            "wer": 0.7096774193548387,
+            "lowercase_cer_diagnostic": 0.18666666666666668,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 4
+          },
+          "per_region_character_edits": {
+            "Relacja_chwalebnej_FT__437015__r001": 119,
+            "Ceremonie_FT__436723__r005": 46,
+            "List_FT__436651__r000": 66,
+            "Wyprawa_2_FT__436963__r000": 118,
+            "Zalosne_FT__436608__r001": 195,
+            "Relacja_spraw_FT__437088__r001": 88,
+            "Diariusz_FT__436661__r004": 55,
+            "NA4_FT__435794__r003": 47,
+            "Nowe_nowiny_z_Czech_FT__436793__r002": 273,
+            "Prawdziwa_relacja_FT__436999__r004": 59,
+            "Relacja_prawdziwa_FT__436828__r001": 131,
+            "Nowiny_z_Inflant_FT__436660__r001": 125
+          }
+        },
+        "line_band": {
+          "all_regions": {
+            "regions": 12,
+            "reference_characters": 3486,
+            "cer": 0.38009179575444635,
+            "wer": 0.8307692307692308,
+            "lowercase_cer_diagnostic": 0.3732071141709696,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 68
+          },
+          "without_private_use_references": {
+            "regions": 1,
+            "reference_characters": 225,
+            "cer": 0.22666666666666666,
+            "wer": 0.6129032258064516,
+            "lowercase_cer_diagnostic": 0.20444444444444446,
+            "errors": 0,
+            "empty": 0,
+            "detected_lines": 4
+          },
+          "per_region_character_edits": {
+            "Relacja_chwalebnej_FT__437015__r001": 126,
+            "Ceremonie_FT__436723__r005": 39,
+            "List_FT__436651__r000": 69,
+            "Wyprawa_2_FT__436963__r000": 130,
+            "Zalosne_FT__436608__r001": 182,
+            "Relacja_spraw_FT__437088__r001": 89,
+            "Diariusz_FT__436661__r004": 51,
+            "NA4_FT__435794__r003": 51,
+            "Nowe_nowiny_z_Czech_FT__436793__r002": 268,
+            "Prawdziwa_relacja_FT__436999__r004": 61,
+            "Relacja_prawdziwa_FT__436828__r001": 136,
+            "Nowiny_z_Inflant_FT__436660__r001": 123
+          }
+        }
+      },
+      "comparison": {
+        "improved": 5,
+        "regressed": 7,
+        "tied": 0,
+        "net_character_edit_change": 3,
+        "deltas": {
+          "Relacja_chwalebnej_FT__437015__r001": 7,
+          "Ceremonie_FT__436723__r005": -7,
+          "List_FT__436651__r000": 3,
+          "Wyprawa_2_FT__436963__r000": 12,
+          "Zalosne_FT__436608__r001": -13,
+          "Relacja_spraw_FT__437088__r001": 1,
+          "Diariusz_FT__436661__r004": -4,
+          "NA4_FT__435794__r003": 4,
+          "Nowe_nowiny_z_Czech_FT__436793__r002": -5,
+          "Prawdziwa_relacja_FT__436999__r004": 2,
+          "Relacja_prawdziwa_FT__436828__r001": 5,
+          "Nowiny_z_Inflant_FT__436660__r001": -2
+        }
+      },
+      "possibly_truncated_lines": {
+        "rectangle": 0,
+        "line_band": 0
+      },
+      "paired_bootstrap": {
+        "unit": "region",
+        "samples": 20000,
+        "seed": 20260924,
+        "cer_delta_line_band_minus_rectangle": 0.0008605851979345824,
+        "percentile_95_interval": [
+          -0.012054647736405036,
+          0.013597398758498374
+        ],
+        "bootstrap_fraction_line_band_better": 0.4338
+      }
+    }
+  }
+}

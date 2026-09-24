@@ -6,14 +6,18 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 21 września 2026
+## Aktualny stan: 24 września 2026
 
 ### Google Colab (dodano 24 września)
 
-- **Następny test:** [zamrożona próba geometrii z 12 nowych kolekcji](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_holdout.ipynb).
-  Pełne regiony, automatyczna segmentacja bez znajomości liczby referencyjnych
-  linii i wszystkie regiony w mianowniku. Obrazy są pobierane bezpośrednio z
-  przypiętej rewizji Hugging Face; repo nie publikuje ich ponownie.
+- **Zakończony holdout geometrii:** [12 nowych kolekcji w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_holdout.ipynb).
+  Dla mixed-v3 prostokąt uzyskał CER **37,9231%**, a line-band **38,0092%**;
+  przedział bootstrap 95% różnicy przecina zero. Prostokąt pozostaje wariantem
+  domyślnym, a strojenie geometrii na tej próbie jest zamknięte.
+  [Zweryfikowany wynik i decyzja](docs/GEOMETRY_HOLDOUT_RESULT_20260924.md).
+- **Następny etap:** przegląd 45 znaków prywatnego alfabetu na skanach oraz
+  trening recognizera dla historycznego druku. Starej pisowni, w tym `á` i `ſ`,
+  nie modernizujemy; pozostaje częścią podstawowej metryki.
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).

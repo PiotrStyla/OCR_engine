@@ -32,3 +32,15 @@ Files:
 Primary normalization is NFC plus whitespace only. Case and historical spelling
 are retained. This sample may guide a geometry decision, but the final frozen
 PolOCRBench test remains untouched.
+
+## Completed result
+
+The Colab run completed all four model/geometry combinations on 2026-09-24.
+For mixed-v3, rectangle CER was 37.9231% and line-band CER was 38.0092%.
+The paired region-bootstrap 95% interval for the difference crossed zero, so
+rectangle remains the default and this holdout is closed for geometry tuning.
+
+- `result-summary.json`: independently recomputed metrics and provenance.
+- `recognition-error-summary.json`: aggregate mixed-v3 rectangle error profile;
+  raw OCR text is excluded.
+- [Full result and decision](../../../docs/GEOMETRY_HOLDOUT_RESULT_20260924.md).
