@@ -10,6 +10,10 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Google Colab (dodano 24 września)
 
+- **Następny test:** [zamrożona próba geometrii z 12 nowych kolekcji](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_holdout.ipynb).
+  Pełne regiony, automatyczna segmentacja bez znajomości liczby referencyjnych
+  linii i wszystkie regiony w mianowniku. Obrazy są pobierane bezpośrednio z
+  przypiętej rewizji Hugging Face; repo nie publikuje ich ponownie.
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).
