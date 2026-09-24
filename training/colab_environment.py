@@ -8,16 +8,17 @@ REQUIRED_PACKAGES = {
 }
 
 
-def check_colab_environment():
+def check_colab_environment(extra=None):
+    required = {**REQUIRED_PACKAGES, **(extra or {})}
     problems = []
-    for name, expected in REQUIRED_PACKAGES.items():
+    for name, expected in required.items():
         try:
             installed = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
             installed = 'missing'
         if installed != expected:
             problems.append(f'{name}: installed={installed}, required={expected}')
-    for name in [*REQUIRED_PACKAGES, 'tokenizers']:
+    for name in [*required, 'tokenizers']:
         loaded = sys.modules.get(name)
         version = getattr(loaded, '__version__', None)
         if version is not None:

@@ -37,3 +37,9 @@ def test_missing_package_rejected(monkeypatch):
     monkeypatch.setattr(env.importlib.metadata, 'version', missing)
     with pytest.raises(RuntimeError, match='installed=missing'):
         env.check_colab_environment()
+
+
+def test_extra_package_pin(monkeypatch):
+    versions = setup_versions(monkeypatch)
+    versions['opencv-python-headless'] = '4.12.0.88'
+    env.check_colab_environment({'opencv-python-headless': '4.12.0.88'})
