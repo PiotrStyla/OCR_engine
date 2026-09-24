@@ -92,6 +92,8 @@ def train(
     revision: str | None = None,
     include_mlp: bool = False,
     seed: int = 42,
+    max_target_length: int = 128,
+    gradient_accumulation_steps: int = 1,
 ) -> None:
     if isinstance(train_dirs, str):
         train_dirs = [train_dirs]
@@ -158,13 +160,13 @@ def train(
     train_samples = [s for d in train_dirs for s in load_pairs(d)]
     if not train_samples:
         raise SystemExit(f"Brak danych treningowych w {train_dirs}")
-    train_ds = TrOCRLineDataset(train_samples, processor)
+    train_ds = TrOCRLineDataset(train_samples, processor, max_target_length)
 
     val_ds = None
     if val_dir:
         val_samples = load_pairs(val_dir)
         if val_samples:
-            val_ds = TrOCRLineDataset(val_samples, processor)
+            val_ds = TrOCRLineDataset(val_samples, processor, max_target_length)
 
     args = Seq2SeqTrainingArguments(
         output_dir=output_dir,
@@ -172,6 +174,7 @@ def train(
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         learning_rate=lr,
+        gradient_accumulation_steps=gradient_accumulation_steps,
         save_strategy="epoch",
         eval_strategy="epoch" if val_ds else "no",
         predict_with_generate=True,
@@ -197,6 +200,8 @@ def train(
         resolved_revision=getattr(model.config, '_commit_hash', None), source_commit=source_commit,
         train=train_records, validation=val_records, seed=seed, generation=generation,
         use_4bit=use_4bit, include_mlp=include_mlp, neftune_noise=neftune_noise,
+        max_target_length=max_target_length,
+        gradient_accumulation_steps=gradient_accumulation_steps,
         trainable_parameters=sum(p.numel() for p in model.parameters() if p.requires_grad),
         packages={name:importlib.metadata.version(name) for name in ['torch','transformers','peft','accelerate','jiwer']},
         training_arguments=args.to_dict()))
@@ -242,6 +247,8 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument('--revision', default=None)
     p.add_argument('--include-mlp', action='store_true', help='Separate capacity experiment: add fc1/fc2')
     p.add_argument('--seed', type=int, default=42)
+    p.add_argument('--max-target-length', type=int, default=128)
+    p.add_argument('--gradient-accumulation-steps', type=int, default=1)
     return p.parse_args()
 
 
@@ -255,6 +262,8 @@ def main() -> None:
         use_4bit=not a.no_4bit,
         neftune_noise=0.0,
         revision=a.revision, include_mlp=a.include_mlp, seed=a.seed,
+        max_target_length=a.max_target_length,
+        gradient_accumulation_steps=a.gradient_accumulation_steps,
     )
 
 

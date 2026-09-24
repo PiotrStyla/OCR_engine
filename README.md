@@ -18,6 +18,10 @@ ani potwierdzonym silnikiem SOTA.**
 - **Następny etap:** przegląd 45 znaków prywatnego alfabetu na skanach oraz
   trening recognizera dla historycznego druku. Starej pisowni, w tym `á` i `ſ`,
   nie modernizujemy; pozostaje częścią podstawowej metryki.
+- **Gotowy korpus pilota recognizera:** 258 linii train i 139 validation z
+  rozłącznych kolekcji; linie z PUA/U+FFFD są w kwarantannie. Konfiguracja nie
+  używa 12 kolekcji holdoutu geometrii ani końcowego testu.
+  [Protokół i warunki promocji](docs/HISTORICAL_RECOGNIZER_V1.md).
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).

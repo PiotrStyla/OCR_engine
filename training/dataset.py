@@ -58,6 +58,21 @@ class TrOCRLineDataset:
         self.samples = samples
         self.processor = processor
         self.max_target_length = max_target_length
+        lengths = [
+            len(processor.tokenizer(sample.text, truncation=False).input_ids)
+            for sample in samples
+        ]
+        too_long = [
+            (index, length)
+            for index, length in enumerate(lengths)
+            if length > max_target_length
+        ]
+        if too_long:
+            index, length = too_long[0]
+            raise ValueError(
+                f"Target {index} has {length} tokens; max_target_length={max_target_length}. "
+                "Do not silently truncate OCR labels."
+            )
 
     def __len__(self) -> int:
         return len(self.samples)

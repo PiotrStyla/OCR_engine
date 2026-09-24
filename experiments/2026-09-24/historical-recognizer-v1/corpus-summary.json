@@ -1,0 +1,350 @@
+{
+  "schema": "ocr-engine-historical-lines-v1",
+  "scope": "training/development corpus; not benchmark or gold release",
+  "dataset": "PiotrSty/impact-psnc-polish-ocr",
+  "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+  "geometry": "automatic rectangle; reference line count used only to accept or quarantine a region",
+  "normalization": "NFC and whitespace only; historical spelling retained",
+  "label_policy": "U+FFFD and private-use lines quarantined; no modernization",
+  "collections": {
+    "train": [
+      "Adwersaria_FT",
+      "Discurs_FT",
+      "NA1_FT",
+      "NA3_FT",
+      "Nowiny_z_Torunia_FT",
+      "O_cieplicach_FT",
+      "Oekonomika_FT",
+      "Pasja_zolnierzy_FT",
+      "Szturm_FT",
+      "Wyprawa_1_FT"
+    ],
+    "validation": [
+      "Choragiew_FT",
+      "Relacja_koronacji_FT",
+      "SLAWNA_VICTORIA_FT",
+      "Slawna_wiktoria_FT",
+      "Wiesc_FT"
+    ],
+    "test": [
+      "NA2_FT",
+      "Nowiny_z_Rakuz_FT",
+      "Powodzenia_FT"
+    ],
+    "geometry_holdout": [
+      "Ceremonie_FT",
+      "Diariusz_FT",
+      "List_FT",
+      "NA4_FT",
+      "Nowe_nowiny_z_Czech_FT",
+      "Nowiny_z_Inflant_FT",
+      "Prawdziwa_relacja_FT",
+      "Relacja_chwalebnej_FT",
+      "Relacja_prawdziwa_FT",
+      "Relacja_spraw_FT",
+      "Wyprawa_2_FT",
+      "Zalosne_FT"
+    ]
+  },
+  "stats": {
+    "train": {
+      "candidate_regions": 188,
+      "regions_line_count_mismatch": 87,
+      "accepted_lines": 258,
+      "quarantined_private_use_character_lines": 173,
+      "quarantined_replacement_character_lines": 39,
+      "accepted_regions": 94
+    },
+    "validation": {
+      "candidate_regions": 116,
+      "regions_line_count_mismatch": 42,
+      "accepted_lines": 139,
+      "quarantined_private_use_character_lines": 61,
+      "quarantined_replacement_character_lines": 7,
+      "accepted_regions": 69
+    }
+  },
+  "quarantine_records": 409,
+  "unicode_inventory": [
+    {
+      "character": "°",
+      "codepoint": "U+00B0",
+      "name": "DEGREE SIGN",
+      "count": 1
+    },
+    {
+      "character": "ß",
+      "codepoint": "U+00DF",
+      "name": "LATIN SMALL LETTER SHARP S",
+      "count": 128
+    },
+    {
+      "character": "à",
+      "codepoint": "U+00E0",
+      "name": "LATIN SMALL LETTER A WITH GRAVE",
+      "count": 8
+    },
+    {
+      "character": "á",
+      "codepoint": "U+00E1",
+      "name": "LATIN SMALL LETTER A WITH ACUTE",
+      "count": 478
+    },
+    {
+      "character": "æ",
+      "codepoint": "U+00E6",
+      "name": "LATIN SMALL LETTER AE",
+      "count": 2
+    },
+    {
+      "character": "é",
+      "codepoint": "U+00E9",
+      "name": "LATIN SMALL LETTER E WITH ACUTE",
+      "count": 2
+    },
+    {
+      "character": "í",
+      "codepoint": "U+00ED",
+      "name": "LATIN SMALL LETTER I WITH ACUTE",
+      "count": 1
+    },
+    {
+      "character": "ñ",
+      "codepoint": "U+00F1",
+      "name": "LATIN SMALL LETTER N WITH TILDE",
+      "count": 1
+    },
+    {
+      "character": "ô",
+      "codepoint": "U+00F4",
+      "name": "LATIN SMALL LETTER O WITH CIRCUMFLEX",
+      "count": 1
+    },
+    {
+      "character": "Ą",
+      "codepoint": "U+0104",
+      "name": "LATIN CAPITAL LETTER A WITH OGONEK",
+      "count": 2
+    },
+    {
+      "character": "ą",
+      "codepoint": "U+0105",
+      "name": "LATIN SMALL LETTER A WITH OGONEK",
+      "count": 3
+    },
+    {
+      "character": "ć",
+      "codepoint": "U+0107",
+      "name": "LATIN SMALL LETTER C WITH ACUTE",
+      "count": 102
+    },
+    {
+      "character": "ċ",
+      "codepoint": "U+010B",
+      "name": "LATIN SMALL LETTER C WITH DOT ABOVE",
+      "count": 27
+    },
+    {
+      "character": "ē",
+      "codepoint": "U+0113",
+      "name": "LATIN SMALL LETTER E WITH MACRON",
+      "count": 1
+    },
+    {
+      "character": "ę",
+      "codepoint": "U+0119",
+      "name": "LATIN SMALL LETTER E WITH OGONEK",
+      "count": 11
+    },
+    {
+      "character": "Ł",
+      "codepoint": "U+0141",
+      "name": "LATIN CAPITAL LETTER L WITH STROKE",
+      "count": 7
+    },
+    {
+      "character": "ł",
+      "codepoint": "U+0142",
+      "name": "LATIN SMALL LETTER L WITH STROKE",
+      "count": 163
+    },
+    {
+      "character": "ń",
+      "codepoint": "U+0144",
+      "name": "LATIN SMALL LETTER N WITH ACUTE",
+      "count": 24
+    },
+    {
+      "character": "ō",
+      "codepoint": "U+014D",
+      "name": "LATIN SMALL LETTER O WITH MACRON",
+      "count": 1
+    },
+    {
+      "character": "œ",
+      "codepoint": "U+0153",
+      "name": "LATIN SMALL LIGATURE OE",
+      "count": 1
+    },
+    {
+      "character": "ś",
+      "codepoint": "U+015B",
+      "name": "LATIN SMALL LETTER S WITH ACUTE",
+      "count": 74
+    },
+    {
+      "character": "ź",
+      "codepoint": "U+017A",
+      "name": "LATIN SMALL LETTER Z WITH ACUTE",
+      "count": 77
+    },
+    {
+      "character": "Ż",
+      "codepoint": "U+017B",
+      "name": "LATIN CAPITAL LETTER Z WITH DOT ABOVE",
+      "count": 1
+    },
+    {
+      "character": "ż",
+      "codepoint": "U+017C",
+      "name": "LATIN SMALL LETTER Z WITH DOT ABOVE",
+      "count": 129
+    },
+    {
+      "character": "ž",
+      "codepoint": "U+017E",
+      "name": "LATIN SMALL LETTER Z WITH CARON",
+      "count": 14
+    },
+    {
+      "character": "ſ",
+      "codepoint": "U+017F",
+      "name": "LATIN SMALL LETTER LONG S",
+      "count": 228
+    },
+    {
+      "character": "ȧ",
+      "codepoint": "U+0227",
+      "name": "LATIN SMALL LETTER A WITH DOT ABOVE",
+      "count": 65
+    },
+    {
+      "character": "Ⱥ",
+      "codepoint": "U+023A",
+      "name": "LATIN CAPITAL LETTER A WITH STROKE",
+      "count": 1
+    },
+    {
+      "character": "Ɇ",
+      "codepoint": "U+0246",
+      "name": "LATIN CAPITAL LETTER E WITH STROKE",
+      "count": 2
+    },
+    {
+      "character": "ɇ",
+      "codepoint": "U+0247",
+      "name": "LATIN SMALL LETTER E WITH STROKE",
+      "count": 93
+    },
+    {
+      "character": "̃",
+      "codepoint": "U+0303",
+      "name": "COMBINING TILDE",
+      "count": 1
+    },
+    {
+      "character": "̄",
+      "codepoint": "U+0304",
+      "name": "COMBINING MACRON",
+      "count": 2
+    },
+    {
+      "character": "ṁ",
+      "codepoint": "U+1E41",
+      "name": "LATIN SMALL LETTER M WITH DOT ABOVE",
+      "count": 1
+    },
+    {
+      "character": "ṗ",
+      "codepoint": "U+1E57",
+      "name": "LATIN SMALL LETTER P WITH DOT ABOVE",
+      "count": 1
+    },
+    {
+      "character": "ṡ",
+      "codepoint": "U+1E61",
+      "name": "LATIN SMALL LETTER S WITH DOT ABOVE",
+      "count": 19
+    },
+    {
+      "character": "ẃ",
+      "codepoint": "U+1E83",
+      "name": "LATIN SMALL LETTER W WITH ACUTE",
+      "count": 1
+    },
+    {
+      "character": "ẇ",
+      "codepoint": "U+1E87",
+      "name": "LATIN SMALL LETTER W WITH DOT ABOVE",
+      "count": 4
+    },
+    {
+      "character": "ẞ",
+      "codepoint": "U+1E9E",
+      "name": "LATIN CAPITAL LETTER SHARP S",
+      "count": 1
+    },
+    {
+      "character": "‑",
+      "codepoint": "U+2011",
+      "name": "NON-BREAKING HYPHEN",
+      "count": 9
+    },
+    {
+      "character": "ⱥ",
+      "codepoint": "U+2C65",
+      "name": "LATIN SMALL LETTER A WITH STROKE",
+      "count": 115
+    },
+    {
+      "character": "⸗",
+      "codepoint": "U+2E17",
+      "name": "DOUBLE OBLIQUE HYPHEN",
+      "count": 54
+    },
+    {
+      "character": "ﬀ",
+      "codepoint": "U+FB00",
+      "name": "LATIN SMALL LIGATURE FF",
+      "count": 1
+    },
+    {
+      "character": "ﬁ",
+      "codepoint": "U+FB01",
+      "name": "LATIN SMALL LIGATURE FI",
+      "count": 3
+    },
+    {
+      "character": "ﬃ",
+      "codepoint": "U+FB03",
+      "name": "LATIN SMALL LIGATURE FFI",
+      "count": 1
+    },
+    {
+      "character": "ﬆ",
+      "codepoint": "U+FB06",
+      "name": "LATIN SMALL LIGATURE ST",
+      "count": 1
+    }
+  ],
+  "manifest_sha256": "dbed37d35d77fe85af634dcdd353f628f0c318b37b02cff08520eb746f090314",
+  "quarantine_sha256": "a7fd8a394ccb06c8d0d037f4ec48321b625ed9109c5aacb9f4ef741b444f32e5",
+  "provenance": {
+    "metadata_sha256": {
+      "train": "dae1190a6de1f80468cda2e3682b0f0bf491683bf950e71365d9f86a09eba3da",
+      "validation": "7c327af0b655813cd2b2e695aa9c9a6f31a2a2524e826e4b2cacec1717db53ad",
+      "test": "b311a3c077deb15f95cb7f972fd351be15b5922b69ba8f49a2b3c0834a523435"
+    },
+    "holdout_manifest_sha256": "0b5459ea56d352de532b2cdc2284bd701b1c98458c67afd9f2220b6f0a6a7b18"
+  }
+}
