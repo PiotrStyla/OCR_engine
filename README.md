@@ -10,10 +10,12 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Google Colab (dodano 24 września)
 
-- **Następny eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
+- **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).
-  Wynik OCR tego wariantu nie jest jeszcze zmierzony.
+  Mixed-v3: CER 29,40% wobec 29,44% poprzednio, tylko jeden błąd mniej.
+  Brak podstaw do zmiany wariantu domyślnego. [Wynik i ograniczenia](docs/AUTO_GEOMETRY_BANDS_RESULT_20260924.md).
+  Następny krok: osobna próbka walidacyjna, bez dalszego strojenia na tych 63 liniach.
 - **Poprzedni eksperyment:** [porównanie automatycznych ramek na 63 liniach](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_auto_geometry.ipynb).
   31 propozycji nowych wycinków i 32 jawne powroty do oryginału; obie wersje
   porównywane na tych samych referencjach. [Metoda i ograniczenia](docs/AUTO_LINE_GEOMETRY_20260924.md).

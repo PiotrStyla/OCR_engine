@@ -1,0 +1,256 @@
+{
+  "scope": "post-hoc development diagnostic; draft references; not benchmark or SOTA",
+  "source_zip_sha256": {
+    "body-dev-diagnostic-20260924T102032899332Z.zip": "ba094189d571715c9fa6086ac557c8881a0c6a68f6f73a62f4efc6234821f9c3",
+    "body-dev-diagnostic-20260924T104545380613Z.zip": "bf35301440a9fef025517c49c03e08633025a3b007318a8f7afbe4d82714f072"
+  },
+  "models": {
+    "microsoft/trocr-base-printed": "93450be3f1ed40a930690d951ef3932687cc1892",
+    "PiotrSty/trocr-pl-mixed-v3": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9"
+  },
+  "environment": {
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6",
+    "Pillow": "11.3.0",
+    "jiwer": "4.0.0",
+    "huggingface_hub": "0.36.0"
+  },
+  "normalization": "NFC and whitespace; additional lowercase CER reported separately",
+  "generation": {
+    "do_sample": false,
+    "num_beams": 1,
+    "max_new_tokens": 256,
+    "dtype": "float32"
+  },
+  "input_zip_sha256": "d61133662b7245e873566defb5d31510965674877efbfa281a1ec20148fd294d",
+  "runner_sha256": "ec4ebdc16f2c24e085cbd2e18fc64ece339464a52497e4dbf9b94b4e906241fc",
+  "previous_results": {
+    "microsoft/trocr-base-printed": {
+      "original": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.8529980657640233,
+          "wer": 1.0,
+          "lowercase_cer_diagnostic": 0.39613152804642165,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.8531195840554593,
+          "wer": 0.9972972972972973,
+          "lowercase_cer_diagnostic": 0.3882149046793761,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 31,
+          "cer": 0.8995391705069125,
+          "wer": 1.016304347826087,
+          "lowercase_cer_diagnostic": 0.5548387096774193,
+          "errors": 0,
+          "empty": 0
+        }
+      },
+      "automatic_with_fallback": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.8448742746615087,
+          "wer": 0.9952267303102625,
+          "lowercase_cer_diagnostic": 0.372147001934236,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.8466204506065858,
+          "wer": 0.9945945945945946,
+          "lowercase_cer_diagnostic": 0.3630849220103986,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 31,
+          "cer": 0.880184331797235,
+          "wer": 1.0054347826086956,
+          "lowercase_cer_diagnostic": 0.4976958525345622,
+          "errors": 0,
+          "empty": 0
+        }
+      }
+    },
+    "PiotrSty/trocr-pl-mixed-v3": {
+      "original": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.31644100580270795,
+          "wer": 0.7947494033412887,
+          "lowercase_cer_diagnostic": 0.31102514506769824,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.3128249566724437,
+          "wer": 0.8027027027027027,
+          "lowercase_cer_diagnostic": 0.30719237435008667,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 31,
+          "cer": 0.4589861751152074,
+          "wer": 0.9347826086956522,
+          "lowercase_cer_diagnostic": 0.45069124423963136,
+          "errors": 0,
+          "empty": 0
+        }
+      },
+      "automatic_with_fallback": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.2943907156673114,
+          "wer": 0.7756563245823389,
+          "lowercase_cer_diagnostic": 0.28936170212765955,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.2902946273830156,
+          "wer": 0.7864864864864864,
+          "lowercase_cer_diagnostic": 0.28466204506065856,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 31,
+          "cer": 0.4064516129032258,
+          "wer": 0.8913043478260869,
+          "lowercase_cer_diagnostic": 0.3990783410138249,
+          "errors": 0,
+          "empty": 0
+        }
+      }
+    }
+  },
+  "current_results": {
+    "microsoft/trocr-base-printed": {
+      "original": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.8529980657640233,
+          "wer": 1.0,
+          "lowercase_cer_diagnostic": 0.39613152804642165,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.8531195840554593,
+          "wer": 0.9972972972972973,
+          "lowercase_cer_diagnostic": 0.3882149046793761,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 33,
+          "cer": 0.8975903614457831,
+          "wer": 1.015075376884422,
+          "lowercase_cer_diagnostic": 0.5516351118760757,
+          "errors": 0,
+          "empty": 0
+        }
+      },
+      "automatic_with_fallback": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.844100580270793,
+          "wer": 0.9904534606205251,
+          "lowercase_cer_diagnostic": 0.3729206963249516,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.8461871750433275,
+          "wer": 0.9918918918918919,
+          "lowercase_cer_diagnostic": 0.36741767764298094,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 33,
+          "cer": 0.8777969018932874,
+          "wer": 0.9949748743718593,
+          "lowercase_cer_diagnostic": 0.5,
+          "errors": 0,
+          "empty": 0
+        }
+      }
+    },
+    "PiotrSty/trocr-pl-mixed-v3": {
+      "original": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.31644100580270795,
+          "wer": 0.7947494033412887,
+          "lowercase_cer_diagnostic": 0.31102514506769824,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.3128249566724437,
+          "wer": 0.8027027027027027,
+          "lowercase_cer_diagnostic": 0.30719237435008667,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 33,
+          "cer": 0.4509466437177281,
+          "wer": 0.9246231155778895,
+          "lowercase_cer_diagnostic": 0.44320137693631667,
+          "errors": 0,
+          "empty": 0
+        }
+      },
+      "automatic_with_fallback": {
+        "all_draft_lines": {
+          "lines": 63,
+          "cer": 0.2940038684719536,
+          "wer": 0.7756563245823389,
+          "lowercase_cer_diagnostic": 0.28936170212765955,
+          "errors": 0,
+          "empty": 0
+        },
+        "without_needs_review": {
+          "lines": 56,
+          "cer": 0.29116117850953205,
+          "wer": 0.7837837837837838,
+          "lowercase_cer_diagnostic": 0.28639514731369153,
+          "errors": 0,
+          "empty": 0
+        },
+        "changed_geometry_only": {
+          "lines": 33,
+          "cer": 0.4010327022375215,
+          "wer": 0.8844221105527639,
+          "lowercase_cer_diagnostic": 0.39500860585197933,
+          "errors": 0,
+          "empty": 0
+        }
+      }
+    }
+  },
+  "mixed_v3_original_records_identical": true,
+  "mixed_v3_band_vs_rectangle": {
+    "tied": 44,
+    "regressed": 10,
+    "improved": 9
+  },
+  "net_character_edit_change": -1,
+  "reference_strings_changed": false,
+  "weights_changed": false
+}
