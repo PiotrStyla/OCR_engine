@@ -41,13 +41,15 @@ def test_fallback_must_retain_pixels():
         pair_inputs(b'old', 'a', b'changed', 'b', loader)
 
 
-def test_notebook_is_reproducible_and_small(tmp_path):
+@pytest.mark.parametrize('bands', [False, True])
+def test_notebook_is_reproducible_and_small(tmp_path, bands):
     from pathlib import Path
     from training.build_geometry_colab import build
-    target = tmp_path / 'colab_auto_geometry.ipynb'
-    build(target)
+    name = 'colab_geometry_bands.ipynb' if bands else 'colab_auto_geometry.ipynb'
+    target = tmp_path / name
+    build(target, bands=bands)
     root = Path(__file__).resolve().parents[1]
-    assert target.read_bytes() == (root / 'training/colab_auto_geometry.ipynb').read_bytes()
+    assert target.read_bytes() == (root / 'training' / name).read_bytes()
     assert target.stat().st_size < 1_000_000
     nb = json.loads(target.read_text(encoding='utf-8'))
     for cell in nb['cells']:
@@ -56,3 +58,6 @@ def test_notebook_is_reproducible_and_small(tmp_path):
             source = ''.join(cell['source'])
             if not source.startswith('%pip'):
                 compile(source, '<cell>', 'exec')
+    run = ''.join(next(c for c in nb['cells'] if c['id'] == 'run')['source'])
+    assert run.index('\ncheck_colab_environment()') < run.index('\nfrom urllib.request import urlopen')
+    assert 'INCOMPLETE RUN' in run
