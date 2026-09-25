@@ -1,0 +1,8 @@
+{
+  "cer_micro": 0.982766439909297,
+  "wer_micro": 0.9957446808510638,
+  "pages": 2,
+  "failed_pages": 0,
+  "replacement_char_predictions": 0,
+  "elapsed_seconds": 1.437
+}

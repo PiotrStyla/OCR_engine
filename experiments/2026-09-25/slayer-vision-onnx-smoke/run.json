@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-09-25T07:22:52.019941+00:00",
+  "scope": "diagnostic-smoke",
+  "claim": "Not SOTA evidence; full-page capability and decoding are under test.",
+  "model_repo": "PiotrSty/slayer-vision-onnx",
+  "model_revision": "22b86dc311bb6c7213ddfc1924d5d90119f29c10",
+  "base_lm": "SlayerLab/goLLeM-110M-PL-SFT-merged",
+  "base_lm_revision": "a319aedb2b705f72c17823deef509225e59e3b0a",
+  "vision_model": "google/siglip-base-patch16-224",
+  "vision_revision": "7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed",
+  "dataset_repo": "PiotrSty/impact-print-v2",
+  "dataset_revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+  "dataset_archive_sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0",
+  "model_file_sha256": {
+    "embed_tokens.onnx": "191338b81038c8f9d209441f3dc90ebd7484926037784312f6479aa73897735b",
+    "embed_tokens.onnx.data": "ac2b33679389d26b90508779f2aa518eeabb3d9d9e2d00966c392c863ed7c78e",
+    "lm_embeds.onnx": "84310fc4aecc1cbf114da515a6e19ff202ea710642612833c71a168e351e3da5",
+    "lm_embeds.onnx.data": "593f4b01165010201d4f6a6c76fcb24c308a5cbdc24c74861bac16aecbfe3265",
+    "manifest.json": "996fc9517af8b6118a8694004d7b0134a72e82bc96d0a5dcd6b0773c72f9f3da",
+    "vision_projector.onnx": "88fbdec4f6aec429c3c2630e14e828ddf9a9e1e85b96569071b828f90e41d31a",
+    "vision_projector.onnx.data": "0582b7f59cabae62838085f0cc41bd29adfa192347a280be65a5b65424c6d973"
+  },
+  "pages": 2,
+  "max_context": 512,
+  "image_tokens": 196,
+  "max_new_tokens": 128,
+  "preprocessing": "Pinned SiglipImageProcessor; RGB; resize 224x224; rescale and normalize mean/std 0.5.",
+  "decoding": "Greedy argmax; complete ID sequence decoded once; no post-correction; NFC/whitespace only for metrics.",
+  "limitations": [
+    "The model was described as image captioning, not faithful OCR.",
+    "Image embeddings leave at most 316 LM positions for output tokens.",
+    "The ONNX LM has no KV cache and recomputes the prefix for every token.",
+    "The full page is resized to 224x224, which can erase small print."
+  ]
+}

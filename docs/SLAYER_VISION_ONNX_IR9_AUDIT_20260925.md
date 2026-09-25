@@ -77,6 +77,11 @@ zrodel, zachowac teksty licencji i ustalic licencje calego modelu pochodnego.
 
 ## Bramka przed integracja z OCR_engine
 
+**Bramka zamknieta negatywnie 2026-09-25.** Test dwoch zamrozonych stron dal
+CER 98,28% i WER 99,57%; model wygenerowal krotkie podpisy obrazu zamiast
+transkrypcji. Zobacz
+[`SLAYER_VISION_ONNX_SMOKE_RESULT_20260925.md`](SLAYER_VISION_ONNX_SMOKE_RESULT_20260925.md).
+
 1. Wyeksportowac lub dolaczyc `tokenizer.json` i `tokenizer_config.json` z
    przypietej rewizji LM; usunac dekodowanie przez `tokens_decoded.json`.
 2. Dodac jawny `preprocessor_config.json` oraz test zgodnosci obrazu i logitow

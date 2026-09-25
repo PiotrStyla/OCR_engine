@@ -19,6 +19,9 @@ ani potwierdzonym silnikiem SOTA.**
   Notebook używa przypiętych rewizji modelu, tokenizera, SigLIP i danych,
   dekoduje pełną sekwencję tokenów oraz pobiera ZIP dowodowy. To diagnostyka;
   dopiero wynik pokaże, czy model ma jakąkolwiek zdolność wiernej transkrypcji.
+- **Wynik negatywny:** na dwóch stronach model osiągnął CER 98,28% i WER
+  99,57%, generując krótkie podpisy zamiast transkrypcji. Checkpoint nie będzie
+  rozwijany jako OCR pełnych stron. [Wynik, dowody i decyzja](docs/SLAYER_VISION_ONNX_SMOKE_RESULT_20260925.md).
 
 ### Google Colab (dodano 24 września)
 
