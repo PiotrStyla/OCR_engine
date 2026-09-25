@@ -49,7 +49,8 @@ def test_install_cell_is_version_pinned(tmp_path):
     notebook = json.loads(target.read_text(encoding="utf-8"))
     install = "".join(next(cell for cell in notebook["cells"] if cell["id"] == "install")["source"])
     assert "onnxruntime-gpu==1.23.0" in install
-    assert "transformers==4.57.6" in install
+    assert "tokenizers==0.22.2" in install
+    assert "transformers" not in install
     assert "huggingface_hub==0.36.2" in install
     assert "jiwer==4.0.0" in install
 
@@ -65,7 +66,7 @@ def test_decode_uses_one_complete_sequence_call():
     tokenizer = Tokenizer()
     assert decode_sequence(tokenizer, [95, 96, 1234]) == "W świetne błáwaty."
     assert tokenizer.calls == [
-        ([95, 96, 1234], {"skip_special_tokens": True, "clean_up_tokenization_spaces": False})
+        ([95, 96, 1234], {"skip_special_tokens": True})
     ]
 
 

@@ -53,11 +53,18 @@ def normalize_metric_text(text: str) -> str:
 
 def decode_sequence(tokenizer, token_ids: list[int]) -> str:
     """Decode the complete sequence so byte-level tokens are not corrupted."""
-    return tokenizer.decode(
-        token_ids,
-        skip_special_tokens=True,
-        clean_up_tokenization_spaces=False,
-    )
+    return tokenizer.decode(token_ids, skip_special_tokens=True)
+
+
+def preprocess_siglip(image):
+    """Apply the pinned SigLIP 224px preprocessing without importing Transformers."""
+    import numpy as np
+    from PIL import Image
+
+    image = image.convert("RGB").resize((224, 224), resample=Image.Resampling.BICUBIC)
+    pixels = np.asarray(image, dtype=np.float32) / np.float32(255.0)
+    pixels = (pixels - np.float32(0.5)) / np.float32(0.5)
+    return np.transpose(pixels, (2, 0, 1))[None, ...]
 
 
 def validate_generation_limit(max_new_tokens: int) -> None:
@@ -142,7 +149,7 @@ def generate(sessions, pixel_values, tokenizer, max_new_tokens: int) -> dict:
         raise ValueError(f"Unexpected image embedding shape: {image_embeds.shape}")
 
     generated: list[int] = []
-    eos_token_id = tokenizer.eos_token_id
+    eos_token_id = tokenizer.token_to_id("<|endoftext|>")
     if eos_token_id is None:
         raise ValueError("Tokenizer has no eos_token_id")
     stopped_on_eos = False
@@ -179,7 +186,7 @@ def _environment(available_providers: list[str]) -> dict:
         "numpy",
         "onnxruntime-gpu",
         "Pillow",
-        "transformers",
+        "tokenizers",
     )
     return {
         "python": platform.python_version(),
@@ -194,7 +201,7 @@ def run(work_dir: Path = Path("/content/slayer-vision-onnx-smoke"), pages: int =
     from huggingface_hub import hf_hub_download, snapshot_download
     from jiwer import cer, wer
     from PIL import Image
-    from transformers import AutoImageProcessor, AutoTokenizer
+    from tokenizers import Tokenizer
 
     validate_generation_limit(max_new_tokens)
     work_dir = Path(work_dir)
@@ -224,10 +231,32 @@ def run(work_dir: Path = Path("/content/slayer-vision-onnx-smoke"), pages: int =
         if manifest.get(key) != expected:
             raise ValueError(f"Manifest mismatch for {key}: {manifest.get(key)!r}")
 
-    tokenizer = AutoTokenizer.from_pretrained(BASE_LM, revision=BASE_LM_REVISION)
-    processor = AutoImageProcessor.from_pretrained(VISION_MODEL, revision=VISION_REVISION)
-    if tokenizer.vocab_size != 32000 or tokenizer.eos_token_id != 0:
+    tokenizer_path = hf_hub_download(
+        BASE_LM, "tokenizer.json", revision=BASE_LM_REVISION
+    )
+    tokenizer = Tokenizer.from_file(tokenizer_path)
+    if tokenizer.get_vocab_size(with_added_tokens=True) != 32000:
+        raise ValueError("Unexpected tokenizer vocabulary size")
+    if tokenizer.token_to_id("<|endoftext|>") != 0:
         raise ValueError("Unexpected tokenizer contract")
+
+    processor_config_path = Path(hf_hub_download(
+        VISION_MODEL, "preprocessor_config.json", revision=VISION_REVISION
+    ))
+    processor_config = json.loads(processor_config_path.read_text(encoding="utf-8"))
+    expected_processor = {
+        "do_normalize": True,
+        "do_rescale": True,
+        "do_resize": True,
+        "image_mean": [0.5, 0.5, 0.5],
+        "image_std": [0.5, 0.5, 0.5],
+        "resample": 3,
+        "rescale_factor": 1 / 255,
+        "size": {"height": 224, "width": 224},
+    }
+    for key, expected in expected_processor.items():
+        if processor_config.get(key) != expected:
+            raise ValueError(f"Preprocessor mismatch for {key}: {processor_config.get(key)!r}")
 
     dataset_archive = Path(hf_hub_download(
         DATASET_REPO,
@@ -257,8 +286,8 @@ def run(work_dir: Path = Path("/content/slayer-vision-onnx-smoke"), pages: int =
         page_started = time.perf_counter()
         error = None
         try:
-            image = Image.open(image_path).convert("RGB")
-            pixel_values = processor(images=image, return_tensors="np")["pixel_values"]
+            image = Image.open(image_path)
+            pixel_values = preprocess_siglip(image)
             result = generate(sessions, pixel_values, tokenizer, max_new_tokens)
         except Exception as exc:  # Keep failed pages in the metric denominator.
             result = {"text": "", "token_ids": [], "token_count": 0, "stopped_on_eos": False}

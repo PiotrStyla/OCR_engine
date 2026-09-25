@@ -50,7 +50,7 @@ def build(target: Path) -> None:
                 "outputs": [],
                 "source": [
                     "%pip uninstall -q -y onnxruntime onnxruntime-gpu\n",
-                    "%pip install -q onnxruntime-gpu==1.23.0 transformers==4.57.6 "
+                    "%pip install -q onnxruntime-gpu==1.23.0 tokenizers==0.22.2 "
                     "huggingface_hub==0.36.2 jiwer==4.0.0 Pillow==11.3.0 numpy==2.2.6\n",
                 ],
             },
