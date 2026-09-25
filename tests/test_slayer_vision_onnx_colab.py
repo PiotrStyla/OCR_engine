@@ -12,6 +12,7 @@ from training.slayer_vision_onnx_smoke import (
     MODEL_REVISION,
     VISION_REVISION,
     decode_sequence,
+    normalized_tar_path,
     normalize_metric_text,
     safe_extract_tar,
     validate_generation_limit,
@@ -91,3 +92,17 @@ def test_safe_extract_rejects_parent_traversal(tmp_path):
         archive.addfile(member, io.BytesIO(payload))
     with pytest.raises(ValueError, match="Unsafe archive member"):
         safe_extract_tar(archive_path, tmp_path / "output")
+
+
+def test_safe_extract_normalizes_internal_parent_component(tmp_path):
+    archive_path = tmp_path / "dataset.tar.gz"
+    member_name = "impact-print-v2/../impact-corpus/pages/page.jpg"
+    payload = b"image"
+    with tarfile.open(archive_path, "w:gz") as archive:
+        member = tarfile.TarInfo(member_name)
+        member.size = len(payload)
+        archive.addfile(member, io.BytesIO(payload))
+    output = tmp_path / "output"
+    safe_extract_tar(archive_path, output)
+    assert (output / "impact-corpus/pages/page.jpg").read_bytes() == payload
+    assert normalized_tar_path(member_name) == Path("impact-corpus/pages/page.jpg")

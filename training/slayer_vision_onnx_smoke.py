@@ -6,6 +6,7 @@ import hashlib
 import importlib.metadata
 import json
 import platform
+import shutil
 import tarfile
 import time
 import unicodedata
@@ -75,25 +76,49 @@ def validate_generation_limit(max_new_tokens: int) -> None:
         )
 
 
+def normalized_tar_path(name: str) -> Path:
+    pure = PurePosixPath(name)
+    if pure.is_absolute() or "\\" in name or ":" in name:
+        raise ValueError(f"Unsafe archive member: {name}")
+    parts: list[str] = []
+    for part in pure.parts:
+        if part in ("", "."):
+            continue
+        if part == "..":
+            if not parts:
+                raise ValueError(f"Unsafe archive member: {name}")
+            parts.pop()
+        else:
+            parts.append(part)
+    if not parts:
+        raise ValueError(f"Unsafe archive member: {name}")
+    return Path(*parts)
+
+
 def safe_extract_tar(archive_path: Path, output_dir: Path) -> None:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    output_root = output_dir.resolve()
     with tarfile.open(archive_path, "r:gz") as archive:
         members = archive.getmembers()
         if sum(member.size for member in members) > 2_000_000_000:
             raise ValueError("Dataset archive is unexpectedly large")
         for member in members:
-            pure = PurePosixPath(member.name)
-            if (
-                pure.is_absolute()
-                or ".." in pure.parts
-                or "\\" in member.name
-                or ":" in member.name
-                or member.issym()
-                or member.islnk()
-            ):
+            if member.issym() or member.islnk() or not (member.isdir() or member.isfile()):
                 raise ValueError(f"Unsafe archive member: {member.name}")
-        archive.extractall(output_dir, members=members, filter="data")
+            relative = normalized_tar_path(member.name)
+            target = (output_root / relative).resolve()
+            if not target.is_relative_to(output_root):
+                raise ValueError(f"Unsafe archive member: {member.name}")
+            if member.isdir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            source = archive.extractfile(member)
+            if source is None:
+                raise ValueError(f"Unreadable archive member: {member.name}")
+            with source, target.open("xb") as destination:
+                shutil.copyfileobj(source, destination)
 
 
 def find_image(work_dir: Path, bench_dir: Path, record: dict) -> Path:
