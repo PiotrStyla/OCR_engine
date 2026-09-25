@@ -6,7 +6,15 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 24 września 2026
+## Aktualny stan: 25 września 2026
+
+### Eksperymentalny model SLAYER Vision ONNX
+
+- Paczka IR9/opset 18 przechodzi pełną statyczną walidację trzech grafów ONNX,
+  ale nie jest jeszcze kandydatem na domyślny silnik OCR. Brakuje poprawnego
+  tokenizera, kompletnej umowy preprocessingu i generacji oraz pomiaru CER/WER.
+  Obecny `tokens_decoded.json` ma 167 tokenów z U+FFFD, więc dekodowanie przez
+  konkatenację może psuć polskie znaki. [Audyt i bramka integracji](docs/SLAYER_VISION_ONNX_IR9_AUDIT_20260925.md).
 
 ### Google Colab (dodano 24 września)
 
