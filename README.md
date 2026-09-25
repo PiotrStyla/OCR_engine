@@ -15,6 +15,10 @@ ani potwierdzonym silnikiem SOTA.**
   tokenizera, kompletnej umowy preprocessingu i generacji oraz pomiaru CER/WER.
   Obecny `tokens_decoded.json` ma 167 tokenów z U+FFFD, więc dekodowanie przez
   konkatenację może psuć polskie znaki. [Audyt i bramka integracji](docs/SLAYER_VISION_ONNX_IR9_AUDIT_20260925.md).
+- **Gotowy test wykonawczy:** [uruchom dwie zamrożone strony IMPACT w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_vision_onnx_smoke.ipynb).
+  Notebook używa przypiętych rewizji modelu, tokenizera, SigLIP i danych,
+  dekoduje pełną sekwencję tokenów oraz pobiera ZIP dowodowy. To diagnostyka;
+  dopiero wynik pokaże, czy model ma jakąkolwiek zdolność wiernej transkrypcji.
 
 ### Google Colab (dodano 24 września)
 

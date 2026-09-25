@@ -45,6 +45,9 @@ Do czasu testu wykonawczego nalezy traktowac eksport jako model batch-size 1.
    nie zawiera sum kontrolnych plikow i nie dokumentuje zbioru treningowego.
 5. Graf LM nie ma wejsc/wyjsc KV-cache. Generowanie autoregresyjne bedzie
    przeliczalo cala sekwencje przy kazdym tokenie i moze byc wolne na CPU.
+6. LM ma kontekst 512 pozycji, z ktorych 196 zajmuje obraz. Pozostaje najwyzej
+   316 tokenow tekstu, wiec architektura moze obcinac transkrypcje pelnych stron
+   niezaleznie od jakosci wag.
 
 ## Pochodzenie i licencje
 
@@ -78,7 +81,8 @@ zrodel, zachowac teksty licencji i ustalic licencje calego modelu pochodnego.
    przypietej rewizji LM; usunac dekodowanie przez `tokens_decoded.json`.
 2. Dodac jawny `preprocessor_config.json` oraz test zgodnosci obrazu i logitow
    PyTorch versus ONNX na co najmniej trzech rzeczywistych skanach.
-3. Dodac wykonywalny runner ONNX Runtime z EOS, limitem tokenow i raportem czasu.
+3. Uruchomic przygotowany runner ONNX Runtime z EOS, limitem tokenow i raportem
+   czasu na dwoch zamrozonych stronach IMPACT, a wynik zachowac jako ZIP dowodowy.
 4. Zmierzyc CER/WER na zamrozonym holdoucie pelnych polskich stron oraz osobno
    na materialach historycznych. Ground truth moze miec tylko normalizacje
    NFC i bialych znakow; bez modernizacji pisowni.
