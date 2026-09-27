@@ -148,3 +148,111 @@ def sort_reading_order(bboxes: list[BBox], image_height: int) -> list[BBox]:
     for row in rows:
         ordered.extend(sorted(row, key=lambda b: b.x1))
     return ordered
+
+
+def sort_reading_order_columns(
+    bboxes: list[BBox], image_width: int, image_height: int
+) -> list[BBox]:
+    """Sort detected lines by columns while retaining wide separators.
+
+    The heuristic is deliberately conservative. Narrow boxes are connected
+    into horizontal-overlap components; only layouts with at least two
+    components containing multiple lines are treated as multi-column. Boxes
+    spanning at least 70% of the page width retain row-major position and split
+    the page into vertical sections.
+    """
+    row_major = sort_reading_order(bboxes, image_height)
+    if len(bboxes) < 4 or image_width <= 0:
+        return row_major
+
+    indexed = list(enumerate(bboxes))
+    spanning = [index for index, box in indexed if box.width >= image_width * 0.70]
+    body = [index for index, box in indexed if index not in set(spanning)]
+    if len(body) < 4:
+        return row_major
+
+    neighbours = {index: set() for index in body}
+    for position, left_index in enumerate(body):
+        left = bboxes[left_index]
+        for right_index in body[position + 1:]:
+            right = bboxes[right_index]
+            overlap = min(left.x2, right.x2) - max(left.x1, right.x1)
+            if overlap <= 0:
+                continue
+            if overlap / max(1, min(left.width, right.width)) >= 0.25:
+                neighbours[left_index].add(right_index)
+                neighbours[right_index].add(left_index)
+
+    components: list[list[int]] = []
+    unseen = set(body)
+    while unseen:
+        seed = min(unseen)
+        stack = [seed]
+        component = []
+        unseen.remove(seed)
+        while stack:
+            current = stack.pop()
+            component.append(current)
+            for neighbour in neighbours[current]:
+                if neighbour in unseen:
+                    unseen.remove(neighbour)
+                    stack.append(neighbour)
+        components.append(component)
+
+    major = [component for component in components if len(component) >= 2]
+    if len(major) < 2:
+        return row_major
+
+    def component_center(component: list[int]) -> float:
+        left = min(bboxes[index].x1 for index in component)
+        right = max(bboxes[index].x2 for index in component)
+        return (left + right) / 2
+
+    major.sort(key=component_center)
+    column_for_index: dict[int, int] = {}
+    for column, component in enumerate(major):
+        for index in component:
+            column_for_index[index] = column
+
+    major_members = {index for component in major for index in component}
+    for component in components:
+        if any(index in major_members for index in component):
+            continue
+        target = min(
+            range(len(major)),
+            key=lambda column: abs(component_center(component) - component_center(major[column])),
+        )
+        for index in component:
+            column_for_index[index] = target
+
+    def order_section(indices: list[int]) -> list[int]:
+        return sorted(
+            indices,
+            key=lambda index: (
+                column_for_index[index],
+                bboxes[index].y1,
+                bboxes[index].x1,
+                bboxes[index].y2,
+            ),
+        )
+
+    pending = set(body)
+    ordered_indices: list[int] = []
+    for span_index in sorted(
+        spanning,
+        key=lambda index: (bboxes[index].y1, bboxes[index].x1),
+    ):
+        span_center = (bboxes[span_index].y1 + bboxes[span_index].y2) / 2
+        before = [
+            index
+            for index in pending
+            if (bboxes[index].y1 + bboxes[index].y2) / 2 < span_center
+        ]
+        ordered_indices.extend(order_section(before))
+        pending.difference_update(before)
+        ordered_indices.append(span_index)
+    ordered_indices.extend(order_section(list(pending)))
+
+    if len(ordered_indices) != len(bboxes) or len(set(ordered_indices)) != len(bboxes):
+        raise RuntimeError("Column ordering did not preserve the detected boxes")
+    return [bboxes[index] for index in ordered_indices]
