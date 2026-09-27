@@ -1,0 +1,25 @@
+{
+  "schema": "ocr-engine-historical-recognizer-config-v1",
+  "status": "frozen before training",
+  "base_model": "PiotrSty/trocr-pl-mixed-v3",
+  "base_revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+  "dataset": "PiotrSty/impact-psnc-polish-ocr",
+  "dataset_revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+  "geometry": "automatic rectangle",
+  "training": {
+    "epochs": 12,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 2,
+    "learning_rate": 0.00005,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "include_mlp": false,
+    "use_4bit": false,
+    "max_target_length": 128,
+    "seed": 42
+  },
+  "selection_metric": "validation CER",
+  "normalization": "NFC and whitespace only; historical spelling retained",
+  "label_policy": "U+FFFD and private-use lines quarantined; no modernization",
+  "publication": "disabled pending evidence review"
+}

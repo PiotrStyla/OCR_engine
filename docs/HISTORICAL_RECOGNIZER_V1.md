@@ -4,6 +4,11 @@ This experiment specializes `PiotrSty/trocr-pl-mixed-v3` for historical Polish
 print while preserving source spelling. It is a bounded development pilot, not
 a benchmark run or SOTA claim.
 
+**Run completed 2026-09-27:** historical validation CER improved by 7.66 pp,
+but `real-lines-v1` regressed by 3.99 pp and EHRI by 11.21 pp. The candidate
+failed promotion and was not packaged or published. See
+[`HISTORICAL_RECOGNIZER_V1_RESULT_20260927.md`](HISTORICAL_RECOGNIZER_V1_RESULT_20260927.md).
+
 ## Corpus construction
 
 Source: `PiotrSty/impact-psnc-polish-ocr` at revision

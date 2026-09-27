@@ -1,0 +1,13 @@
+{
+  "historical_validation_improved": true,
+  "real_lines_regression_within_1pp": false,
+  "ehri_regression_within_2pp": false,
+  "tokenizer_roundtrip_clean": true,
+  "no_target_truncation": true,
+  "cer_deltas": {
+    "historical-validation": -0.07659360040312424,
+    "real-lines-v1": 0.039910689366452694,
+    "ehri-test": 0.11209302325581394
+  },
+  "all_gates_passed": false
+}

@@ -1,0 +1,23 @@
+{
+  "historical-validation": {
+    "cer": 0.27185689090450993,
+    "wer": 0.7378048780487805,
+    "n_lines": 139,
+    "cer_corrected": null,
+    "wer_corrected": null
+  },
+  "real-lines-v1": {
+    "cer": 0.09349706949483673,
+    "wer": 0.3472,
+    "n_lines": 75,
+    "cer_corrected": null,
+    "wer_corrected": null
+  },
+  "ehri-test": {
+    "cer": 0.4095348837209302,
+    "wer": 0.8584758942457231,
+    "n_lines": 81,
+    "cer_corrected": null,
+    "wer_corrected": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "baseline-metrics.json": "858ececd309f8e80320a733637bd271c6f3af39a1e2a61907a96feb73acaac56",
+  "best-metrics.json": "c261341d3a22d2d18d065c102315b8cea7fe6b0999ae13060e32ea7b37e27a68",
+  "candidate-metrics.json": "8165d421af20ecffc3d5df2ead049072b58295a0b9993634697302be3ec0a278",
+  "corpus-manifest.jsonl": "f8fe4202e710601a1132e351c4e9d9c7398932e563ba4fb1c2e0b2d0008188dc",
+  "corpus-quarantine.jsonl": "a7fd8a394ccb06c8d0d037f4ec48321b625ed9109c5aacb9f4ef741b444f32e5",
+  "corpus-report.json": "ac20615ca1fef607e7961e4454a5e01e7c1eb84738245dde1b65b5361f1a4443",
+  "environment.json": "ccf8e656f134fc4f5f8da44b0fe271d40e4348d2c1d25e1c469531075b80ec76",
+  "experiment-config.json": "1d3f0b1648dc4df047d85cbd341a15908144e50a79c8717f5c1641563b1bc4a1",
+  "promotion-gates.json": "9fedb520b9b10ee70078fb7bcd3dc0db0f2ae3549099d8fd6afcdb78085e3b67",
+  "selection.json": "1fa88ff0189081dfa62c24fdad3d7e442a1f961a85fb5c7a2e8f0cc650809330",
+  "tokenizer-audit.json": "28846689a24f1fb14465ce1f634ed171d65614d4314c057aa237a162f65657bb",
+  "training-run.json": "5699bf6e08171af0753d7c169214477a1d408572f4ad3ee990ca053585e377e5"
+}

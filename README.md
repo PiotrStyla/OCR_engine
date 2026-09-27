@@ -38,6 +38,9 @@ ani potwierdzonym silnikiem SOTA.**
   używa 12 kolekcji holdoutu geometrii ani końcowego testu.
   [Uruchom trening w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_recognizer_v1.ipynb) oraz zobacz
   [protokół i warunki promocji](docs/HISTORICAL_RECOGNIZER_V1.md).
+- **Recognizer v1 odrzucony:** historyczny CER poprawił się z 34,85% do
+  27,19%, lecz `real-lines-v1` pogorszył się o 3,99 pp, a EHRI o 11,21 pp.
+  Wagi nie zostały opublikowane. [Wynik i następny eksperyment](docs/HISTORICAL_RECOGNIZER_V1_RESULT_20260927.md).
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).
