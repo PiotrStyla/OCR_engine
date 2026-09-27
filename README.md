@@ -6,7 +6,7 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 25 września 2026
+## Aktualny stan: 27 września 2026
 
 ### Eksperymentalny model SLAYER Vision ONNX
 
@@ -51,7 +51,10 @@ ani potwierdzonym silnikiem SOTA.**
 - **Pełnostronicowy A/B zamrożony:** 36 niezależnych stron, jeden przebieg
   detektora OpenCV i identyczne cropy dla mixed-v3 oraz prywatnego recognizera
   v2. [Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_full_page_ab_v1.ipynb)
-  · [protokół](docs/HISTORICAL_FULL_PAGE_AB_V1.md).
+  · [protokół](docs/HISTORICAL_FULL_PAGE_AB_V1.md)
+  · [wynik](docs/HISTORICAL_FULL_PAGE_AB_V1_RESULT_20260927.md). V2 poprawił
+  WER o 0,6480 pp, ale pogorszył główny CER o 0,6353 pp i nie przeszedł
+  zamrożonych bramek. Mixed-v3 pozostaje domyślnym recognizerem całej strony.
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).

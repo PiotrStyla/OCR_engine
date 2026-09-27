@@ -1,0 +1,77 @@
+{
+  "schema": "ocr-engine-historical-full-page-ab-result-v1",
+  "pages": 36,
+  "baseline": {
+    "cer_micro": 0.5611258873729933,
+    "wer_micro": 0.9783177570093458,
+    "errors_or_missing": 0
+  },
+  "candidate": {
+    "cer_micro": 0.5674786169418878,
+    "wer_micro": 0.9718380062305296,
+    "errors_or_missing": 0
+  },
+  "delta": {
+    "cer_micro": 0.006352729568894544,
+    "wer_micro": -0.006479750778816129
+  },
+  "collections": {
+    "baseline": {
+      "NA2_FT": {
+        "pages": 15,
+        "cer_micro": 0.5147748033997934,
+        "wer_micro": 0.9911553344389166
+      },
+      "Nowiny_z_Rakuz_FT": {
+        "pages": 15,
+        "cer_micro": 0.6082720502131247,
+        "wer_micro": 0.9705372616984402
+      },
+      "Powodzenia_FT": {
+        "pages": 6,
+        "cer_micro": 0.589117544471573,
+        "wer_micro": 0.9576719576719577
+      }
+    },
+    "candidate": {
+      "NA2_FT": {
+        "pages": 15,
+        "cer_micro": 0.5252998649614743,
+        "wer_micro": 0.9947484798231067
+      },
+      "Nowiny_z_Rakuz_FT": {
+        "pages": 15,
+        "cer_micro": 0.6077568035973582,
+        "wer_micro": 0.9575389948006933
+      },
+      "Powodzenia_FT": {
+        "pages": 6,
+        "cer_micro": 0.6027206138821067,
+        "wer_micro": 0.9365079365079365
+      }
+    }
+  },
+  "collection_cer_deltas": {
+    "NA2_FT": 0.01052506156168087,
+    "Nowiny_z_Rakuz_FT": -0.0005152466157665181,
+    "Powodzenia_FT": 0.013603069410533686
+  },
+  "paired_page_cer_wins": {
+    "candidate": 20,
+    "baseline": 15,
+    "ties": 1
+  },
+  "segmentation": {
+    "detected_lines": 1215,
+    "reference_nonempty_lines": 1072,
+    "pages_with_zero_boxes": 0
+  },
+  "gates": {
+    "candidate_overall_cer_improves": false,
+    "candidate_overall_wer_improves": true,
+    "maximum_collection_cer_regression_within_1pp": false,
+    "candidate_errors_or_missing_zero": true,
+    "all_gates_passed": false
+  },
+  "claim_boundary": "A pass supports use in this frozen OpenCV full-page pipeline only; it is not SOTA evidence."
+}

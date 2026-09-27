@@ -1,0 +1,51 @@
+{
+  "code_revision": "d49704129fdee6f11530ddc25c574f795681678b",
+  "dataset": {
+    "repo": "PiotrSty/impact-print-v2",
+    "revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+    "file": "impact-print-v2-test.tar.gz",
+    "archive_sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0",
+    "pages": 36,
+    "collections": 3
+  },
+  "models": {
+    "baseline": {
+      "repo": "PiotrSty/trocr-pl-mixed-v3",
+      "revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+      "model_sha256": "19437f5769b8df8be5af1fb0c5bbcc3acccae9d889f337f0c4b9e94fa80d8bb7"
+    },
+    "candidate": {
+      "repo": "PiotrSty/trocr-pl-historical-replay-v2",
+      "revision": "35d521d65fc59bf04bb7083322d1a6b7dc75da81",
+      "model_sha256": "87ae8689ef4716b452759ceb9203840288318b2ffeca9cd908f57e76b88db394",
+      "private": true
+    }
+  },
+  "pipeline": {
+    "deskew": true,
+    "detector": "ocr.opencv_detector.OpenCVDetector",
+    "detector_passes_per_page": 1,
+    "shared_boxes_between_models": true,
+    "reading_order": "ocr.detector.sort_reading_order; row-major and not column-aware",
+    "line_padding": 5,
+    "batch_size": 8,
+    "language": "pl",
+    "text_correction": false,
+    "normalization": "Unicode NFC and whitespace only"
+  },
+  "gpu": "Tesla T4",
+  "python": "3.13.15 (main, Aug  6 2026, 11:06:22) [GCC 13.3.0]",
+  "packages": {
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6",
+    "jiwer": "4.0.0",
+    "huggingface_hub": "0.36.2",
+    "tokenizers": "0.22.2",
+    "Pillow": "11.3.0",
+    "opencv-python-headless": "4.12.0.88"
+  },
+  "raw_predictions_included": false,
+  "images_or_references_included": false,
+  "model_weights_included": false,
+  "private_token_recorded": false
+}

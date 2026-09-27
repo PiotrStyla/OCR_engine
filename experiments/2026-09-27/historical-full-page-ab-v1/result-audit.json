@@ -1,0 +1,43 @@
+{
+  "schema": "ocr-engine-historical-full-page-ab-audit-v1",
+  "audited_at": "2026-09-27",
+  "evidence_zip_sha256": "0c7dd17ffd1c38669ab62d335803ff5a9523184dab6f9482e28e841bbf12e263",
+  "archive_files": 5,
+  "listed_checksums_verified": true,
+  "frozen_config_matches_repository": true,
+  "pages": 36,
+  "baseline": {
+    "cer_micro": 0.5611258873729933,
+    "wer_micro": 0.9783177570093458,
+    "errors_or_missing": 0
+  },
+  "candidate": {
+    "cer_micro": 0.5674786169418878,
+    "wer_micro": 0.9718380062305296,
+    "errors_or_missing": 0
+  },
+  "delta": {
+    "cer_micro": 0.006352729568894544,
+    "wer_micro": -0.006479750778816129
+  },
+  "paired_page_cer_wins": {
+    "candidate": 20,
+    "baseline": 15,
+    "ties": 1,
+    "two_sided_exact_sign_test_p": 0.49955983320251107
+  },
+  "segmentation": {
+    "detected_lines": 1215,
+    "reference_nonempty_lines": 1072,
+    "pages_with_zero_boxes": 0
+  },
+  "diagnostic_only": {
+    "known_incomplete_reference_page": "NA2_FT__434735",
+    "known_incomplete_reference_characters": 4,
+    "candidate_cer_delta_excluding_that_page": 0.003674148917848341,
+    "changes_frozen_result": false
+  },
+  "all_frozen_gates_passed": false,
+  "decision": "retain v2 as a private research artifact; keep mixed-v3 as the default full-page recognizer",
+  "publication": "raw predictions, scans, references and model weights remain excluded"
+}
