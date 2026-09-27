@@ -1,0 +1,55 @@
+{
+  "schema": "ocr-engine-historical-layout-dev-audit-v1",
+  "audited_at": "2026-09-27",
+  "evidence_zip_sha256": "84e2a0d0f666c4191b9b58d2e66deea72a708e681a58ebad94e9fc5d313f716e",
+  "archive_files": 5,
+  "listed_checksums_verified": true,
+  "frozen_config_matches_repository": true,
+  "pages": 15,
+  "overall": {
+    "row_major": {
+      "cer_micro": 0.5993870402802102,
+      "wer_micro": 0.9579661016949153,
+      "errors_or_missing": 0
+    },
+    "column_aware_v1": {
+      "cer_micro": 0.5993870402802102,
+      "wer_micro": 0.9579661016949153,
+      "errors_or_missing": 0
+    },
+    "pagexml_region_oracle": {
+      "cer_micro": 0.5996059544658494,
+      "wer_micro": 0.9579661016949153,
+      "errors_or_missing": 0
+    }
+  },
+  "delta_column_aware_minus_row_major": {
+    "cer_micro": 0.0,
+    "wer_micro": 0.0
+  },
+  "delta_oracle_minus_row_major": {
+    "cer_micro": 0.0002189141856392407,
+    "wer_micro": 0.0
+  },
+  "paired_page_cer_wins": {
+    "column_aware_v1": 1,
+    "row_major": 1,
+    "ties": 13
+  },
+  "layout_diagnostics": {
+    "detected_lines": 309,
+    "reference_nonempty_lines": 301,
+    "pages_with_line_overdetection": 10,
+    "pages_with_line_underdetection": 4,
+    "pages_with_equal_line_count": 1,
+    "median_absolute_line_count_difference": 6,
+    "column_order_changed_pages": 6,
+    "oracle_order_changed_pages": 4,
+    "pagexml_overlap_assigned_lines": 225,
+    "pagexml_nearest_assigned_lines": 84,
+    "pagexml_overlap_assignment_fraction": 0.7281553398058253
+  },
+  "all_frozen_gates_passed": false,
+  "decision": "keep row-major; do not test column-aware on the frozen test; isolate detection and crop geometry next",
+  "publication": "raw predictions, images, references, PAGE XML and model weights remain excluded"
+}

@@ -1,0 +1,159 @@
+{
+  "schema": "ocr-engine-historical-layout-dev-result-v1",
+  "scope": "layout development only; not recognizer selection and not final test evidence",
+  "pages": 15,
+  "overall": {
+    "row_major": {
+      "pages": 15,
+      "cer_micro": 0.5993870402802102,
+      "wer_micro": 0.9579661016949153,
+      "errors_or_missing": 0
+    },
+    "column_aware_v1": {
+      "pages": 15,
+      "cer_micro": 0.5993870402802102,
+      "wer_micro": 0.9579661016949153,
+      "errors_or_missing": 0
+    },
+    "pagexml_region_oracle": {
+      "pages": 15,
+      "cer_micro": 0.5996059544658494,
+      "wer_micro": 0.9579661016949153,
+      "errors_or_missing": 0
+    }
+  },
+  "delta_column_aware_minus_row_major": {
+    "cer_micro": 0.0,
+    "wer_micro": 0.0
+  },
+  "delta_oracle_minus_row_major": {
+    "cer_micro": 0.0002189141856392407,
+    "wer_micro": 0.0
+  },
+  "collections": {
+    "row_major": {
+      "Choragiew_FT": {
+        "pages": 3,
+        "cer_micro": 0.5344048216976394,
+        "wer_micro": 0.9807073954983923,
+        "errors_or_missing": 0
+      },
+      "Relacja_koronacji_FT": {
+        "pages": 3,
+        "cer_micro": 0.48091247672253257,
+        "wer_micro": 0.8251533742331288,
+        "errors_or_missing": 0
+      },
+      "SLAWNA_VICTORIA_FT": {
+        "pages": 3,
+        "cer_micro": 0.6915343915343916,
+        "wer_micro": 0.9969418960244648,
+        "errors_or_missing": 0
+      },
+      "Slawna_wiktoria_FT": {
+        "pages": 3,
+        "cer_micro": 0.7376923076923076,
+        "wer_micro": 0.945,
+        "errors_or_missing": 0
+      },
+      "Wiesc_FT": {
+        "pages": 3,
+        "cer_micro": 0.6159380188157166,
+        "wer_micro": 1.0418006430868167,
+        "errors_or_missing": 0
+      }
+    },
+    "column_aware_v1": {
+      "Choragiew_FT": {
+        "pages": 3,
+        "cer_micro": 0.5349070818684079,
+        "wer_micro": 0.9871382636655949,
+        "errors_or_missing": 0
+      },
+      "Relacja_koronacji_FT": {
+        "pages": 3,
+        "cer_micro": 0.48091247672253257,
+        "wer_micro": 0.8251533742331288,
+        "errors_or_missing": 0
+      },
+      "SLAWNA_VICTORIA_FT": {
+        "pages": 3,
+        "cer_micro": 0.6915343915343916,
+        "wer_micro": 0.9969418960244648,
+        "errors_or_missing": 0
+      },
+      "Slawna_wiktoria_FT": {
+        "pages": 3,
+        "cer_micro": 0.7376923076923076,
+        "wer_micro": 0.945,
+        "errors_or_missing": 0
+      },
+      "Wiesc_FT": {
+        "pages": 3,
+        "cer_micro": 0.6153846153846154,
+        "wer_micro": 1.0353697749196142,
+        "errors_or_missing": 0
+      }
+    },
+    "pagexml_region_oracle": {
+      "Choragiew_FT": {
+        "pages": 3,
+        "cer_micro": 0.5349070818684079,
+        "wer_micro": 0.9807073954983923,
+        "errors_or_missing": 0
+      },
+      "Relacja_koronacji_FT": {
+        "pages": 3,
+        "cer_micro": 0.48091247672253257,
+        "wer_micro": 0.8251533742331288,
+        "errors_or_missing": 0
+      },
+      "SLAWNA_VICTORIA_FT": {
+        "pages": 3,
+        "cer_micro": 0.6915343915343916,
+        "wer_micro": 0.9969418960244648,
+        "errors_or_missing": 0
+      },
+      "Slawna_wiktoria_FT": {
+        "pages": 3,
+        "cer_micro": 0.7384615384615385,
+        "wer_micro": 0.945,
+        "errors_or_missing": 0
+      },
+      "Wiesc_FT": {
+        "pages": 3,
+        "cer_micro": 0.6159380188157166,
+        "wer_micro": 1.0418006430868167,
+        "errors_or_missing": 0
+      }
+    }
+  },
+  "column_collection_cer_deltas": {
+    "Choragiew_FT": 0.0005022601707684871,
+    "Relacja_koronacji_FT": 0.0,
+    "SLAWNA_VICTORIA_FT": 0.0,
+    "Slawna_wiktoria_FT": 0.0,
+    "Wiesc_FT": -0.0005534034311012181
+  },
+  "paired_page_cer_wins": {
+    "column_aware_v1": 1,
+    "row_major": 1,
+    "ties": 13
+  },
+  "layout_diagnostics": {
+    "detected_lines": 309,
+    "reference_nonempty_lines": 301,
+    "column_order_changed_pages": 6,
+    "oracle_order_changed_pages": 4,
+    "pagexml_overlap_assigned_lines": 225,
+    "pagexml_nearest_assigned_lines": 84
+  },
+  "gates": {
+    "column_aware_overall_cer_improves": false,
+    "column_aware_overall_wer_improves": false,
+    "maximum_collection_cer_regression_within_1pp": true,
+    "column_aware_errors_or_missing_zero": true,
+    "all_gates_passed": false
+  },
+  "claim_boundary": "A pass selects a reading-order candidate for one later frozen test; it is not SOTA evidence."
+}

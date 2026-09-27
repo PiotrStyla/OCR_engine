@@ -1,0 +1,53 @@
+{
+  "code_revision": "5a6ab7b99ad56a15812c91df353866ae7cc745eb",
+  "dataset": {
+    "repo": "PiotrSty/impact-psnc-polish-ocr",
+    "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+    "config": "pages",
+    "split": "validation",
+    "metadata_path": "pages/validation/metadata.jsonl",
+    "metadata_sha256": "536fc014963c2c55626e89f9bd07500826cb930f05ca3f8848352ca80c8856b1",
+    "pages": 15,
+    "collections": [
+      "Choragiew_FT",
+      "Relacja_koronacji_FT",
+      "SLAWNA_VICTORIA_FT",
+      "Slawna_wiktoria_FT",
+      "Wiesc_FT"
+    ],
+    "license": "CC-BY-3.0",
+    "replacement_characters_in_references": 14
+  },
+  "model": {
+    "repo": "PiotrSty/trocr-pl-mixed-v3",
+    "revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+    "model_sha256": "19437f5769b8df8be5af1fb0c5bbcc3acccae9d889f337f0c4b9e94fa80d8bb7"
+  },
+  "pipeline": {
+    "deskew": true,
+    "detector": "ocr.opencv_detector.OpenCVDetector",
+    "detector_passes_per_page": 1,
+    "recognizer_passes_per_line": 1,
+    "line_padding": 5,
+    "batch_size": 8,
+    "language": "pl",
+    "text_correction": false,
+    "normalization": "Unicode NFC and whitespace only"
+  },
+  "gpu": "Tesla T4",
+  "python": "3.13.15 (main, Aug  6 2026, 11:06:22) [GCC 13.3.0]",
+  "packages": {
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6",
+    "jiwer": "4.0.0",
+    "huggingface_hub": "0.36.2",
+    "tokenizers": "0.22.2",
+    "Pillow": "11.3.0",
+    "opencv-python-headless": "4.12.0.88"
+  },
+  "raw_predictions_included": false,
+  "images_or_references_included": false,
+  "pagexml_included": false,
+  "model_weights_included": false,
+  "private_token_recorded": false
+}

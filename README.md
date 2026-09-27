@@ -55,12 +55,15 @@ ani potwierdzonym silnikiem SOTA.**
   · [wynik](docs/HISTORICAL_FULL_PAGE_AB_V1_RESULT_20260927.md). V2 poprawił
   WER o 0,6480 pp, ale pogorszył główny CER o 0,6353 pp i nie przeszedł
   zamrożonych bramek. Mixed-v3 pozostaje domyślnym recognizerem całej strony.
-- **Gotowy development kolejności czytania:** 15 publicznych stron validation,
+- **Zakończony development kolejności czytania:** 15 publicznych stron validation,
   jeden przebieg detektora i recognizera oraz trzy porządki tych samych linii:
   obecny row-major, automatyczny column-aware i diagnostyczny PAGE XML oracle.
   [Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_layout_dev_v1.ipynb)
-  · [zamrożony protokół](docs/HISTORICAL_LAYOUT_DEV_V1.md). Końcowe 36 stron
-  nie uczestniczy w rozwoju ani wyborze wariantu.
+  · [zamrożony protokół](docs/HISTORICAL_LAYOUT_DEV_V1.md)
+  · [wynik](docs/HISTORICAL_LAYOUT_DEV_V1_RESULT_20260927.md). Column-aware
+  zmienił kolejność na 6 stronach, ale CER i WER pozostały identyczne;
+  PAGE XML oracle także nie pomógł. Row-major pozostaje domyślny, a następnym
+  celem jest geometria detekcji. Końcowe 36 stron nie uczestniczyło w wyborze.
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).

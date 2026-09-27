@@ -1,0 +1,71 @@
+{
+  "schema": "ocr-engine-historical-layout-dev-config-v1",
+  "status": "frozen before implementation and inference",
+  "frozen_at": "2026-09-27",
+  "scope": "layout development only; not recognizer selection and not final test evidence",
+  "dataset": {
+    "repo": "PiotrSty/impact-psnc-polish-ocr",
+    "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+    "config": "pages",
+    "split": "validation",
+    "metadata_path": "pages/validation/metadata.jsonl",
+    "metadata_sha256": "536fc014963c2c55626e89f9bd07500826cb930f05ca3f8848352ca80c8856b1",
+    "pages": 15,
+    "collections": [
+      "Choragiew_FT",
+      "Relacja_koronacji_FT",
+      "SLAWNA_VICTORIA_FT",
+      "Slawna_wiktoria_FT",
+      "Wiesc_FT"
+    ],
+    "license": "CC-BY-3.0",
+    "replacement_characters_in_references": 14
+  },
+  "model": {
+    "repo": "PiotrSty/trocr-pl-mixed-v3",
+    "revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+    "model_sha256": "19437f5769b8df8be5af1fb0c5bbcc3acccae9d889f337f0c4b9e94fa80d8bb7"
+  },
+  "pipeline": {
+    "deskew": true,
+    "detector": "ocr.opencv_detector.OpenCVDetector",
+    "detector_passes_per_page": 1,
+    "recognizer_passes_per_line": 1,
+    "line_padding": 5,
+    "batch_size": 8,
+    "language": "pl",
+    "text_correction": false,
+    "normalization": "Unicode NFC and whitespace only"
+  },
+  "variants": {
+    "row_major": "ocr.detector.sort_reading_order",
+    "column_aware_v1": "ocr.detector.sort_reading_order_columns",
+    "pagexml_region_oracle": "training.pagexml_order.order_by_pagexml_regions; diagnostic only"
+  },
+  "metrics": {
+    "primary": "full-page CER micro",
+    "secondary": [
+      "full-page WER micro",
+      "per-page CER and WER",
+      "per-collection CER and WER",
+      "paired page wins",
+      "detected versus reference line count",
+      "PAGE region overlap assignment coverage",
+      "pages whose order changed"
+    ]
+  },
+  "promotion_gates": {
+    "column_aware_overall_cer_improves": true,
+    "column_aware_overall_wer_improves": true,
+    "maximum_collection_cer_regression": 0.01,
+    "column_aware_errors_or_missing": 0
+  },
+  "boundaries": {
+    "test_pages_used_for_tuning": 0,
+    "pagexml_oracle_is_promotable": false,
+    "historical_spelling_modernized": false,
+    "raw_predictions_published": false,
+    "images_or_references_published": false
+  },
+  "claim_boundary": "A pass selects a reading-order candidate for one later frozen test; it is not SOTA evidence."
+}
