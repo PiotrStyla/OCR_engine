@@ -34,6 +34,8 @@ def test_notebook_contract_is_pinned_private_and_nonpublishing(tmp_path):
     assert "resolved.relative_to(dataset_root).as_posix()" in source
     assert "not relative.startswith('../')" in source
     assert "models[label]" in source
+    assert "if evidence_dir.exists():" in source
+    assert "shutil.rmtree(evidence_dir)" in source
     assert "raw_predictions_included': False" in source
     assert "private_token_recorded': False" in source
     assert "upload_folder" not in source

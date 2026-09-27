@@ -338,6 +338,8 @@ print(json.dumps(summary, ensure_ascii=False, indent=2))
 '''
 
     evidence = '''evidence_dir = work / 'evidence'
+if evidence_dir.exists():
+    shutil.rmtree(evidence_dir)
 evidence_dir.mkdir()
 for source, name in {
     repo / 'experiments/2026-09-27/historical-full-page-ab-v1/config.json': 'experiment-config.json',
