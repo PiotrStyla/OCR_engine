@@ -2,6 +2,10 @@
 
 Status: frozen before implementation and training on 2026-09-27.
 
+Run the pinned [Colab notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_recognizer_v2.ipynb)
+with a GPU runtime and **Run all**. Download the evidence ZIP at the end; the
+notebook does not publish a model.
+
 V1 improved historical validation CER by 7.66 percentage points but regressed
 `real-lines-v1` by 3.99 points and EHRI test by 11.21 points. V2 tests whether
 training-domain replay can retain that historical gain without catastrophic
