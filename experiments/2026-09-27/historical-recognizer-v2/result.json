@@ -1,7 +1,8 @@
 {
   "schema": "ocr-engine-historical-recognizer-result-v2",
   "audited_at": "2026-09-27",
-  "evidence_zip_sha256": "04ba8229dc906195a33a570e301da73c37cc5ba5b2065be83c79b861b6c14d99",
+  "initial_evidence_zip_sha256": "04ba8229dc906195a33a570e301da73c37cc5ba5b2065be83c79b861b6c14d99",
+  "final_evidence_zip_sha256": "b617cd425c32c4196fe6af9b821baf8514633ba20dee5860843bbb6fabce4e92",
   "code_revision": "8b950b8f5c42af259269fb0bb5a706f1c6724148",
   "evidence_checksums_verified": true,
   "training_contract_verified": true,
@@ -23,8 +24,9 @@
     "real-lines-v1": 0.00614010605637734,
     "ehri-test": 0.020000000000000018
   },
-  "recorded_gate_result": false,
-  "recorded_gate_failure": "ehri-test boundary rejected by binary floating-point drift",
+  "initial_recorded_gate_result": false,
+  "initial_recorded_gate_failure": "ehri-test boundary rejected by binary floating-point drift",
+  "final_recorded_gate_result": true,
   "audited_gate_policy": {
     "comparison_abs_tolerance": 1e-12,
     "historical_validation_improved": true,
@@ -32,7 +34,20 @@
     "ehri_regression_within_2pp": true,
     "all_gates_passed": true
   },
-  "decision": "passes the frozen intended thresholds after correcting the boundary comparison; recover and archive the already-trained model before any broader evaluation",
-  "model_archive_present": false,
+  "rerun_reproducibility": {
+    "baseline_metrics_byte_identical": true,
+    "candidate_metrics_byte_identical": true,
+    "replay_manifest_byte_identical": true
+  },
+  "decision": "retain as a line-recognizer candidate and proceed to independent full-page evaluation; this is not SOTA evidence",
+  "model_archive": {
+    "present": true,
+    "sha256": "9c992c679570947dbd7c511af5598e60d96bf3b3f0cde42682b44abb0c3b15c7",
+    "files": 13,
+    "model_safetensors_bytes": 1335747032,
+    "model_safetensors_tensors": 480,
+    "safetensors_extents_verified": true,
+    "training_metadata_matches_evidence": true
+  },
   "publication": "disabled"
 }

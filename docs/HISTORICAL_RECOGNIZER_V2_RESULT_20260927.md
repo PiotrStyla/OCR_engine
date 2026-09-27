@@ -9,14 +9,17 @@ V2 spelnia zamrozone progi eksperymentu po poprawnym potraktowaniu granicy
 wylacznie przez reprezentacje zmiennoprzecinkowa: delta EHRI wyniosla
 `0.020000000000000018` zamiast matematycznego `0.02`.
 
-Model jest kandydatem do zachowania i dalszej niezaleznej oceny, ale nie jest
-dowodem SOTA. Oryginalny ZIP pozostaje niezmieniony. Nie zawiera wag, poniewaz
-bledna bramka zablokowala ich spakowanie.
+Powtorzony przebieg potwierdzil wszystkie bramki jako PASS i utworzyl scalone
+wagi. Model jest kandydatem do zachowania i dalszej niezaleznej oceny, ale nie
+jest dowodem SOTA. Wagi pozostaja lokalnym artefaktem i nie zostaly
+opublikowane.
 
 ## Integralnosc i wykonanie
 
-- ZIP dowodowy SHA-256:
+- poczatkowy ZIP dowodowy SHA-256:
   `04ba8229dc906195a33a570e301da73c37cc5ba5b2065be83c79b861b6c14d99`;
+- finalny ZIP dowodowy SHA-256:
+  `b617cd425c32c4196fe6af9b821baf8514633ba20dee5860843bbb6fabce4e92`;
 - wszystkie 13 sum z `checksums.json` sa zgodne;
 - kod treningu: `8b950b8f5c42af259269fb0bb5a706f1c6724148`;
 - konfiguracja w evidence jest identyczna z zamrozona konfiguracja repo;
@@ -25,6 +28,21 @@ bledna bramka zablokowala ich spakowanie.
 - 4 epoki, LR `2e-5`, LoRA fp16, 3 047 424 parametry trenowalne;
 - najlepszy checkpoint: `checkpoint-513`, CER walidacyjny 31,4185%, epoka 4;
 - wszystkie 9 kontroli dokladnego overlapu obrazu ma wynik zero.
+
+Baseline, metryki kandydata i manifest replay sa bitowo identyczne w obu
+uruchomieniach. Potwierdza to odtworzenie wyniku po poprawce bramki.
+
+## Artefakt modelu
+
+- ZIP modelu SHA-256:
+  `9c992c679570947dbd7c511af5598e60d96bf3b3f0cde42682b44abb0c3b15c7`;
+- 13 plikow modelu i tokenizera;
+- scalony `model.safetensors`: 1 335 747 032 bajty, 480 tensorow;
+- naglowek i zakresy danych safetensors sa spojne z rozmiarem pliku;
+- `run.json`, `selection.json` i `best_metrics.json` sa bitowo zgodne z
+  odpowiednimi plikami finalnego evidence;
+- konfiguracja: `VisionEncoderDecoderModel`, enkoder ViT, dekoder TrOCR,
+  `max_length=128`, `num_beams=4`.
 
 Tokenizer poprawnie obsluzyl 1402 etykiety. Najdluzsza miala 88 tokenow,
 zadna nie przekroczyla limitu 128 i nie bylo bledow round-trip. Historyczna
@@ -54,6 +72,6 @@ wobec v1 CER poprawia sie o 3,3771 pp na `real-lines-v1` i 9,2093 pp na EHRI.
 
 ## Nastepny krok
 
-Najpierw trzeba odzyskac scalone wagi z aktywnej sesji Colab, bez ponownego
-treningu. Potem uruchomic pelny, niezalezny benchmark stron i porownanie z
-modelem bazowym. Publikacja pozostaje wylaczona do czasu tej oceny.
+Uruchomic pelny, niezalezny benchmark stron i porownanie z modelem bazowym.
+Obejmuje to segmentacje, kolejnosc czytania i OCR koniec-koniec, a nie tylko
+oracle line crops. Publikacja pozostaje wylaczona do czasu tej oceny.
