@@ -8,6 +8,20 @@ ani potwierdzonym silnikiem SOTA.**
 
 ## Aktualny stan: 27 września 2026
 
+### SLAYER-OCR 2.0: DATA ENGINE v2
+
+- Projekt przechodzi na ścieżkę `generator -> teacher ensemble -> consensus ->
+  annotation review -> clean dataset -> RF-DETR layout -> recognizer ->
+  hard-example mining`. [Architektura, granice twierdzeń i bramki](docs/SLAYER_OCR_2_DATA_ENGINE.md).
+- Dodano deterministyczny, lokalny moduł konsensusu layoutu. Zachowuje pełne
+  propozycje teacherów, przyjmuje wyłącznie kworum różnych modeli, kieruje
+  konflikty do review i eksportuje zaakceptowane weak labels jako COCO JSON dla
+  RF-DETR. To infrastruktura danych, nie wynik jakości ani deklaracja SOTA.
+- Zamrożona konfiguracja pilota znajduje się w
+  [`experiments/2026-09-27/slayer-ocr-2-data-engine/config.json`](experiments/2026-09-27/slayer-ocr-2-data-engine/config.json).
+  Nie wykonano jeszcze inferencji teacherów; obrazy i surowe odpowiedzi pozostają
+  prywatne do czasu osobnej decyzji publikacyjnej.
+
 ### Eksperymentalny model SLAYER Vision ONNX
 
 - Paczka IR9/opset 18 przechodzi pełną statyczną walidację trzech grafów ONNX,

@@ -1,0 +1,49 @@
+{
+  "schema": "slayer-ocr-2-data-engine-config-v1",
+  "status": "architecture and offline consensus pilot; no teacher inference executed",
+  "frozen_at": "2026-09-27",
+  "scope": "Polish printed and historical full-page documents; layout development only",
+  "ontology": {
+    "level": "page regions; line segmentation remains a separate downstream task",
+    "categories": [
+      "text_region",
+      "heading",
+      "table",
+      "figure",
+      "caption",
+      "marginalia",
+      "header",
+      "footer",
+      "page_number"
+    ]
+  },
+  "consensus": {
+    "categories": [
+      "text_region",
+      "heading",
+      "table",
+      "figure",
+      "caption",
+      "marginalia",
+      "header",
+      "footer",
+      "page_number"
+    ],
+    "quorum": 2,
+    "iou_threshold": 0.5,
+    "conflict_iou": 0.5,
+    "min_score": 0.0
+  },
+  "boundaries": {
+    "teacher_identity": "one vote per teacher.id per page; prompt or run variants do not add votes",
+    "teacher_output_is_ground_truth": false,
+    "consensus_output_is_ground_truth": false,
+    "manual_review_required_for_disagreements": true,
+    "historical_spelling_modernized": false,
+    "raw_teacher_outputs_published": false,
+    "images_published": false,
+    "final_test_used_for_threshold_tuning": false
+  },
+  "next_gate": "Run a small private multi-teacher pilot on development pages, inspect class balance and disagreement, then freeze teacher revisions and thresholds before generating training labels.",
+  "claim_boundary": "The module creates traceable weak labels and an RF-DETR-compatible COCO file. It is not evidence that RF-DETR improves OCR or that SLAYER-OCR is SOTA."
+}
