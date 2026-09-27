@@ -1,0 +1,52 @@
+{
+  "schema": "ocr-engine-historical-recognizer-config-v2",
+  "status": "frozen before implementation and training",
+  "frozen_at": "2026-09-27",
+  "base_model": "PiotrSty/trocr-pl-mixed-v3",
+  "base_revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+  "sources": {
+    "historical": {
+      "repo": "PiotrSty/impact-psnc-polish-ocr",
+      "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+      "distinct_train_lines": 258,
+      "repeats": 2,
+      "effective_examples": 516
+    },
+    "ehri": {
+      "repo": "PiotrSty/ehri-pl-lines",
+      "revision": "3003e8614b74a351e7d94aba4f1348368815fb70",
+      "split": "train",
+      "examples": 349
+    },
+    "synthetic": {
+      "repo": "PiotrSty/ocr-pl-lines",
+      "revision": "d881debb90045fd71ad8e25faeeafeb6adab6622",
+      "split": "train",
+      "source_examples": 2000,
+      "selected_examples": 500,
+      "selection": "sort by sha256('historical-replay-v2:' + id), take first 500"
+    }
+  },
+  "training": {
+    "epochs": 4,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 2,
+    "learning_rate": 0.00002,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "include_mlp": false,
+    "use_4bit": false,
+    "max_target_length": 128,
+    "seed": 42
+  },
+  "selection_metric": "historical-validation CER",
+  "promotion_gates": {
+    "historical_validation_improved": true,
+    "real_lines_max_cer_regression": 0.01,
+    "ehri_test_max_cer_regression": 0.02,
+    "tokenizer_roundtrip_mismatches": 0,
+    "targets_over_128": 0
+  },
+  "normalization": "NFC and whitespace only; historical spelling retained",
+  "publication": "disabled pending evidence review"
+}
