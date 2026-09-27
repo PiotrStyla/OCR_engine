@@ -128,6 +128,20 @@ for row in records:
     path = find_image(work / 'dataset', bench_dir, row)
     assert sha256_file(path) == row['sha256']
     page_paths[row['id']] = path
+
+dataset_root = (work / 'dataset').resolve()
+portable_records = []
+for row in records:
+    resolved = page_paths[row['id']].resolve()
+    relative = resolved.relative_to(dataset_root).as_posix()
+    assert '\\\\' not in relative and not relative.startswith('../')
+    portable_records.append({**row, 'image': relative})
+manifest_path = work / 'dataset' / 'evaluation-manifest.jsonl'
+manifest_path.write_text(
+    ''.join(json.dumps(row, ensure_ascii=False) + '\\n' for row in portable_records),
+    encoding='utf-8',
+)
+records = portable_records
 print('PINNED_INPUTS_OK pages=36 collections=3')
 '''
 

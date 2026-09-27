@@ -33,6 +33,10 @@ boxes, and both recognizers receive exactly the same crops in the same order.
 The output text is the whitespace-normalized concatenation of recognized
 lines. No language-model correction or modernization is allowed.
 
+Before evaluation, source image paths are resolved against the verified
+archive and rewritten to portable POSIX paths in a run-local manifest. This
+does not change page bytes, IDs, hashes or references.
+
 The current reading-order heuristic is row-major and is not column-aware.
 Consequently, this experiment measures the complete current pipeline and also
 exposes its segmentation and ordering ceiling. A line-count comparison is only

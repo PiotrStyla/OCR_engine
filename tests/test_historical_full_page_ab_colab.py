@@ -30,6 +30,9 @@ def test_notebook_contract_is_pinned_private_and_nonpublishing(tmp_path):
     assert "userdata.get('HF_TOKEN')" in source
     assert "getpass.getpass" in source
     assert "SINGLE_SEGMENTATION_PASS_OK" in source
+    assert "evaluation-manifest.jsonl" in source
+    assert "resolved.relative_to(dataset_root).as_posix()" in source
+    assert "not relative.startswith('../')" in source
     assert "models[label]" in source
     assert "raw_predictions_included': False" in source
     assert "private_token_recorded': False" in source
