@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import subprocess
 
 from training.build_historical_recognizer_colab import (
     BASE_REVISION,
@@ -32,6 +33,16 @@ def test_notebook_is_pinned_and_does_not_publish(tmp_path):
     assert "TRANSFORMERS_IMPORT_PREFLIGHT_OK" in source
     assert "if source.is_file()" in source
     assert "model_package_dir" in source
+
+
+def test_code_revision_resolves_to_a_local_commit():
+    root = Path(__file__).resolve().parents[1]
+    resolved = subprocess.check_output(
+        ["git", "-C", str(root), "rev-parse", f"{CODE_REVISION}^{{commit}}"],
+        text=True,
+    ).strip()
+    assert len(CODE_REVISION) == 40
+    assert resolved == CODE_REVISION
 
 
 def test_install_cell_cleans_stale_transformers_files(tmp_path):

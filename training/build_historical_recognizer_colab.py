@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 
-CODE_REVISION = "822e2653d56d38f33fffc470d1dbc1c959b2b3fd"
+CODE_REVISION = "a18fd3aee050ba10ce3595875ea9a9c5f280c6fd"
 BASE_MODEL = "PiotrSty/trocr-pl-mixed-v3"
 BASE_REVISION = "85d0c91c26f8e088849096dded7c9ba10b4cd9c9"
 EHRI_REVISION = "3003e8614b74a351e7d94aba4f1348368815fb70"
