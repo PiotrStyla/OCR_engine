@@ -44,6 +44,10 @@ uruchomieniach. Potwierdza to odtworzenie wyniku po poprawce bramki.
 - konfiguracja: `VisionEncoderDecoderModel`, enkoder ViT, dekoder TrOCR,
   `max_length=128`, `num_beams=4`.
 
+Zweryfikowany model zostal zachowany w prywatnym repo
+`PiotrSty/trocr-pl-historical-replay-v2` na rewizji
+`35d521d65fc59bf04bb7083322d1a6b7dc75da81`. Repo nie jest publiczne.
+
 Tokenizer poprawnie obsluzyl 1402 etykiety. Najdluzsza miala 88 tokenow,
 zadna nie przekroczyla limitu 128 i nie bylo bledow round-trip. Historyczna
 pisownia nie byla modernizowana.
@@ -75,3 +79,5 @@ wobec v1 CER poprawia sie o 3,3771 pp na `real-lines-v1` i 9,2093 pp na EHRI.
 Uruchomic pelny, niezalezny benchmark stron i porownanie z modelem bazowym.
 Obejmuje to segmentacje, kolejnosc czytania i OCR koniec-koniec, a nie tylko
 oracle line crops. Publikacja pozostaje wylaczona do czasu tej oceny.
+
+Zamrozony protokol: [Historical full-page A/B v1](HISTORICAL_FULL_PAGE_AB_V1.md).

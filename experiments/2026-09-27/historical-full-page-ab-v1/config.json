@@ -1,0 +1,61 @@
+{
+  "schema": "ocr-engine-historical-full-page-ab-config-v1",
+  "status": "frozen before notebook implementation and evaluation",
+  "frozen_at": "2026-09-27",
+  "dataset": {
+    "repo": "PiotrSty/impact-print-v2",
+    "revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+    "file": "impact-print-v2-test.tar.gz",
+    "archive_sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0",
+    "pages": 36,
+    "collections": 3
+  },
+  "models": {
+    "baseline": {
+      "repo": "PiotrSty/trocr-pl-mixed-v3",
+      "revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+      "model_sha256": "19437f5769b8df8be5af1fb0c5bbcc3acccae9d889f337f0c4b9e94fa80d8bb7"
+    },
+    "candidate": {
+      "repo": "PiotrSty/trocr-pl-historical-replay-v2",
+      "revision": "35d521d65fc59bf04bb7083322d1a6b7dc75da81",
+      "model_sha256": "87ae8689ef4716b452759ceb9203840288318b2ffeca9cd908f57e76b88db394",
+      "private": true
+    }
+  },
+  "pipeline": {
+    "deskew": true,
+    "detector": "ocr.opencv_detector.OpenCVDetector",
+    "detector_passes_per_page": 1,
+    "shared_boxes_between_models": true,
+    "reading_order": "ocr.detector.sort_reading_order; row-major and not column-aware",
+    "line_padding": 5,
+    "batch_size": 8,
+    "language": "pl",
+    "text_correction": false,
+    "normalization": "Unicode NFC and whitespace only"
+  },
+  "metrics": {
+    "primary": "full-page CER micro",
+    "secondary": [
+      "full-page WER micro",
+      "per-page CER and WER",
+      "per-collection CER and WER",
+      "detected line count versus nonempty reference line count",
+      "errors and empty-page outputs",
+      "paired page wins"
+    ]
+  },
+  "decision_gates": {
+    "candidate_overall_cer_improves": true,
+    "candidate_overall_wer_improves": true,
+    "maximum_collection_cer_regression": 0.01,
+    "candidate_errors_or_missing": 0
+  },
+  "evidence": {
+    "raw_predictions_included": false,
+    "images_or_references_included": false,
+    "model_weights_included": false
+  },
+  "claim_boundary": "A pass supports use in this frozen OpenCV full-page pipeline only; it is not SOTA evidence."
+}

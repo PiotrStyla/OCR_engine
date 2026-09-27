@@ -49,5 +49,11 @@
     "safetensors_extents_verified": true,
     "training_metadata_matches_evidence": true
   },
+  "private_hugging_face": {
+    "repo": "PiotrSty/trocr-pl-historical-replay-v2",
+    "revision": "35d521d65fc59bf04bb7083322d1a6b7dc75da81",
+    "model_sha256": "87ae8689ef4716b452759ceb9203840288318b2ffeca9cd908f57e76b88db394",
+    "verified_private": true
+  },
   "publication": "disabled"
 }

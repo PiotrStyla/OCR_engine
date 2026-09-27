@@ -48,6 +48,9 @@ ani potwierdzonym silnikiem SOTA.**
   · [protokół v2](docs/HISTORICAL_RECOGNIZER_V2.md). V2 przechodzi zamrożone
   progi po naprawie porównania dokładnej granicy `+2 pp`; wagi nie zostały
   opublikowane.
+- **Pełnostronicowy A/B zamrożony:** 36 niezależnych stron, jeden przebieg
+  detektora OpenCV i identyczne cropy dla mixed-v3 oraz prywatnego recognizera
+  v2. [Protokół](docs/HISTORICAL_FULL_PAGE_AB_V1.md).
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).
