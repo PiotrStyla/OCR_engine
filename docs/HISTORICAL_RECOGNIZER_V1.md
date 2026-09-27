@@ -58,6 +58,14 @@ not modernize `á`, `ſ`, ligatures or other historical forms.
 
 [Open the pinned training notebook in Google Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_recognizer_v1.ipynb).
 
+The install cell first removes stale `transformers`, `tokenizers` and
+`huggingface_hub` files, reinstalls pinned versions without the pip cache, and
+runs an import preflight before downloading data. The final cell always
+downloads the evidence ZIP. It downloads a separate model ZIP only when every
+promotion gate passes; that package contains the final merged model and root
+configuration files, without training checkpoints or the redundant adapter.
+A failed candidate is not packaged or published.
+
 ## Promotion gates
 
 The candidate remains experimental unless all of these hold:

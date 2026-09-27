@@ -27,6 +27,22 @@ def test_notebook_is_pinned_and_does_not_publish(tmp_path):
     assert "upload_folder" not in source
     assert "push_to_hub" not in source
     assert "files.download(str(evidence_zip))" in source
+    assert "files.download(str(model_archive))" in source
+    assert "if promotion['all_gates_passed']" in source
+    assert "TRANSFORMERS_IMPORT_PREFLIGHT_OK" in source
+    assert "if source.is_file()" in source
+    assert "model_package_dir" in source
+
+
+def test_install_cell_cleans_stale_transformers_files(tmp_path):
+    target = tmp_path / "historical.ipynb"
+    build(target)
+    notebook = json.loads(target.read_text(encoding="utf-8"))
+    install = "".join(next(cell for cell in notebook["cells"] if cell["id"] == "install")["source"])
+    assert "uninstall -q -y torchao transformers tokenizers huggingface_hub" in install
+    assert "--no-cache-dir" in install
+    assert "transformers==4.57.6" in install
+    assert "tokenizers==0.22.2" in install
 
 
 def test_all_plain_python_cells_compile(tmp_path):

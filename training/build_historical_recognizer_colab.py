@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 
-CODE_REVISION = "009d79ecf1f342f4f16557d91bdeaa8ef5e83820"
+CODE_REVISION = "822e2653d56d38f33fffc470d1dbc1c959b2b3fd"
 BASE_MODEL = "PiotrSty/trocr-pl-mixed-v3"
 BASE_REVISION = "85d0c91c26f8e088849096dded7c9ba10b4cd9c9"
 EHRI_REVISION = "3003e8614b74a351e7d94aba4f1348368815fb70"
@@ -48,18 +48,25 @@ os.chdir(repo)
 sys.path.insert(0, str(repo))
 
 for name in list(sys.modules):
-    if name == 'huggingface_hub' or name.startswith('huggingface_hub.') or name == 'transformers' or name.startswith('transformers.'):
+    if (name == 'huggingface_hub' or name.startswith('huggingface_hub.')
+            or name == 'transformers' or name.startswith('transformers.')
+            or name == 'tokenizers' or name.startswith('tokenizers.')):
         del sys.modules[name]
 
 import torch
 assert torch.cuda.is_available(), 'Select a GPU runtime, then Run all.'
 assert importlib.metadata.version('transformers') == '4.57.6'
+assert importlib.metadata.version('tokenizers') == '0.22.2'
 assert importlib.metadata.version('peft') == '0.19.1'
 assert importlib.metadata.version('accelerate') == '1.13.0'
 assert importlib.metadata.version('jiwer') == '4.0.0'
 assert importlib.metadata.version('huggingface_hub') == '0.36.2'
 assert importlib.metadata.version('Pillow') == '11.3.0'
 assert importlib.metadata.version('opencv-python-headless') == '4.12.0.88'
+from transformers.generation import GenerationMixin
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+assert GenerationMixin is not None and TrOCRProcessor is not None and VisionEncoderDecoderModel is not None
+print('TRANSFORMERS_IMPORT_PREFLIGHT_OK')
 
 run_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
 work = Path('/content') / ('historical-recognizer-v1-' + run_id)
@@ -223,6 +230,21 @@ print('No model was published. Review the evidence ZIP first.')
     evidence = '''import hashlib
 import shutil
 
+model_archive = None
+model_archive_sha256 = None
+if promotion['all_gates_passed']:
+    model_package_dir = work / 'historical-recognizer-v1-package'
+    model_package_dir.mkdir()
+    for source in sorted(model_dir.iterdir()):
+        if source.is_file():
+            shutil.copyfile(source, model_package_dir / source.name)
+    model_archive = Path(shutil.make_archive(
+        str(work / 'historical-recognizer-v1-model'),
+        'zip',
+        model_package_dir,
+    ))
+    model_archive_sha256 = hashlib.sha256(model_archive.read_bytes()).hexdigest()
+
 evidence_dir = work / 'evidence'
 evidence_dir.mkdir()
 files_to_copy = {
@@ -251,11 +273,14 @@ environment = {
     'packages': {
         name: importlib.metadata.version(name)
         for name in ('torch', 'transformers', 'peft', 'accelerate', 'jiwer',
-                     'huggingface_hub', 'Pillow', 'opencv-python-headless')
+                     'huggingface_hub', 'tokenizers', 'Pillow', 'opencv-python-headless')
     },
     'raw_predictions_included': False,
     'images_or_labels_included': False,
     'model_weights_included': False,
+    'model_archive_contents': 'Merged final model and root configuration files; no checkpoints or adapter.',
+    'model_archive_created': model_archive is not None,
+    'model_archive_sha256': model_archive_sha256,
 }
 (evidence_dir / 'environment.json').write_text(json.dumps(environment, indent=2) + '\\n')
 checksums = {
@@ -266,7 +291,10 @@ checksums = {
 (evidence_dir / 'checksums.json').write_text(json.dumps(checksums, indent=2) + '\\n')
 evidence_zip = Path(shutil.make_archive(str(work / 'historical-recognizer-v1-evidence'), 'zip', evidence_dir))
 print('Evidence:', evidence_zip)
-print('Model remains local to this Colab session:', model_dir)
+if model_archive is None:
+    print('Promotion gates failed; model archive was not created.')
+else:
+    print('Promotion gates passed. Model archive:', model_archive)
 '''
 
     notebook = {
@@ -300,8 +328,8 @@ print('Model remains local to this Colab session:', model_dir)
                 "execution_count": None,
                 "outputs": [],
                 "source": [
-                    "%pip uninstall -y torchao\n",
-                    "%pip install -q --upgrade transformers==4.57.6 peft==0.19.1 "
+                    "%pip uninstall -q -y torchao transformers tokenizers huggingface_hub\n",
+                    "%pip install -q --no-cache-dir transformers==4.57.6 tokenizers==0.22.2 peft==0.19.1 "
                     "accelerate==1.13.0 jiwer==4.0.0 huggingface_hub==0.36.2 "
                     "sentencepiece==0.2.1 pillow==11.3.0 opencv-python-headless==4.12.0.88\n",
                 ],
@@ -320,7 +348,12 @@ print('Model remains local to this Colab session:', model_dir)
                 "metadata": {},
                 "execution_count": None,
                 "outputs": [],
-                "source": ["from google.colab import files\nfiles.download(str(evidence_zip))\n"],
+                "source": [
+                    "from google.colab import files\n",
+                    "files.download(str(evidence_zip))\n",
+                    "if model_archive is not None:\n",
+                    "    files.download(str(model_archive))\n",
+                ],
             },
         ],
     }
