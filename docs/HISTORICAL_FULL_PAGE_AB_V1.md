@@ -2,6 +2,9 @@
 
 Status: frozen before notebook implementation and evaluation on 2026-09-27.
 
+Run the pinned [Colab notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_full_page_ab_v1.ipynb)
+with a GPU runtime and the private `HF_TOKEN` Colab secret.
+
 ## Question
 
 Does the accepted historical replay v2 line recognizer improve end-to-end
