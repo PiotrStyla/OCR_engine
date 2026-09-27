@@ -1,0 +1,38 @@
+{
+  "schema": "ocr-engine-historical-recognizer-result-v2",
+  "audited_at": "2026-09-27",
+  "evidence_zip_sha256": "04ba8229dc906195a33a570e301da73c37cc5ba5b2065be83c79b861b6c14d99",
+  "code_revision": "8b950b8f5c42af259269fb0bb5a706f1c6724148",
+  "evidence_checksums_verified": true,
+  "training_contract_verified": true,
+  "exact_image_overlap_records": 0,
+  "tokenizer_roundtrip_mismatches": 0,
+  "targets_over_128": 0,
+  "baseline_cer": {
+    "historical-validation": 0.34845049130763417,
+    "real-lines-v1": 0.053586380128384035,
+    "ehri-test": 0.2974418604651163
+  },
+  "candidate_cer": {
+    "historical-validation": 0.31418493323255225,
+    "real-lines-v1": 0.059726486184761375,
+    "ehri-test": 0.3174418604651163
+  },
+  "cer_delta": {
+    "historical-validation": -0.034265558075081914,
+    "real-lines-v1": 0.00614010605637734,
+    "ehri-test": 0.020000000000000018
+  },
+  "recorded_gate_result": false,
+  "recorded_gate_failure": "ehri-test boundary rejected by binary floating-point drift",
+  "audited_gate_policy": {
+    "comparison_abs_tolerance": 1e-12,
+    "historical_validation_improved": true,
+    "real_lines_regression_within_1pp": true,
+    "ehri_regression_within_2pp": true,
+    "all_gates_passed": true
+  },
+  "decision": "passes the frozen intended thresholds after correcting the boundary comparison; recover and archive the already-trained model before any broader evaluation",
+  "model_archive_present": false,
+  "publication": "disabled"
+}

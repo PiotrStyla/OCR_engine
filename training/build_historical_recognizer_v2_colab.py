@@ -341,6 +341,43 @@ print((model_dir / 'best_metrics.json').read_text())
 '''
     _set_source(notebook, "train", train)
 
+    candidate = '''import math
+
+candidate_metrics = evaluate_sets(model_dir)
+(work / 'candidate-metrics.json').write_text(
+    json.dumps(candidate_metrics, indent=2) + '\\n',
+    encoding='utf-8',
+)
+
+def cer_delta(name):
+    return candidate_metrics[name]['cer'] - baseline_metrics[name]['cer']
+
+def regression_within(name, limit):
+    delta = cer_delta(name)
+    return delta <= limit or math.isclose(delta, limit, rel_tol=0.0, abs_tol=1e-12)
+
+promotion = {
+    'historical_validation_improved': cer_delta('historical-validation') < 0,
+    'real_lines_regression_within_1pp': regression_within('real-lines-v1', 0.01),
+    'ehri_regression_within_2pp': regression_within('ehri-test', 0.02),
+    'tokenizer_roundtrip_clean': not tokenizer_audit['roundtrip_mismatches'],
+    'no_target_truncation': tokenizer_audit['over_128'] == 0,
+    'comparison_abs_tolerance': 1e-12,
+    'cer_deltas': {name: cer_delta(name) for name in evaluation_sets},
+}
+promotion['all_gates_passed'] = all(
+    value for key, value in promotion.items()
+    if key not in {'comparison_abs_tolerance', 'cer_deltas', 'all_gates_passed'}
+)
+(work / 'promotion-gates.json').write_text(
+    json.dumps(promotion, indent=2) + '\\n',
+    encoding='utf-8',
+)
+print(json.dumps(promotion, indent=2))
+print('No model was published. Review the evidence ZIP first.')
+'''
+    _set_source(notebook, "candidate", candidate)
+
     evidence = '''import hashlib
 import shutil
 

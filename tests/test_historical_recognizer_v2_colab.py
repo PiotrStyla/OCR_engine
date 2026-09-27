@@ -1,4 +1,5 @@
 import json
+import math
 from pathlib import Path
 import subprocess
 
@@ -9,6 +10,7 @@ from training.build_historical_recognizer_v2_colab import (
     SYN_REVISION,
     build,
 )
+from training.recover_historical_recognizer_v2 import promotion_decision
 
 
 def generated_notebook(tmp_path):
@@ -43,12 +45,51 @@ def test_notebook_is_frozen_audited_and_does_not_publish(tmp_path):
     assert "tokenizer_audit['labels'] == 1402" in source
     assert "'--epochs', '4'" in source
     assert "'--lr', '2e-5'" in source
+    assert "math.isclose(delta, limit, rel_tol=0.0, abs_tol=1e-12)" in source
     assert "str(corpus_root / 'train'),\n    str(corpus_root / 'train')," in source
     assert "upload_folder" not in source
     assert "push_to_hub" not in source
     assert "if promotion['all_gates_passed']" in source
     assert "files.download(str(evidence_zip))" in source
     assert "files.download(str(model_archive))" in source
+
+
+def test_exact_boundary_regression_passes_promotion_gate(tmp_path):
+    _, notebook = generated_notebook(tmp_path)
+    candidate = "".join(
+        next(cell for cell in notebook["cells"] if cell["id"] == "candidate")["source"]
+    )
+    baseline = {
+        "historical-validation": {"cer": 0.34845049130763417},
+        "real-lines-v1": {"cer": 0.053586380128384035},
+        "ehri-test": {"cer": 0.2974418604651163},
+    }
+    observed = {
+        "historical-validation": {"cer": 0.31418493323255225},
+        "real-lines-v1": {"cer": 0.059726486184761375},
+        "ehri-test": {"cer": 0.3174418604651163},
+    }
+    assert math.isclose(
+        observed["ehri-test"]["cer"] - baseline["ehri-test"]["cer"],
+        0.02,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    namespace = {
+        "baseline_metrics": baseline,
+        "evaluate_sets": lambda _: observed,
+        "evaluation_sets": {name: None for name in baseline},
+        "json": json,
+        "model_dir": tmp_path / "model",
+        "tokenizer_audit": {"roundtrip_mismatches": [], "over_128": 0},
+        "work": tmp_path,
+    }
+    exec(candidate, namespace)
+    assert namespace["promotion"]["ehri_regression_within_2pp"] is True
+    assert namespace["promotion"]["all_gates_passed"] is True
+    recovered = promotion_decision(baseline, observed, namespace["tokenizer_audit"])
+    assert recovered["ehri_regression_within_2pp"] is True
+    assert recovered["all_gates_passed"] is True
 
 
 def test_code_revision_resolves_to_a_local_commit():

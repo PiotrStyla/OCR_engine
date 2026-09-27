@@ -44,7 +44,10 @@ ani potwierdzonym silnikiem SOTA.**
 - **Recognizer v2 zamrożony przed treningiem:** jeden test replay łączy
   historyczne linie wyłącznie z treningowymi splitami EHRI i syntetycznego
   druku; progi promocji pozostają bez zmian. [Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_historical_recognizer_v2.ipynb)
-  · [protokół v2](docs/HISTORICAL_RECOGNIZER_V2.md).
+  · [wynik v2](docs/HISTORICAL_RECOGNIZER_V2_RESULT_20260927.md)
+  · [protokół v2](docs/HISTORICAL_RECOGNIZER_V2.md). V2 przechodzi zamrożone
+  progi po naprawie porównania dokładnej granicy `+2 pp`; wagi nie zostały
+  opublikowane.
 - **Zakończony eksperyment:** [granice wierszy i interpunkcja w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_geometry_bands.ipynb).
   33 nowe wycinki i 30 niezmienionych; automatyczne pobieranie pełnej paczki,
   kontrola wersji bibliotek i ZIP wyników. [Metoda](docs/AUTO_GEOMETRY_BANDS_20260924.md).
