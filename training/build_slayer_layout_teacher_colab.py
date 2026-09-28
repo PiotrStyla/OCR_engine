@@ -15,24 +15,31 @@ CONFIG_PATH = (
 CONFIG = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
 
-def build(target: str | Path, teacher_id: str | None = None) -> None:
+def build(target: str | Path, teacher_id: str | None = None, *, pages: int = 2,
+          code_revision: str = CODE_REVISION,
+          record_code_revision: bool = False) -> None:
     if teacher_id is not None and teacher_id not in CONFIG["teachers"]:
         raise ValueError(f"Unknown teacher: {teacher_id}")
+    if not 1 <= pages <= CONFIG["dataset"]["selected_pages"]:
+        raise ValueError("pages outside frozen pilot range")
+    if (not isinstance(code_revision, str) or len(code_revision) != 40 or
+            any(character not in "0123456789abcdef" for character in code_revision)):
+        raise ValueError("Invalid code revision")
     if teacher_id is None:
-        parameters = '''TEACHER_ID = "qwen3-vl-4b"  # @param ["qwen3-vl-4b", "doclayout-yolo", "surya-layout2"]
-PAGES = 2  # @param {type:"integer"}
+        parameters = f'''TEACHER_ID = "qwen3-vl-4b"  # @param ["qwen3-vl-4b", "doclayout-yolo", "surya-layout2"]
+PAGES = {pages}  # @param {{type:"integer"}}
 
-assert TEACHER_ID in {"qwen3-vl-4b", "doclayout-yolo", "surya-layout2"}
+assert TEACHER_ID in {{"qwen3-vl-4b", "doclayout-yolo", "surya-layout2"}}
 assert 1 <= PAGES <= 60
-print(f"Teacher={TEACHER_ID} pages={PAGES}")
+print(f"Teacher={{TEACHER_ID}} pages={{PAGES}}")
 '''
     else:
         parameters = f'''TEACHER_ID = {teacher_id!r}
-PAGES = 2
+PAGES = {pages}
 
 assert TEACHER_ID == {teacher_id!r}
-assert PAGES == 2
-print(f"Locked smoke run: teacher={{TEACHER_ID}} pages={{PAGES}}")
+assert PAGES == {pages}
+print(f"Locked {'full' if pages == 60 else 'smoke'} run: teacher={{TEACHER_ID}} pages={{PAGES}}")
 '''
     install = '''import subprocess
 import sys
@@ -75,7 +82,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-CODE_REVISION = {CODE_REVISION!r}
+CODE_REVISION = {code_revision!r}
 EXPECTED_CONFIG = {CONFIG!r}
 
 repo = Path("/content/OCR_engine")
@@ -117,9 +124,10 @@ if TEACHER_ID == "qwen3-vl-4b":
     assert AutoModelForImageTextToText is not None
 print("PINNED_RUNTIME_OK", torch.cuda.get_device_name(0), CODE_REVISION)
 '''
-    inference = '''from training.slayer_layout_teacher_pilot import run
+    revision_argument = ", code_revision=CODE_REVISION" if record_code_revision else ""
+    inference = f'''from training.slayer_layout_teacher_pilot import run
 
-result_archive = run(TEACHER_ID, CONFIG, pages=PAGES, output_root="/content")
+result_archive = run(TEACHER_ID, CONFIG, pages=PAGES, output_root="/content"{revision_argument})
 print("PRIVATE_EVIDENCE_READY", result_archive)
 '''
     notebook = {
@@ -141,9 +149,8 @@ print("PRIVATE_EVIDENCE_READY", result_archive)
                 "metadata": {},
                 "source": [
                     f"# SLAYER-OCR layout teacher: {teacher_id or 'selectable pilot'}\n",
-                    "Use a fresh GPU runtime for exactly one teacher. Start with the default "
-                    "two-page smoke run. After all three smoke ZIPs pass consensus inspection, "
-                    "repeat in three fresh runtimes with `PAGES = 60`.\n",
+                    f"Use a fresh GPU runtime for exactly one teacher. This notebook is locked "
+                    f"to `PAGES = {pages}`.\n",
                     "The run uses pinned public train pages and pinned model revisions. Reference "
                     "text is never sent to a teacher. The downloaded private evidence ZIP contains "
                     "proposals, provenance and checksums, but no page images or reference text. "

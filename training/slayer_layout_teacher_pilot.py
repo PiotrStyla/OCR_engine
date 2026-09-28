@@ -333,11 +333,15 @@ def _package_versions(names):
     return result
 
 
-def run(teacher_id, config, pages=None, output_root='/content'):
+def run(teacher_id, config, pages=None, output_root='/content', code_revision=None):
     import torch
 
     if teacher_id not in config['teachers']:
         raise ValueError(f'Unknown teacher: {teacher_id}')
+    if code_revision is not None and (
+            not isinstance(code_revision, str) or len(code_revision) != 40 or
+            any(character not in '0123456789abcdef' for character in code_revision)):
+        raise ValueError('Invalid code revision')
     pages = pages or config['dataset']['selected_pages']
     if not 1 <= pages <= config['dataset']['selected_pages']:
         raise ValueError('pages outside frozen pilot range')
@@ -400,6 +404,7 @@ def run(teacher_id, config, pages=None, output_root='/content'):
             'doclayout-yolo', 'surya-ocr', 'huggingface-hub', 'Pillow']),
         'dataset_revision': config['dataset']['revision'],
         'dataset_metadata_sha256': config['dataset']['metadata_sha256'],
+        'code_revision': code_revision,
         'reference_text_sent_to_teacher': False,
         'images_or_references_in_evidence_zip': False,
         'automatic_publication': False,

@@ -62,6 +62,19 @@ def test_surya_notebook_uses_its_compatible_dependency_family(tmp_path):
     assert '"huggingface_hub": "1.5.0"' in source
 
 
+def test_locked_full_notebook_records_pinned_code_revision(tmp_path):
+    target = tmp_path / "full.ipynb"
+    revision = "a" * 40
+    build(target, teacher_id="qwen3-vl-4b", pages=60,
+          code_revision=revision, record_code_revision=True)
+    notebook = json.loads(target.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook["cells"])
+    assert revision in source
+    assert "PAGES = 60" in source and "assert PAGES == 60" in source
+    assert "code_revision=CODE_REVISION" in source
+    assert "Locked full run" in source
+
+
 def test_code_revision_resolves_locally():
     root = Path(__file__).resolve().parents[1]
     resolved = subprocess.check_output(

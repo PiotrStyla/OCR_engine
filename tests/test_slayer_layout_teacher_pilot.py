@@ -12,6 +12,7 @@ from training.slayer_layout_teacher_pilot import (
     select_pages,
     sha256_bytes,
     _load_qwen,
+    run,
 )
 
 
@@ -93,3 +94,9 @@ def test_qwen_uses_transformers_457_image_text_auto_loader():
     source = inspect.getsource(_load_qwen)
     assert 'AutoModelForImageTextToText' in source
     assert 'AutoModelForMultimodalLM' not in source
+
+
+def test_teacher_run_records_and_validates_code_revision():
+    source = inspect.getsource(run)
+    assert "'code_revision': code_revision" in source
+    assert "Invalid code revision" in source
