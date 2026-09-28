@@ -8,7 +8,7 @@ from training.build_historical_recognizer_colab import code_cell
 from training.build_slayer_layout_teacher_colab import CONFIG
 
 
-CONSENSUS_CODE_REVISION = "2c953866adc5ec7f8701072ab0a5eafdfd60a242"
+CONSENSUS_CODE_REVISION = "f851c6fc38efef3a222616c7b5d04cc37bc0e120"
 POLICY_PATH = (
     Path(__file__).resolve().parents[1]
     / "experiments/2026-09-28/slayer-layout-consensus-policy-v2.json"

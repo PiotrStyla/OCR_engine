@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import subprocess
 
 from training.build_slayer_layout_consensus_colab import (
     CONSENSUS_CODE_REVISION,
@@ -50,3 +51,19 @@ def test_checked_in_v2_notebook_matches_generator(tmp_path):
     assert json.loads(generated.read_text(encoding="utf-8")) == json.loads(
         checked_in.read_text(encoding="utf-8")
     )
+
+
+def test_pinned_consensus_runtime_supports_notebook_api():
+    root = Path(__file__).resolve().parents[1]
+    source = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(root),
+            "show",
+            f"{CONSENSUS_CODE_REVISION}:training/slayer_layout_consensus_colab.py",
+        ],
+        text=True,
+    )
+    assert "def combine_archives(archives, output_root, config, consensus_policy=None," in source
+    assert "code_revision=None" in source
