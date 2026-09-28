@@ -71,9 +71,12 @@ for name, content in uploaded.items():
     archives.append(target)
 print("UPLOAD_OK", [path.name for path in archives])
 '''
-    consensus = '''from training.slayer_layout_consensus_colab import combine_archives
+    consensus = '''import importlib
+import training.slayer_layout_consensus_colab as consensus_module
 
-result_archive, summary = combine_archives(
+importlib.invalidate_caches()
+consensus_module = importlib.reload(consensus_module)
+result_archive, summary = consensus_module.combine_archives(
     archives, work / "combined", CONFIG, POLICY, code_revision=CODE_REVISION
 )
 print(json.dumps(summary, ensure_ascii=False, indent=2))

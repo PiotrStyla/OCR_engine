@@ -21,7 +21,8 @@ def test_consensus_notebook_requires_three_private_archives(tmp_path):
     assert "slayer-layout-consensus-policy-v2.json" in source
     assert "code_revision=CODE_REVISION" in source
     assert "assert len(uploaded) == 3" in source
-    assert "combine_archives" in source
+    assert "consensus_module.combine_archives" in source
+    assert "importlib.reload(consensus_module)" in source
     assert "files.download(str(result_archive))" in source
     assert "push_to_hub" not in source and "upload_folder" not in source
     for spec in CONFIG["teachers"].values():
