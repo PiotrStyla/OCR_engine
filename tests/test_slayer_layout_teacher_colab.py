@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import subprocess
+import pytest
 
 from training.build_slayer_layout_teacher_colab import CODE_REVISION, CONFIG, build
 
@@ -34,6 +35,20 @@ def test_teacher_notebook_outputs_are_empty_and_code_compiles(tmp_path):
         assert cell["execution_count"] is None
         assert cell["outputs"] == []
         compile("".join(cell["source"]), f"<{cell['id']}>", "exec")
+
+
+@pytest.mark.parametrize("teacher_id", ["doclayout-yolo", "surya-layout2"])
+def test_locked_smoke_notebooks_cannot_switch_teacher(tmp_path, teacher_id):
+    target = tmp_path / f"{teacher_id}.ipynb"
+    build(target, teacher_id=teacher_id)
+    notebook = json.loads(target.read_text(encoding="utf-8"))
+    parameters = "".join(
+        next(cell for cell in notebook["cells"] if cell["id"] == "parameters")["source"]
+    )
+    assert f"TEACHER_ID = {teacher_id!r}" in parameters
+    assert f"assert TEACHER_ID == {teacher_id!r}" in parameters
+    assert "# @param" not in parameters
+    assert "PAGES = 2" in parameters and "assert PAGES == 2" in parameters
 
 
 def test_code_revision_resolves_locally():

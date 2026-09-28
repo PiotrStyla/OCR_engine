@@ -15,13 +15,24 @@ CONFIG_PATH = (
 CONFIG = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
 
-def build(target: str | Path) -> None:
-    parameters = '''TEACHER_ID = "qwen3-vl-4b"  # @param ["qwen3-vl-4b", "doclayout-yolo", "surya-layout2"]
+def build(target: str | Path, teacher_id: str | None = None) -> None:
+    if teacher_id is not None and teacher_id not in CONFIG["teachers"]:
+        raise ValueError(f"Unknown teacher: {teacher_id}")
+    if teacher_id is None:
+        parameters = '''TEACHER_ID = "qwen3-vl-4b"  # @param ["qwen3-vl-4b", "doclayout-yolo", "surya-layout2"]
 PAGES = 2  # @param {type:"integer"}
 
 assert TEACHER_ID in {"qwen3-vl-4b", "doclayout-yolo", "surya-layout2"}
 assert 1 <= PAGES <= 60
 print(f"Teacher={TEACHER_ID} pages={PAGES}")
+'''
+    else:
+        parameters = f'''TEACHER_ID = {teacher_id!r}
+PAGES = 2
+
+assert TEACHER_ID == {teacher_id!r}
+assert PAGES == 2
+print(f"Locked smoke run: teacher={{TEACHER_ID}} pages={{PAGES}}")
 '''
     install = '''import subprocess
 import sys
@@ -112,7 +123,7 @@ print("PRIVATE_EVIDENCE_READY", result_archive)
                 "id": "scope",
                 "metadata": {},
                 "source": [
-                    "# SLAYER-OCR layout teacher pilot v1\n",
+                    f"# SLAYER-OCR layout teacher: {teacher_id or 'selectable pilot'}\n",
                     "Use a fresh GPU runtime for exactly one teacher. Start with the default "
                     "two-page smoke run. After all three smoke ZIPs pass consensus inspection, "
                     "repeat in three fresh runtimes with `PAGES = 60`.\n",
@@ -145,4 +156,9 @@ print("PRIVATE_EVIDENCE_READY", result_archive)
 
 
 if __name__ == "__main__":
-    build(Path(__file__).with_name("colab_slayer_layout_teacher_pilot_v1.ipynb"))
+    directory = Path(__file__).parent
+    build(directory / "colab_slayer_layout_teacher_pilot_v1.ipynb")
+    build(directory / "colab_slayer_layout_doclayout_yolo_smoke_v1.ipynb",
+          teacher_id="doclayout-yolo")
+    build(directory / "colab_slayer_layout_surya_smoke_v1.ipynb",
+          teacher_id="surya-layout2")

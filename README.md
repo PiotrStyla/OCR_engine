@@ -21,6 +21,9 @@ ani potwierdzonym silnikiem SOTA.**
   osobno w trzech świeżych sesjach dla `qwen3-vl-4b`, `doclayout-yolo` i
   `surya-layout2`. Zacznij od domyślnych dwóch stron. Każda sesja pobiera
   przypięte dane i model oraz zwraca osobny ZIP dowodowy bez skanów i referencji.
+  Dla smoke testu są też notebooki bez przełączników:
+  [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_smoke_v1.ipynb)
+  oraz [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_smoke_v1.ipynb).
 - **Konsensus trzech runów:** [otwórz notebook CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v1.ipynb),
   wgraj dokładnie trzy ZIP-y teacherów i pobierz COCO weak labels, kolejkę review,
   hard examples oraz pełne provenance. Po kontroli smoke runu powtórz trzy sesje
