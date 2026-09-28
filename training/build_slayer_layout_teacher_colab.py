@@ -37,23 +37,32 @@ print(f"Locked smoke run: teacher={{TEACHER_ID}} pages={{PAGES}}")
     install = '''import subprocess
 import sys
 
-COMMON = ["huggingface_hub==0.36.2", "pillow==11.3.0"]
 PACKAGES = {
     "qwen3-vl-4b": [
+        "huggingface_hub==0.36.2", "pillow==11.3.0",
         "transformers==4.57.6", "tokenizers==0.22.2", "bitsandbytes==0.48.1",
         "accelerate==1.13.0", "sentencepiece==0.2.1",
     ],
-    "doclayout-yolo": ["doclayout-yolo==0.0.4"],
-    "surya-layout2": ["surya-ocr==0.22.1"],
+    "doclayout-yolo": [
+        "huggingface_hub==0.36.2", "pillow==11.3.0", "doclayout-yolo==0.0.4",
+    ],
+    "surya-layout2": [
+        "surya-ocr==0.22.1", "transformers==5.12.1",
+        "huggingface_hub==1.5.0", "pillow==10.4.0",
+    ],
 }
-if TEACHER_ID == "qwen3-vl-4b":
+RESET = {
+    "qwen3-vl-4b": ["torchao", "transformers", "tokenizers", "huggingface_hub"],
+    "doclayout-yolo": [],
+    "surya-layout2": ["transformers", "tokenizers", "huggingface_hub", "pillow"],
+}
+if RESET[TEACHER_ID]:
     subprocess.run(
-        [sys.executable, "-m", "pip", "uninstall", "-q", "-y",
-         "torchao", "transformers", "tokenizers", "huggingface_hub"],
+        [sys.executable, "-m", "pip", "uninstall", "-y", *RESET[TEACHER_ID]],
         check=False,
     )
 subprocess.run(
-    [sys.executable, "-m", "pip", "install", "-q", "--no-cache-dir", *COMMON,
+    [sys.executable, "-m", "pip", "install", "--no-cache-dir",
      *PACKAGES[TEACHER_ID]],
     check=True,
 )
@@ -94,7 +103,15 @@ import torch
 assert torch.cuda.is_available(), "Select a GPU runtime, then Run all."
 expected_package = CONFIG["teachers"][TEACHER_ID]["package"].split("==")
 assert importlib.metadata.version(expected_package[0]) == expected_package[1]
-assert importlib.metadata.version("huggingface_hub") == "0.36.2"
+EXPECTED_RUNTIME = {{
+    "qwen3-vl-4b": {{"huggingface_hub": "0.36.2", "Pillow": "11.3.0"}},
+    "doclayout-yolo": {{"huggingface_hub": "0.36.2", "Pillow": "11.3.0"}},
+    "surya-layout2": {{
+        "huggingface_hub": "1.5.0", "Pillow": "10.4.0", "transformers": "5.12.1",
+    }},
+}}
+for package, version in EXPECTED_RUNTIME[TEACHER_ID].items():
+    assert importlib.metadata.version(package) == version, (package, version)
 if TEACHER_ID == "qwen3-vl-4b":
     from transformers import AutoModelForImageTextToText
     assert AutoModelForImageTextToText is not None

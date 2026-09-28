@@ -51,6 +51,17 @@ def test_locked_smoke_notebooks_cannot_switch_teacher(tmp_path, teacher_id):
     assert "PAGES = 2" in parameters and "assert PAGES == 2" in parameters
 
 
+def test_surya_notebook_uses_its_compatible_dependency_family(tmp_path):
+    target = tmp_path / "surya.ipynb"
+    build(target, teacher_id="surya-layout2")
+    notebook = json.loads(target.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook["cells"])
+    assert '"surya-ocr==0.22.1", "transformers==5.12.1"' in source
+    assert '"huggingface_hub==1.5.0", "pillow==10.4.0"' in source
+    assert '"surya-layout2": ["transformers", "tokenizers", "huggingface_hub", "pillow"]' in source
+    assert '"huggingface_hub": "1.5.0"' in source
+
+
 def test_code_revision_resolves_locally():
     root = Path(__file__).resolve().parents[1]
     resolved = subprocess.check_output(
