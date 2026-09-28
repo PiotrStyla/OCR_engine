@@ -7,7 +7,7 @@ from pathlib import Path
 from training.build_historical_recognizer_colab import code_cell
 
 
-CODE_REVISION = "40815d00962a10d8cd1397f19c69a515d6634c79"
+CODE_REVISION = "9ed238038cd8ef1abf16af858a1e8289d672ea86"
 CONFIG_PATH = (
     Path(__file__).resolve().parents[1]
     / "experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json"
@@ -84,6 +84,9 @@ assert torch.cuda.is_available(), "Select a GPU runtime, then Run all."
 expected_package = CONFIG["teachers"][TEACHER_ID]["package"].split("==")
 assert importlib.metadata.version(expected_package[0]) == expected_package[1]
 assert importlib.metadata.version("huggingface_hub") == "0.36.2"
+if TEACHER_ID == "qwen3-vl-4b":
+    from transformers import AutoModelForImageTextToText
+    assert AutoModelForImageTextToText is not None
 print("PINNED_RUNTIME_OK", torch.cuda.get_device_name(0), CODE_REVISION)
 '''
     inference = '''from training.slayer_layout_teacher_pilot import run

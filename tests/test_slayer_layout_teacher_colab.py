@@ -15,6 +15,8 @@ def test_teacher_notebook_is_pinned_private_and_gpu_ready(tmp_path):
     assert CODE_REVISION in source
     assert 'PAGES = 2' in source
     assert 'files.download(str(result_archive))' in source
+    assert 'from transformers import AutoModelForImageTextToText' in source
+    assert 'AutoModelForMultimodalLM' not in source
     assert 'push_to_hub' not in source and 'upload_folder' not in source
     assert 'Reference text is never sent' in source
     for teacher_id, spec in CONFIG["teachers"].items():
