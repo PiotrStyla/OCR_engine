@@ -25,6 +25,11 @@ def test_qwen_retry_notebook_is_locked_and_matches_generator(tmp_path):
     assert "PAGES = 60" in source and "assert PAGES == 60" in source
     assert QWEN_RETRY_CODE_REVISION in source
     assert "code_revision=CODE_REVISION" in source
+    assert 'run_metadata["code_revision"] == CODE_REVISION' in source
+    assert 'run_metadata["pages_completed"] == PAGES' in source
+    assert 'run_metadata["error_pages"] == 0' in source
+    assert 'print("RUN_COMPLETE", run_complete' in source
+    assert "qwen3-vl-4b-evidence-v3.zip" in source
     assert "# @param" not in source
     assert "push_to_hub" not in source and "upload_folder" not in source
     checked_in = Path(__file__).resolve().parents[1] / "training" / TARGET

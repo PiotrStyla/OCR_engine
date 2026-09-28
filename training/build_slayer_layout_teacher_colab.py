@@ -17,7 +17,8 @@ CONFIG = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
 def build(target: str | Path, teacher_id: str | None = None, *, pages: int = 2,
           code_revision: str = CODE_REVISION,
-          record_code_revision: bool = False) -> None:
+          record_code_revision: bool = False,
+          output_name: str | None = None) -> None:
     if teacher_id is not None and teacher_id not in CONFIG["teachers"]:
         raise ValueError(f"Unknown teacher: {teacher_id}")
     if not 1 <= pages <= CONFIG["dataset"]["selected_pages"]:
@@ -25,6 +26,9 @@ def build(target: str | Path, teacher_id: str | None = None, *, pages: int = 2,
     if (not isinstance(code_revision, str) or len(code_revision) != 40 or
             any(character not in "0123456789abcdef" for character in code_revision)):
         raise ValueError("Invalid code revision")
+    if output_name is not None and (
+            Path(output_name).name != output_name or not output_name.endswith(".zip")):
+        raise ValueError("Invalid output name")
     if teacher_id is None:
         parameters = f'''TEACHER_ID = "qwen3-vl-4b"  # @param ["qwen3-vl-4b", "doclayout-yolo", "surya-layout2"]
 PAGES = {pages}  # @param {{type:"integer"}}
@@ -128,6 +132,29 @@ print("PINNED_RUNTIME_OK", torch.cuda.get_device_name(0), CODE_REVISION)
     inference = f'''from training.slayer_layout_teacher_pilot import run
 
 result_archive = run(TEACHER_ID, CONFIG, pages=PAGES, output_root="/content"{revision_argument})
+print("PRIVATE_EVIDENCE_READY", result_archive)
+'''
+    if output_name is not None:
+        inference = f'''from training.slayer_layout_teacher_pilot import run
+
+result_archive = run(TEACHER_ID, CONFIG, pages=PAGES, output_root="/content"{revision_argument})
+import json
+from pathlib import Path
+import zipfile
+
+with zipfile.ZipFile(result_archive) as evidence_zip:
+    run_metadata = json.loads(evidence_zip.read("run.json"))
+assert run_metadata["code_revision"] == CODE_REVISION
+run_complete = (
+    run_metadata["pages_completed"] == PAGES
+    and run_metadata["error_pages"] == 0
+)
+verified_archive = Path("/content") / {output_name!r}
+result_archive.replace(verified_archive)
+result_archive = verified_archive
+print("RUN_COMPLETE", run_complete, run_metadata["pages_completed"],
+      run_metadata["error_pages"])
+print("VERIFIED_PRIVATE_EVIDENCE", result_archive)
 print("PRIVATE_EVIDENCE_READY", result_archive)
 '''
     notebook = {

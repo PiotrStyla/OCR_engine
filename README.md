@@ -37,13 +37,14 @@ ani potwierdzonym silnikiem SOTA.**
   prywatny kandydat JSONL/COCO bez skanów.
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Qwen v1 ukończył 53/60 stron, dlatego należy ponowić wyłącznie Qwen
-  przez poprawiony notebook [Qwen3-VL v2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_qwen3_vl_4b_full_v2.ipynb).
+  przez poprawiony notebook [Qwen3-VL v3](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_qwen3_vl_4b_full_v3.ipynb).
   Zachowaj istniejące ZIP-y z notebooków
   [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_full_v1.ipynb),
   [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_full_v1.ipynb).
-  Notebook Qwen v2 ponawia odpowiedź o złym JSON-ie, zachowuje surowe odpowiedzi
+  Notebook Qwen v3 ponawia odpowiedź o złym JSON-ie, zachowuje surowe odpowiedzi
   przy błędzie i odrzuca wadliwe ramki bez utraty całej strony. Konsensus odrzuca
-  każdy niekompletny run. Notebooki są zablokowane na właściwym teacherze i
+  każdy niekompletny run. Przed pobraniem notebook sprawdza kompletność i commit,
+  a wynik nazywa `qwen3-vl-4b-evidence-v3.zip`. Notebooki są zablokowane na właściwym teacherze i
   `PAGES = 60`; ZIP zapisuje przypięty commit kodu i nie zawiera skanów ani
   tekstu referencyjnego.
 - Zamrożona konfiguracja pilota znajduje się w
