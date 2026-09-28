@@ -7,7 +7,7 @@ from pathlib import Path
 from training.build_historical_recognizer_colab import code_cell
 
 
-CODE_REVISION = "9ed238038cd8ef1abf16af858a1e8289d672ea86"
+CODE_REVISION = "f3d2247094914f28e9f91b8bc8ee2cc8dd951b32"
 CONFIG_PATH = (
     Path(__file__).resolve().parents[1]
     / "experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json"
