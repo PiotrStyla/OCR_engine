@@ -1,0 +1,53 @@
+{
+  "schema": "slayer-layout-ontology-v2",
+  "status": "frozen after two-page smoke review",
+  "frozen_at": "2026-09-28",
+  "target_granularity": "Maximal coherent region separated from peers by substantial whitespace, a distinct semantic role, or a non-text object.",
+  "classes": {
+    "text_region": {
+      "include": "Contiguous body-text block, including multiple adjacent lines or paragraphs when no substantial separator exists.",
+      "exclude": "Standalone titles, running headers, captions, marginalia, page numbers, ornaments and stamps.",
+      "review_rule": "Reject a page-sized body box when it encloses multiple independently supported semantic or whitespace-separated regions. Do not reuse its single teacher vote for every child box."
+    },
+    "heading": {
+      "include": "Standalone title or section heading visually separated from body text.",
+      "exclude": "First body line, running header and typographic ornament.",
+      "review_rule": "Prefer heading over text_region when the same compact box is a centered or otherwise isolated title."
+    },
+    "table": {
+      "include": "Region whose information is organized in rows and columns.",
+      "exclude": "Aligned prose or a single list without column structure."
+    },
+    "figure": {
+      "include": "Pictorial, decorative or non-text graphic, including ornaments, seals and stamps.",
+      "exclude": "Decorated glyphs that remain part of a text line.",
+      "review_rule": "An isolated printer ornament is figure even when a generic detector calls it text_region or page_number."
+    },
+    "caption": {
+      "include": "Text explicitly attached to and describing a figure or table.",
+      "exclude": "Nearby body text without a clear attachment."
+    },
+    "marginalia": {
+      "include": "Text or annotation placed in a page margin outside the main reading flow.",
+      "exclude": "Damage, bleed-through and crop artifacts."
+    },
+    "header": {
+      "include": "Running text repeated or positioned above the main page content.",
+      "exclude": "A document or section title."
+    },
+    "footer": {
+      "include": "Running text repeated or positioned below the main page content.",
+      "exclude": "Closing body lines, ornaments and page numbers."
+    },
+    "page_number": {
+      "include": "Printed Arabic or Roman numeral identifying the page.",
+      "exclude": "Ornaments, signatures, catchwords and handwritten marks.",
+      "review_rule": "A decorative mark without a readable numeral is not a page number."
+    }
+  },
+  "boundaries": {
+    "historical_spelling_or_transcription_changed": false,
+    "weak_labels_are_ground_truth": false,
+    "nested_semantic_relations_supported": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "slayer-layout-consensus-policy-v2",
+  "status": "frozen after two-page smoke review",
+  "frozen_at": "2026-09-28",
+  "based_on_evidence_sha256": "219ef28f2d8a7e23fc7788cbe7cbd3e62cc3ded25075057556bec9aa885ad79b",
+  "consensus": {
+    "categories": [
+      "text_region",
+      "heading",
+      "table",
+      "figure",
+      "caption",
+      "marginalia",
+      "header",
+      "footer",
+      "page_number"
+    ],
+    "quorum": 2,
+    "iou_threshold": 0.5,
+    "conflict_iou": 0.5,
+    "min_score": 0.0,
+    "containment_threshold": 0.9,
+    "granularity_ratio": 2.0
+  },
+  "decision": "Keep the stronger-vote cluster and route the weaker nested or enclosing cluster to review. Equal-vote cross-scale clusters both abstain.",
+  "claim_boundary": "This policy detects review-worthy cross-scale disagreement. It does not establish label accuracy or ground truth."
+}

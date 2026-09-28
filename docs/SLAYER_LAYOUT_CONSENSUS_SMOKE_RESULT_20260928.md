@@ -60,3 +60,16 @@ pass for a 60-page run. Before scaling:
 4. rerun the same two pages and require zero unexplained accepted objects.
 
 Only after that repeated smoke should the three 60-page teacher runs begin.
+
+## Policy v2 rerun
+
+The same 18 detections were recombined without new inference using the frozen
+`slayer-layout-consensus-policy-v2.json`. Counts intentionally remain unchanged:
+5 accepted objects, 7 review objects and 2 hard pages. Three review objects now
+carry the additional `granularity-conflict` reason. Majority-supported smaller
+regions remain accepted; a weaker enclosing region cannot lend its vote to each
+child. Equal-vote cross-scale clusters both abstain.
+
+All five accepted objects remain visually plausible under the frozen
+`slayer-layout-ontology-v2.json`. The remaining queue still requires explicit,
+versioned adjudication before it can become a clean training dataset.

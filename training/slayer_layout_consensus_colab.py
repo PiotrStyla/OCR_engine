@@ -52,7 +52,7 @@ def _verify_checksums(root):
             raise ValueError(f'Teacher checksum mismatch: {name}')
 
 
-def combine_archives(archives, output_root, config):
+def combine_archives(archives, output_root, config, consensus_policy=None):
     output_root = Path(output_root)
     if output_root.exists():
         raise FileExistsError(output_root)
@@ -108,11 +108,15 @@ def combine_archives(archives, output_root, config):
         raise ValueError('Teacher page sets differ')
 
     consensus_dir = output_root / 'consensus'
-    policy = config['consensus']
+    policy = dict(consensus_policy or config['consensus'])
+    if policy.get('categories') != config['consensus']['categories']:
+        raise ValueError('Consensus categories must match the frozen teacher ontology')
     report = build_consensus(
         proposals, consensus_dir, categories=policy['categories'],
         quorum=policy['quorum'], iou_threshold=policy['iou_threshold'],
-        conflict_iou=policy['conflict_iou'], min_score=policy['min_score'])
+        conflict_iou=policy['conflict_iou'], min_score=policy['min_score'],
+        containment_threshold=policy.get('containment_threshold', 0.9),
+        granularity_ratio=policy.get('granularity_ratio', 2.0))
     evidence = output_root / 'evidence'
     evidence.mkdir()
     shutil.copytree(consensus_dir, evidence / 'consensus')
@@ -136,6 +140,8 @@ def combine_archives(archives, output_root, config):
         json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     (evidence / 'experiment-config.json').write_text(
         json.dumps(config, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    (evidence / 'consensus-policy.json').write_text(
+        json.dumps(policy, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     archive = Path(shutil.make_archive(
         str(output_root / 'slayer-layout-consensus-evidence'), 'zip', evidence))
     return archive, summary

@@ -162,9 +162,10 @@ następnej wersji danych z pełnym pochodzeniem.
 
 ## Najbliższy eksperyment
 
-Dwustronicowy smoke został wykonany. Następny krok to zamrożenie definicji
-`heading`, `figure` i poziomu szczegółowości `text_region`, dodanie jawnego powodu
-`granularity-conflict` oraz ponowienie smoke na tych samych dwóch stronach.
-Dopiero po przejściu tej bramki wykonamy trzy pełne przebiegi po 60 stron,
-zmierzymy zgodność klas, rozkład IoU, odsetek abstencji i czas review, a następnie
-przygotujemy dane do pierwszego treningu RF-DETR.
+Dwustronicowy smoke został wykonany i przeliczony polityką v2. Zamrożono definicje
+klas oraz dodano jawny powód `granularity-conflict`; większościowe boksy pozostały
+stabilne. Następny krok to wersjonowana adjudykacja siedmiu pozycji review i
+eksport pierwszego clean datasetu. Dopiero po sprawdzeniu tego eksportu wykonamy
+trzy pełne przebiegi po 60 stron, zmierzymy zgodność klas, rozkład IoU, odsetek
+abstencji i czas review, a następnie przygotujemy dane do pierwszego treningu
+RF-DETR.

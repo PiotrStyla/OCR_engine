@@ -41,6 +41,21 @@ def iou(first, second):
     return intersection / union if union else 0.0
 
 
+def _area(box):
+    return (box[2] - box[0]) * (box[3] - box[1])
+
+
+def containment(first, second):
+    """Return intersection over the smaller box area."""
+    left = max(first[0], second[0])
+    top = max(first[1], second[1])
+    right = min(first[2], second[2])
+    bottom = min(first[3], second[3])
+    intersection = max(0.0, right - left) * max(0.0, bottom - top)
+    smaller = min(_area(first), _area(second))
+    return intersection / smaller if smaller else 0.0
+
+
 def _required_string(value, field):
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f'Invalid {field}')
@@ -179,11 +194,16 @@ def _cluster_page(detections, iou_threshold, min_score):
 
 
 def build_consensus(paths, output, *, categories=None, quorum=2,
-                    iou_threshold=0.5, conflict_iou=0.5, min_score=0.0):
+                    iou_threshold=0.5, conflict_iou=0.5, min_score=0.0,
+                    containment_threshold=0.9, granularity_ratio=2.0):
     if quorum < 2:
         raise ValueError('quorum must be at least 2')
-    if any(not 0 <= value <= 1 for value in (iou_threshold, conflict_iou, min_score)):
+    if any(not 0 <= value <= 1 for value in (
+            iou_threshold, conflict_iou, min_score, containment_threshold)):
         raise ValueError('thresholds must be in [0, 1]')
+    if (not isinstance(granularity_ratio, (int, float)) or
+            not math.isfinite(granularity_ratio) or granularity_ratio <= 1):
+        raise ValueError('granularity_ratio must be finite and greater than 1')
     if categories is not None and (not categories or len(set(categories)) != len(categories)):
         raise ValueError('categories must be unique and nonempty')
     output = Path(output)
@@ -220,6 +240,18 @@ def build_consensus(paths, output, *, categories=None, quorum=2,
                 if left['label'] != right['label'] and iou(left['bbox_xyxy'], right['bbox_xyxy']) >= conflict_iou:
                     left['reasons'].append('label-conflict')
                     right['reasons'].append('label-conflict')
+                if left['label'] != right['label']:
+                    continue
+                left_area, right_area = _area(left['bbox_xyxy']), _area(right['bbox_xyxy'])
+                ratio = max(left_area, right_area) / min(left_area, right_area)
+                if (ratio < granularity_ratio or
+                        containment(left['bbox_xyxy'], right['bbox_xyxy']) < containment_threshold):
+                    continue
+                left_votes, right_votes = len(left['teachers']), len(right['teachers'])
+                if left_votes <= right_votes:
+                    left['reasons'].append('granularity-conflict')
+                if right_votes <= left_votes:
+                    right['reasons'].append('granularity-conflict')
         accepted = []
         for cluster in clusters:
             cluster['reasons'] = sorted(set(cluster['reasons']))
@@ -283,6 +315,8 @@ def build_consensus(paths, output, *, categories=None, quorum=2,
         'inputs': input_evidence,
         'policy': {'quorum': quorum, 'iou_threshold': iou_threshold,
                    'conflict_iou': conflict_iou, 'min_score': min_score,
+                   'containment_threshold': containment_threshold,
+                   'granularity_ratio': granularity_ratio,
                    'teacher_identity': 'teacher.id; prompts/runs from one teacher do not add votes'},
         'pages': len(page_results),
         'teacher_rows': sum(item['rows'] for item in input_evidence),
@@ -324,6 +358,8 @@ def main():
         iou_threshold=config.get('iou_threshold', 0.5),
         conflict_iou=config.get('conflict_iou', 0.5),
         min_score=config.get('min_score', 0.0),
+        containment_threshold=config.get('containment_threshold', 0.9),
+        granularity_ratio=config.get('granularity_ratio', 2.0),
     )
     print(json.dumps({key: report[key] for key in (
         'status', 'pages', 'teacher_rows', 'teacher_detections', 'accepted_objects',

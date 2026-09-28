@@ -86,6 +86,41 @@ def test_conflicting_labels_demote_otherwise_valid_consensus(tmp_path):
                for row in read_jsonl(output / 'review-queue.jsonl'))
 
 
+def test_granularity_conflict_preserves_stronger_cluster(tmp_path):
+    rows = [
+        proposal('p1', 'a', [('text_region', [10, 10, 40, 40], 0.9)]),
+        proposal('p1', 'b', [('text_region', [11, 11, 41, 41], 0.9)]),
+        proposal('p1', 'c', [('text_region', [0, 0, 90, 180], 0.9)]),
+    ]
+    output = tmp_path / 'out'
+    report = build_consensus([write(tmp_path / 'teachers.jsonl', rows)], output,
+                             categories=CATEGORIES)
+    assert report['accepted_objects'] == 1
+    assert read_jsonl(output / 'consensus.jsonl')[0]['objects'][0]['teachers'] == ['a', 'b']
+    review = read_jsonl(output / 'review-queue.jsonl')
+    assert len(review) == 1
+    assert review[0]['teachers'] == ['c']
+    assert review[0]['reasons'] == ['below-quorum', 'granularity-conflict']
+    assert read_jsonl(output / 'hard-examples.jsonl')[0]['reasons'] == [
+        'below-quorum', 'granularity-conflict']
+
+
+def test_equal_quorum_cross_scale_clusters_are_both_reviewed(tmp_path):
+    rows = [
+        proposal('p1', 'a', [('text_region', [10, 10, 40, 40], 0.9)]),
+        proposal('p1', 'b', [('text_region', [11, 11, 41, 41], 0.9)]),
+        proposal('p1', 'c', [('text_region', [0, 0, 90, 180], 0.9)]),
+        proposal('p1', 'd', [('text_region', [1, 1, 89, 179], 0.9)]),
+    ]
+    output = tmp_path / 'out'
+    report = build_consensus([write(tmp_path / 'teachers.jsonl', rows)], output,
+                             categories=CATEGORIES)
+    assert report['accepted_objects'] == 0
+    assert report['review_objects'] == 2
+    assert all('granularity-conflict' in item['reasons']
+               for item in read_jsonl(output / 'review-queue.jsonl'))
+
+
 @pytest.mark.parametrize('mutate,match', [
     (lambda rows: rows.append(rows[0]), 'Duplicate teacher vote'),
     (lambda rows: rows[1]['image'].__setitem__('sha256', 'c' * 64), 'Image identity mismatch'),

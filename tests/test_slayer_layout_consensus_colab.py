@@ -68,6 +68,7 @@ def test_three_archives_build_traceable_consensus(tmp_path):
     with zipfile.ZipFile(result) as bundle:
         names = set(bundle.namelist())
     assert 'consensus/annotations.coco.json' in names
+    assert 'consensus-policy.json' in names
     assert 'run.json' in names
     assert not any('jpg' in name or 'png' in name for name in names)
 
@@ -111,3 +112,11 @@ def test_safe_extract_rejects_parent_and_symlink(tmp_path):
         output.writestr(info, 'target')
     with pytest.raises(ValueError, match='Unsafe ZIP member'):
         safe_extract_zip(symlink, tmp_path / 'extract-link')
+
+
+def test_consensus_policy_cannot_change_teacher_ontology(tmp_path):
+    archives = [archive(tmp_path, teacher, [10, 20, 50, 80]) for teacher in TEACHERS]
+    policy = dict(CONFIG['consensus'])
+    policy['categories'] = ['invented']
+    with pytest.raises(ValueError, match='frozen teacher ontology'):
+        combine_archives(archives, tmp_path / 'bad-policy', CONFIG, policy)
