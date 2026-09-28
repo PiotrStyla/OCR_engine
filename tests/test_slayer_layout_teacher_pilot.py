@@ -5,6 +5,8 @@ import pytest
 
 from training.slayer_layout_teacher_pilot import (
     PROMPT,
+    QWEN_PROTOCOL,
+    QWEN_RETRY_PROMPT,
     canonicalize,
     make_proposal,
     normalize_label,
@@ -57,9 +59,25 @@ def test_qwen_json_is_scaled_to_original_pixels_without_transcription():
         'score': 0.5,
         'score_kind': 'neutral-unavailable',
     }]
-    with pytest.raises(ValueError, match='normalized range'):
-        parse_qwen_grounding('[{"label":"text","bbox_2d":[0,0,1001,20]}]', 100, 100)
     assert 'Do not transcribe' in PROMPT
+
+
+def test_out_of_range_qwen_box_is_quarantined_without_losing_valid_boxes():
+    raw = parse_qwen_grounding(json.dumps([
+        {"label": "text_region", "bbox_2d": [10, 20, 500, 600]},
+        {"label": "figure", "bbox_2d": [900, 900, 1100, 1200]},
+    ]), 100, 200)
+    accepted, rejected = canonicalize(raw, 100, 200)
+    assert len(accepted) == 1 and accepted[0]['label'] == 'text_region'
+    assert len(rejected) == 1 and rejected[0]['reason'] == 'invalid-bbox'
+
+
+def test_qwen_retry_protocol_is_fixed_and_excludes_transcription():
+    protocol = json.loads(QWEN_PROTOCOL)
+    assert protocol['primary_prompt'] == PROMPT
+    assert protocol['retry_prompt'] == QWEN_RETRY_PROMPT
+    assert 'strict-format retry' in QWEN_RETRY_PROMPT
+    assert 'Do not transcribe' in QWEN_RETRY_PROMPT
 
 
 def test_unmapped_and_invalid_boxes_are_quarantined():
@@ -100,3 +118,4 @@ def test_teacher_run_records_and_validates_code_revision():
     source = inspect.getsource(run)
     assert "'code_revision': code_revision" in source
     assert "Invalid code revision" in source
+    assert "getattr(exc, 'raw_output', raw_text)" in source

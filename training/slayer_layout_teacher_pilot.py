@@ -29,6 +29,14 @@ Return only a JSON array. Each element must be:
 Coordinates must be normalized integers from 0 to 1000 relative to the displayed image.
 Use tight, mutually exclusive region boxes. Do not nest text_region inside another region.
 Do not transcribe, modernize or correct any text. Do not add explanations or Markdown."""
+QWEN_RETRY_PROMPT = PROMPT + """
+This is a strict-format retry. Return at most 60 non-overlapping regions. Verify
+that every object is separated by a comma, every bbox has four numeric values,
+and the final response is one complete JSON array with no surrounding text."""
+QWEN_PROTOCOL = json.dumps(
+    {"primary_prompt": PROMPT, "retry_prompt": QWEN_RETRY_PROMPT},
+    ensure_ascii=False, sort_keys=True,
+)
 
 LABELS = {
     'text': 'text_region', 'plain_text': 'text_region', 'content': 'text_region',
@@ -46,6 +54,12 @@ LABELS = {
     'page_number': 'page_number', 'number': 'page_number',
 }
 SCORE_KINDS = {'model-confidence', 'neutral-unavailable'}
+
+
+class TeacherInferenceError(RuntimeError):
+    def __init__(self, message, raw_output):
+        super().__init__(message)
+        self.raw_output = raw_output
 
 DOCLAYOUT_NAMES = {
     0: 'title', 1: 'plain text', 2: 'abandon', 3: 'figure',
@@ -131,8 +145,6 @@ def parse_qwen_grounding(text, width, height):
                 any(not isinstance(value, (int, float)) for value in box)):
             raise ValueError(f'Invalid Qwen bbox at index {index}')
         values = [float(value) for value in box]
-        if not (0 <= values[0] < values[2] <= 1000 and 0 <= values[1] < values[3] <= 1000):
-            raise ValueError(f'Qwen bbox outside normalized range at index {index}')
         detections.append({
             'raw_label': item.get('label'),
             'bbox_xyxy': [values[0] * width / 1000, values[1] * height / 1000,
@@ -253,15 +265,24 @@ def _load_qwen(spec):
     def infer(path):
         from PIL import Image
         image = Image.open(path).convert('RGB')
-        messages = [{'role': 'user', 'content': [
-            {'type': 'image', 'image': image}, {'type': 'text', 'text': PROMPT}]}]
-        inputs = processor.apply_chat_template(
-            messages, tokenize=True, add_generation_prompt=True,
-            return_dict=True, return_tensors='pt').to(model.device)
-        output = model.generate(**inputs, max_new_tokens=spec['max_new_tokens'], do_sample=False)
-        text = processor.batch_decode(
-            output[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
-        return parse_qwen_grounding(text, image.width, image.height), text
+        outputs, last_error = [], None
+        for prompt in (PROMPT, QWEN_RETRY_PROMPT):
+            messages = [{'role': 'user', 'content': [
+                {'type': 'image', 'image': image}, {'type': 'text', 'text': prompt}]}]
+            inputs = processor.apply_chat_template(
+                messages, tokenize=True, add_generation_prompt=True,
+                return_dict=True, return_tensors='pt').to(model.device)
+            output = model.generate(
+                **inputs, max_new_tokens=spec['max_new_tokens'], do_sample=False)
+            text = processor.batch_decode(
+                output[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
+            outputs.append(text)
+            try:
+                return parse_qwen_grounding(text, image.width, image.height), outputs
+            except (json.JSONDecodeError, ValueError) as error:
+                last_error = error
+        raise TeacherInferenceError(
+            f'{type(last_error).__name__}: {last_error}', outputs)
 
     return model, infer
 
@@ -353,7 +374,7 @@ def run(teacher_id, config, pages=None, output_root='/content', code_revision=No
     spec = config['teachers'][teacher_id]
     selected = download_inputs(config, work, pages)
     model, infer = _load_teacher(teacher_id, spec, work)
-    prompt_material = PROMPT if teacher_id == 'qwen3-vl-4b' else json.dumps(
+    prompt_material = QWEN_PROTOCOL if teacher_id == 'qwen3-vl-4b' else json.dumps(
         {'adapter': teacher_id, 'spec': spec, 'label_map': LABELS}, sort_keys=True)
     prompt_sha256 = sha256_bytes(prompt_material.encode('utf-8'))
     proposal_path = work / 'teacher-proposals.jsonl'
@@ -376,6 +397,7 @@ def run(teacher_id, config, pages=None, output_root='/content', code_revision=No
                     unmapped_stream.write(json.dumps(
                         {'page_id': page['id'], **item}, ensure_ascii=False) + '\n')
             except Exception as exc:  # every page remains represented
+                raw_text = getattr(exc, 'raw_output', raw_text)
                 status, error, detections = 'error', f'{type(exc).__name__}: {exc}', []
                 errors += 1
             proposals.write(json.dumps(make_proposal(

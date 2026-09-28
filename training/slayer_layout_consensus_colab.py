@@ -87,11 +87,16 @@ def combine_archives(archives, output_root, config, consensus_policy=None,
             raise ValueError(f'Unexpected or duplicate teacher: {teacher_id}')
         if run.get('state') != 'completed':
             raise ValueError(f'Incomplete teacher run: {teacher_id}')
+        if (run.get('pages_completed') != run.get('pages_expected') or
+                run.get('error_pages') != 0):
+            raise ValueError(f'Teacher run contains page errors: {teacher_id}')
         if run.get('teacher', {}).get('revision') != config['teachers'][teacher_id]['revision']:
             raise ValueError(f'Teacher revision mismatch: {teacher_id}')
         rows = _jsonl(proposal_path)
         if len(rows) != run.get('pages_expected'):
             raise ValueError(f'Proposal count mismatch: {teacher_id}')
+        if any(row.get('status') != 'ok' or row.get('error') is not None for row in rows):
+            raise ValueError(f'Teacher proposal contains page errors: {teacher_id}')
         if any(row.get('teacher', {}).get('id') != teacher_id for row in rows):
             raise ValueError(f'Proposal teacher mismatch: {teacher_id}')
         if any(row.get('teacher', {}).get('run_id') != run.get('run_id') for row in rows):

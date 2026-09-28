@@ -32,6 +32,7 @@ def archive(tmp_path, teacher, box):
         'detections': [{'id': teacher + '-1', 'label': 'text_region',
                         'bbox_xyxy': box, 'score': 0.8,
                         'score_kind': 'model-confidence'}],
+        'status': 'ok', 'error': None,
     }
     path = tmp_path / (teacher + '.zip')
     files = {
@@ -39,7 +40,7 @@ def archive(tmp_path, teacher, box):
         'run.json': json.dumps({
             'schema': 'slayer-layout-teacher-run-v1', 'state': 'completed',
             'teacher_id': teacher, 'run_id': run_id, 'pages_expected': 1,
-            'error_pages': 0, 'teacher': TEACHERS[teacher]}),
+            'pages_completed': 1, 'error_pages': 0, 'teacher': TEACHERS[teacher]}),
         'raw-model-output.jsonl': '',
         'experiment-config.json': json.dumps(CONFIG),
     }
@@ -129,3 +130,27 @@ def test_consensus_code_revision_is_validated(tmp_path):
     with pytest.raises(ValueError, match='Invalid code revision'):
         combine_archives(archives, tmp_path / 'bad-revision', CONFIG,
                          code_revision='main')
+
+
+def test_teacher_page_errors_are_rejected(tmp_path):
+    paths = [archive(tmp_path, teacher, [10, 20, 50, 80]) for teacher in TEACHERS]
+    broken = tmp_path / 'qwen-broken.zip'
+    with zipfile.ZipFile(paths[0]) as old, zipfile.ZipFile(broken, 'w') as new:
+        files = {member.filename: old.read(member) for member in old.infolist()}
+        run = json.loads(files['run.json'])
+        run['pages_completed'] = 0
+        run['error_pages'] = 1
+        files['run.json'] = json.dumps(run).encode()
+        proposal = json.loads(files['teacher-proposals.jsonl'])
+        proposal['status'] = 'error'
+        proposal['error'] = 'JSONDecodeError: malformed output'
+        proposal['detections'] = []
+        files['teacher-proposals.jsonl'] = (json.dumps(proposal) + '\n').encode()
+        checksums = json.loads(files['checksums.json'])
+        for name in ('run.json', 'teacher-proposals.jsonl'):
+            checksums[name] = hashlib.sha256(files[name]).hexdigest()
+        files['checksums.json'] = json.dumps(checksums).encode()
+        for name, content in files.items():
+            new.writestr(name, content)
+    with pytest.raises(ValueError, match='page errors'):
+        combine_archives([broken, paths[1], paths[2]], tmp_path / 'bad-errors', CONFIG)
