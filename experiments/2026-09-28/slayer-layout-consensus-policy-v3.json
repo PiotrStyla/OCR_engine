@@ -1,0 +1,34 @@
+{
+  "schema": "slayer-layout-consensus-policy-v3",
+  "status": "frozen after 60-page teacher execution",
+  "frozen_at": "2026-09-28",
+  "based_on_evidence_sha256": {
+    "qwen3-vl-4b": "7224fb751c95ef335abe0068225b2b00f35e77237fd8d592ebf2c1798252946a",
+    "doclayout-yolo": "7d1395b7df855cf6de2d1bdefbd877ba6adf33c307c85ba2c88dbb7117ffdff3",
+    "surya-layout2": "e60c7c82bf45a37175ea13758700fd1909bdb67c3ac79ab20f905fb96e61969a"
+  },
+  "consensus": {
+    "categories": [
+      "text_region",
+      "heading",
+      "table",
+      "figure",
+      "caption",
+      "marginalia",
+      "header",
+      "footer",
+      "page_number"
+    ],
+    "quorum": 2,
+    "iou_threshold": 0.5,
+    "conflict_iou": 0.5,
+    "min_score": 0.0,
+    "containment_threshold": 0.9,
+    "granularity_ratio": 2.0,
+    "allow_teacher_abstentions": true,
+    "max_teacher_error_pages": 4,
+    "max_teacher_error_fraction": 0.07
+  },
+  "decision": "A bounded explicit teacher failure is an abstention, never an empty vote. It is accepted only when page accounting is exact, the error row has no detections, the quorum remains two independent teachers, and every affected page is marked as a hard example.",
+  "claim_boundary": "This policy permits weak-label candidate generation with four documented Qwen abstentions. It does not establish label accuracy, human ground truth or SOTA quality."
+}

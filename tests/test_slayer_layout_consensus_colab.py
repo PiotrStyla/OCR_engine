@@ -154,3 +154,43 @@ def test_teacher_page_errors_are_rejected(tmp_path):
             new.writestr(name, content)
     with pytest.raises(ValueError, match='page errors'):
         combine_archives([broken, paths[1], paths[2]], tmp_path / 'bad-errors', CONFIG)
+
+
+def test_bounded_teacher_abstention_is_recorded_and_mined(tmp_path):
+    paths = [archive(tmp_path, teacher, [10, 20, 50, 80]) for teacher in TEACHERS]
+    broken = tmp_path / 'qwen-abstention.zip'
+    with zipfile.ZipFile(paths[0]) as old, zipfile.ZipFile(broken, 'w') as new:
+        files = {member.filename: old.read(member) for member in old.infolist()}
+        run = json.loads(files['run.json'])
+        run['pages_completed'] = 0
+        run['error_pages'] = 1
+        files['run.json'] = json.dumps(run).encode()
+        proposal = json.loads(files['teacher-proposals.jsonl'])
+        proposal['status'] = 'error'
+        proposal['error'] = 'JSONDecodeError: malformed output'
+        proposal['detections'] = []
+        files['teacher-proposals.jsonl'] = (json.dumps(proposal) + '\n').encode()
+        checksums = json.loads(files['checksums.json'])
+        for name in ('run.json', 'teacher-proposals.jsonl'):
+            checksums[name] = hashlib.sha256(files[name]).hexdigest()
+        files['checksums.json'] = json.dumps(checksums).encode()
+        for name, content in files.items():
+            new.writestr(name, content)
+    policy = dict(CONFIG['consensus'])
+    policy.update({
+        'allow_teacher_abstentions': True,
+        'max_teacher_error_pages': 1,
+        'max_teacher_error_fraction': 1.0,
+    })
+    result, summary = combine_archives(
+        [broken, paths[1], paths[2]], tmp_path / 'with-abstention', CONFIG, policy)
+    assert summary['consensus']['teacher_abstentions'] == 1
+    assert summary['consensus']['teacher_abstention_pages'] == 1
+    assert summary['consensus']['hard_example_pages'] == 1
+    with zipfile.ZipFile(result) as bundle:
+        abstention = json.loads(bundle.read('consensus/teacher-abstentions.jsonl'))
+        hard = json.loads(bundle.read('consensus/hard-examples.jsonl'))
+    assert abstention['page_id'] == 'p1'
+    assert abstention['teacher_id'] == 'qwen3-vl-4b'
+    assert hard['reasons'] == ['teacher-abstention']
+    assert hard['abstaining_teachers'] == ['qwen3-vl-4b']
