@@ -1,4 +1,5 @@
 import json
+import inspect
 
 import pytest
 
@@ -10,6 +11,7 @@ from training.slayer_layout_teacher_pilot import (
     parse_qwen_grounding,
     select_pages,
     sha256_bytes,
+    _load_qwen,
 )
 
 
@@ -81,3 +83,9 @@ def test_proposal_has_provenance_and_no_reference_text():
     assert proposal['teacher']['id'] == 'qwen3-vl-4b'
     assert proposal['detections'][0]['score_kind'] == 'neutral-unavailable'
     assert 'must not leak' not in serialized and 'text' not in proposal
+
+
+def test_qwen_uses_transformers_457_image_text_auto_loader():
+    source = inspect.getsource(_load_qwen)
+    assert 'AutoModelForImageTextToText' in source
+    assert 'AutoModelForMultimodalLM' not in source

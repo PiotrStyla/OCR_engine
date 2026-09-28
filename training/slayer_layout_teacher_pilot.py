@@ -233,11 +233,11 @@ def download_inputs(config, work, count):
 
 def _load_qwen(spec):
     import torch
-    from transformers import AutoModelForMultimodalLM, AutoProcessor, BitsAndBytesConfig
+    from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
 
     quantization = BitsAndBytesConfig(load_in_4bit=True,
                                       bnb_4bit_compute_dtype=torch.float16)
-    model = AutoModelForMultimodalLM.from_pretrained(
+    model = AutoModelForImageTextToText.from_pretrained(
         spec['model_repo'], revision=spec['revision'], device_map='auto',
         torch_dtype=torch.float16, quantization_config=quantization)
     processor = AutoProcessor.from_pretrained(
