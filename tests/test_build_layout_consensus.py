@@ -8,7 +8,8 @@ from training.build_layout_consensus import build_consensus, digest
 CATEGORIES = ['text_region', 'heading', 'table']
 
 
-def proposal(page, teacher, detections, *, image_hash='a' * 64):
+def proposal(page, teacher, detections, *, image_hash='a' * 64,
+             score_kind='model-confidence'):
     return {
         'schema': 'slayer-layout-teacher-proposal-v1',
         'page_id': page,
@@ -17,7 +18,8 @@ def proposal(page, teacher, detections, *, image_hash='a' * 64):
         'teacher': {'id': teacher, 'revision': 'rev-1', 'run_id': f'run-{teacher}',
                     'prompt_sha256': 'b' * 64},
         'detections': [
-            {'id': f'{teacher}-{index}', 'label': label, 'bbox_xyxy': box, 'score': score}
+            {'id': f'{teacher}-{index}', 'label': label, 'bbox_xyxy': box, 'score': score,
+             'score_kind': score_kind}
             for index, (label, box, score) in enumerate(detections)
         ],
     }
@@ -44,6 +46,7 @@ def test_two_teachers_create_median_consensus_and_coco(tmp_path):
     item = read_jsonl(output / 'consensus.jsonl')[0]['objects'][0]
     assert item['bbox_xyxy'] == [11.0, 19.0, 51.0, 81.0]
     assert item['teachers'] == ['a', 'b']
+    assert item['score_kinds'] == ['model-confidence']
     coco = json.loads((output / 'annotations.coco.json').read_text(encoding='utf-8'))
     assert coco['annotations'][0]['bbox'] == [11.0, 19.0, 40.0, 62.0]
     assert [item['name'] for item in coco['categories']] == CATEGORIES
@@ -88,6 +91,8 @@ def test_conflicting_labels_demote_otherwise_valid_consensus(tmp_path):
     (lambda rows: rows[1]['image'].__setitem__('sha256', 'c' * 64), 'Image identity mismatch'),
     (lambda rows: rows[0]['detections'][0].__setitem__('label', 'unknown'), 'Unknown category'),
     (lambda rows: rows[1]['teacher'].__setitem__('id', 'A'), 'lowercase model-family slug'),
+    (lambda rows: rows[1]['detections'][0].__setitem__('score_kind', 'invented'),
+     'score_kind'),
 ])
 def test_invalid_provenance_is_rejected_before_writes(tmp_path, mutate, match):
     rows = [

@@ -18,6 +18,7 @@ from statistics import median
 SCHEMA = 'slayer-layout-teacher-proposal-v1'
 OUTPUT_SCHEMA = 'slayer-layout-consensus-v1'
 TEACHER_ID = re.compile(r'[a-z0-9][a-z0-9._/-]{0,127}\Z')
+SCORE_KINDS = {'model-confidence', 'neutral-unavailable'}
 
 
 def digest(path):
@@ -133,12 +134,16 @@ def load_proposals(paths, categories=None):
                     if (not isinstance(score, (int, float)) or isinstance(score, bool) or
                             not math.isfinite(score) or not 0 <= score <= 1):
                         raise ValueError('Detection score must be in [0, 1]')
+                    score_kind = detection.get('score_kind', 'model-confidence')
+                    if score_kind not in SCORE_KINDS:
+                        raise ValueError('Invalid detection score_kind')
                     page['detections'].append({
                         'id': detection_id,
                         'teacher': teacher_identity,
                         'label': label,
                         'bbox_xyxy': _validate_bbox(detection.get('bbox_xyxy'), width, height),
                         'score': float(score),
+                        'score_kind': score_kind,
                         'source': {'path': str(path), 'line': line_number},
                     })
         input_evidence.append({'path': str(path), 'sha256': digest(path), 'rows': rows})
@@ -201,6 +206,7 @@ def build_consensus(paths, output, *, categories=None, quorum=2,
                 'bbox_xyxy': _fused_box(members),
                 'teachers': sorted(item['teacher']['id'] for item in members),
                 'mean_score': sum(item['score'] for item in members) / len(members),
+                'score_kinds': sorted({item['score_kind'] for item in members}),
                 'proposals': members,
                 'reasons': [],
             })
@@ -221,7 +227,7 @@ def build_consensus(paths, output, *, categories=None, quorum=2,
                 review_queue.append(cluster)
             else:
                 accepted.append({key: cluster[key] for key in (
-                    'id', 'label', 'bbox_xyxy', 'teachers', 'mean_score')})
+                    'id', 'label', 'bbox_xyxy', 'teachers', 'mean_score', 'score_kinds')})
         page_results.append({'schema': OUTPUT_SCHEMA, 'page_id': page_id,
                              'image': page['image'], 'objects': accepted})
 
