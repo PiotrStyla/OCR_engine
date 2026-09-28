@@ -1,7 +1,12 @@
 import json
+from pathlib import Path
 
-from training.build_slayer_layout_consensus_colab import build
-from training.build_slayer_layout_teacher_colab import CODE_REVISION, CONFIG
+from training.build_slayer_layout_consensus_colab import (
+    CONSENSUS_CODE_REVISION,
+    POLICY,
+    build,
+)
+from training.build_slayer_layout_teacher_colab import CONFIG
 
 
 def test_consensus_notebook_requires_three_private_archives(tmp_path):
@@ -11,13 +16,16 @@ def test_consensus_notebook_requires_three_private_archives(tmp_path):
     assert "accelerator" not in notebook["metadata"]
     assert notebook["cells"][-1]["id"] == "download"
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook["cells"])
-    assert CODE_REVISION in source
+    assert CONSENSUS_CODE_REVISION in source
+    assert "slayer-layout-consensus-policy-v2.json" in source
+    assert "code_revision=CODE_REVISION" in source
     assert "assert len(uploaded) == 3" in source
     assert "combine_archives" in source
     assert "files.download(str(result_archive))" in source
     assert "push_to_hub" not in source and "upload_folder" not in source
     for spec in CONFIG["teachers"].values():
         assert spec["revision"] in source
+    assert str(POLICY["containment_threshold"]) in source
 
 
 def test_consensus_notebook_outputs_are_empty_and_code_compiles(tmp_path):
@@ -30,3 +38,15 @@ def test_consensus_notebook_outputs_are_empty_and_code_compiles(tmp_path):
         assert cell["execution_count"] is None
         assert cell["outputs"] == []
         compile("".join(cell["source"]), f"<{cell['id']}>", "exec")
+
+
+def test_checked_in_v2_notebook_matches_generator(tmp_path):
+    generated = tmp_path / "colab_slayer_layout_consensus_v2.ipynb"
+    build(generated)
+    checked_in = (
+        Path(__file__).resolve().parents[1]
+        / "training/colab_slayer_layout_consensus_v2.ipynb"
+    )
+    assert json.loads(generated.read_text(encoding="utf-8")) == json.loads(
+        checked_in.read_text(encoding="utf-8")
+    )

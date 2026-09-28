@@ -24,7 +24,7 @@ ani potwierdzonym silnikiem SOTA.**
   Dla smoke testu są też notebooki bez przełączników:
   [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_smoke_v1.ipynb)
   oraz [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_smoke_v1.ipynb).
-- **Konsensus trzech runów:** [otwórz notebook CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v1.ipynb),
+- **Konsensus trzech runów:** [otwórz notebook v2 CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v2.ipynb),
   wgraj dokładnie trzy ZIP-y teacherów i pobierz COCO weak labels, kolejkę review,
   hard examples oraz pełne provenance. Dwustronicowy smoke zakończył się bez
   błędów wykonania, ale ujawnił konflikty klas i poziomu szczegółowości; pełny

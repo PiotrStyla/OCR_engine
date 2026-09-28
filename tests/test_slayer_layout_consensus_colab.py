@@ -64,6 +64,8 @@ def test_three_archives_build_traceable_consensus(tmp_path):
     assert result.exists()
     assert summary['pages'] == 1
     assert summary['consensus']['accepted_objects'] == 1
+    assert summary['code_revision'] is None
+    assert len(summary['consensus_policy_sha256']) == 64
     assert {item['teacher_id'] for item in summary['inputs']} == set(TEACHERS)
     with zipfile.ZipFile(result) as bundle:
         names = set(bundle.namelist())
@@ -120,3 +122,10 @@ def test_consensus_policy_cannot_change_teacher_ontology(tmp_path):
     policy['categories'] = ['invented']
     with pytest.raises(ValueError, match='frozen teacher ontology'):
         combine_archives(archives, tmp_path / 'bad-policy', CONFIG, policy)
+
+
+def test_consensus_code_revision_is_validated(tmp_path):
+    archives = [archive(tmp_path, teacher, [10, 20, 50, 80]) for teacher in TEACHERS]
+    with pytest.raises(ValueError, match='Invalid code revision'):
+        combine_archives(archives, tmp_path / 'bad-revision', CONFIG,
+                         code_revision='main')

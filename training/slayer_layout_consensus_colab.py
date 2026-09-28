@@ -1,6 +1,7 @@
 """Safely combine three private teacher evidence ZIPs into layout consensus."""
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import stat
@@ -52,10 +53,15 @@ def _verify_checksums(root):
             raise ValueError(f'Teacher checksum mismatch: {name}')
 
 
-def combine_archives(archives, output_root, config, consensus_policy=None):
+def combine_archives(archives, output_root, config, consensus_policy=None,
+                     code_revision=None):
     output_root = Path(output_root)
     if output_root.exists():
         raise FileExistsError(output_root)
+    if code_revision is not None:
+        if (not isinstance(code_revision, str) or len(code_revision) != 40 or
+                any(character not in '0123456789abcdef' for character in code_revision)):
+            raise ValueError('Invalid code revision')
     expected_teachers = set(config['teachers'])
     if len(archives) != len(expected_teachers):
         raise ValueError(f'Expected {len(expected_teachers)} teacher archives')
@@ -128,10 +134,15 @@ def combine_archives(archives, output_root, config, consensus_policy=None):
         for source in source_root.rglob('*'):
             if source.is_file():
                 shutil.copyfile(source, target / source.name)
+    policy_path = evidence / 'consensus-policy.json'
+    policy_path.write_text(
+        json.dumps(policy, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     summary = {
         'schema': 'slayer-layout-teacher-consensus-run-v1',
         'state': 'completed', 'inputs': input_evidence,
         'pages': len(page_sets[0]), 'consensus': report,
+        'code_revision': code_revision,
+        'consensus_policy_sha256': hashlib.sha256(policy_path.read_bytes()).hexdigest(),
         'images_or_references_included': False,
         'automatic_publication': False,
         'claim_boundary': config['claim_boundary'],
@@ -140,8 +151,6 @@ def combine_archives(archives, output_root, config, consensus_policy=None):
         json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     (evidence / 'experiment-config.json').write_text(
         json.dumps(config, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    (evidence / 'consensus-policy.json').write_text(
-        json.dumps(policy, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     archive = Path(shutil.make_archive(
         str(output_root / 'slayer-layout-consensus-evidence'), 'zip', evidence))
     return archive, summary

@@ -5,7 +5,15 @@ import json
 from pathlib import Path
 
 from training.build_historical_recognizer_colab import code_cell
-from training.build_slayer_layout_teacher_colab import CODE_REVISION, CONFIG
+from training.build_slayer_layout_teacher_colab import CONFIG
+
+
+CONSENSUS_CODE_REVISION = "2c953866adc5ec7f8701072ab0a5eafdfd60a242"
+POLICY_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "experiments/2026-09-28/slayer-layout-consensus-policy-v2.json"
+)
+POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))["consensus"]
 
 
 def build(target: str | Path) -> None:
@@ -16,8 +24,9 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-CODE_REVISION = {CODE_REVISION!r}
+CODE_REVISION = {CONSENSUS_CODE_REVISION!r}
 EXPECTED_CONFIG = {CONFIG!r}
+EXPECTED_POLICY = {POLICY!r}
 
 repo = Path("/content/OCR_engine")
 if not repo.exists():
@@ -37,6 +46,11 @@ CONFIG = json.loads(
     .read_text(encoding="utf-8")
 )
 assert CONFIG == EXPECTED_CONFIG
+POLICY = json.loads(
+    (repo / "experiments/2026-09-28/slayer-layout-consensus-policy-v2.json")
+    .read_text(encoding="utf-8")
+)["consensus"]
+assert POLICY == EXPECTED_POLICY
 os.chdir(repo)
 sys.path.insert(0, str(repo))
 run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -59,7 +73,9 @@ print("UPLOAD_OK", [path.name for path in archives])
 '''
     consensus = '''from training.slayer_layout_consensus_colab import combine_archives
 
-result_archive, summary = combine_archives(archives, work / "combined", CONFIG)
+result_archive, summary = combine_archives(
+    archives, work / "combined", CONFIG, POLICY, code_revision=CODE_REVISION
+)
 print(json.dumps(summary, ensure_ascii=False, indent=2))
 print("PRIVATE_CONSENSUS_READY", result_archive)
 '''
@@ -80,11 +96,12 @@ print("PRIVATE_CONSENSUS_READY", result_archive)
                 "id": "scope",
                 "metadata": {},
                 "source": [
-                    "# SLAYER-OCR layout consensus v1\n",
+                    "# SLAYER-OCR layout consensus v2\n",
                     "Run this notebook after obtaining one evidence ZIP from each pinned teacher: "
                     "Qwen3-VL, DocLayout-YOLO and Surya Layout. Upload exactly those three ZIPs.\n",
                     "The notebook verifies archive safety, checksums, model revisions, run identity, "
-                    "page identity and the frozen configuration before building COCO weak labels, "
+                    "page identity, frozen teacher configuration and consensus policy v2 before "
+                    "building COCO weak labels, "
                     "a review queue and hard-example records. It never publishes the result.\n",
                 ],
             },
@@ -110,4 +127,4 @@ print("PRIVATE_CONSENSUS_READY", result_archive)
 
 
 if __name__ == "__main__":
-    build(Path(__file__).with_name("colab_slayer_layout_consensus_v1.ipynb"))
+    build(Path(__file__).with_name("colab_slayer_layout_consensus_v2.ipynb"))

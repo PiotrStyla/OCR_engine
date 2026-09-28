@@ -121,7 +121,7 @@ runem albo zestawem stron.
    pobierz ZIP.
 2. Powtórz w dwóch świeżych runtime'ach dla `doclayout-yolo` oraz
    `surya-layout2`. Nie zmieniaj liczby stron pomiędzy teacherami.
-3. Otwórz `training/colab_slayer_layout_consensus_v1.ipynb`, wgraj dokładnie te
+3. Otwórz `training/colab_slayer_layout_consensus_v2.ipynb`, wgraj dokładnie te
    trzy ZIP-y, uruchom wszystko i pobierz ZIP konsensusu.
 4. Sprawdź `run.json`, `consensus/report.json` i `review-queue.jsonl`, a następnie
    zbuduj prywatny panel nakładek poleceniem powyżej. Nie zwiększaj `PAGES`,
