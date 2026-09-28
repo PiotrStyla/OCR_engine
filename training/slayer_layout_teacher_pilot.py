@@ -248,10 +248,10 @@ def _load_qwen(spec):
         from PIL import Image
         image = Image.open(path).convert('RGB')
         messages = [{'role': 'user', 'content': [
-            {'type': 'image'}, {'type': 'text', 'text': PROMPT}]}]
-        rendered = processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True)
-        inputs = processor(text=[rendered], images=[image], return_tensors='pt').to(model.device)
+            {'type': 'image', 'image': image}, {'type': 'text', 'text': PROMPT}]}]
+        inputs = processor.apply_chat_template(
+            messages, tokenize=True, add_generation_prompt=True,
+            return_dict=True, return_tensors='pt').to(model.device)
         output = model.generate(**inputs, max_new_tokens=spec['max_new_tokens'], do_sample=False)
         text = processor.batch_decode(
             output[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
