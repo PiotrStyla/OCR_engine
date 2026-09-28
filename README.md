@@ -35,6 +35,12 @@ ani potwierdzonym silnikiem SOTA.**
   wersjonowana adjudykacja 7 elementów kolejki. Walidator
   `training.adjudicate_layout_consensus` odrzuca niepełne decyzje i eksportuje
   prywatny kandydat JSONL/COCO bez skanów.
+- **Pełny pilot 60 stron:** użyj trzech osobnych notebooków GPU i świeżego
+  runtime'u dla każdego modelu: [Qwen3-VL](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_qwen3_vl_4b_full_v1.ipynb),
+  [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_full_v1.ipynb),
+  [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_full_v1.ipynb).
+  Każdy jest zablokowany na właściwym teacherze i `PAGES = 60`; ZIP zapisuje
+  przypięty commit kodu i nie zawiera skanów ani tekstu referencyjnego.
 - Zamrożona konfiguracja pilota znajduje się w
   [`experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json`](experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json).
   Wykonano wyłącznie dwustronicowy smoke trzech teacherów. Obrazy, predykcje i

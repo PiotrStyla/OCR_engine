@@ -147,6 +147,13 @@ runem albo zestawem stron.
 Notebook teacherów potrzebuje GPU; notebook konsensusu działa na CPU. Żaden z
 nich nie publikuje artefaktów na GitHub ani Hugging Face.
 
+Po zaakceptowanym smoke pełne runy wykonujemy w trzech świeżych sesjach GPU,
+każdą przez dedykowany notebook `*_full_v1.ipynb`. Notebooki są zablokowane na
+jednym teacherze i 60 stronach. Każda strona zapisuje rekord i flushuje JSONL;
+błąd pojedynczej strony trafia do rekordu `status=error` i nie zatrzymuje kolejnych
+stron. Końcowy ZIP zapisuje przypięty commit kodu, wersje środowiska, błędy i
+sumy kontrolne, ale nie skany ani referencje.
+
 ## Plan etapów i bramki
 
 | Etap | Artefakt | Bramka przejścia |
