@@ -36,6 +36,10 @@ def test_selection_is_deterministic_balanced_and_train_only():
 
 
 @pytest.mark.parametrize('raw,expected', [
+    ('text_region', 'text_region'), ('heading', 'heading'),
+    ('table', 'table'), ('figure', 'figure'), ('caption', 'caption'),
+    ('marginalia', 'marginalia'), ('header', 'header'), ('footer', 'footer'),
+    ('page_number', 'page_number'),
     ('plain text', 'text_region'), ('Section-header', 'heading'),
     ('FIGURE_CAPTION', 'caption'), ('page footer', 'footer'),
     ('unknown thing', None),

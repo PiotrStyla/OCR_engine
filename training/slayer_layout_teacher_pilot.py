@@ -19,6 +19,10 @@ from pathlib import Path, PurePosixPath
 
 
 PROPOSAL_SCHEMA = 'slayer-layout-teacher-proposal-v1'
+CANONICAL_LABELS = {
+    'text_region', 'heading', 'table', 'figure', 'caption', 'marginalia',
+    'header', 'footer', 'page_number',
+}
 PROMPT = """Detect every page-layout region in this historical printed document.
 Return only a JSON array. Each element must be:
 {"label": one of ["text_region", "heading", "table", "figure", "caption", "marginalia", "header", "footer", "page_number"], "bbox_2d": [x1, y1, x2, y2]}.
@@ -95,6 +99,8 @@ def normalize_label(value):
     if not isinstance(value, str):
         return None
     key = re.sub(r'_+', '_', re.sub(r'[^a-z0-9]+', '_', value.casefold())).strip('_')
+    if key in CANONICAL_LABELS:
+        return key
     return LABELS.get(key)
 
 
