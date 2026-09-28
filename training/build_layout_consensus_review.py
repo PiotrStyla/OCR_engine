@@ -48,6 +48,19 @@ def _verify_checksums(files: dict[str, bytes]) -> None:
         for name, expected in checksums.items():
             if digest(files[prefix + name]) != expected:
                 raise ValueError(f"Teacher checksum mismatch: {teacher}/{name}")
+    run = json.loads(files["run.json"])
+    policy_hash = run.get("consensus_policy_sha256")
+    if policy_hash is not None:
+        if digest(files["consensus-policy.json"]) != policy_hash:
+            raise ValueError("Consensus policy checksum mismatch")
+
+
+def load_evidence(archive_path: str | Path) -> tuple[dict[str, bytes], str]:
+    archive_path = Path(archive_path)
+    with zipfile.ZipFile(archive_path) as archive:
+        files = _safe_members(archive)
+    _verify_checksums(files)
+    return files, digest(archive_path.read_bytes())
 
 
 def _box(item: dict) -> dict:
@@ -66,9 +79,7 @@ def build_review(archive_path: str | Path, image_dir: str | Path,
     archive_path, image_dir, output_path = map(Path, (archive_path, image_dir, output_path))
     if output_path.exists():
         raise FileExistsError(output_path)
-    with zipfile.ZipFile(archive_path) as archive:
-        files = _safe_members(archive)
-    _verify_checksums(files)
+    files, archive_hash = load_evidence(archive_path)
     run = json.loads(files["run.json"])
     consensus = _jsonl(files["consensus/consensus.jsonl"])
     reviews = _jsonl(files["consensus/review-queue.jsonl"])
@@ -99,7 +110,7 @@ def build_review(archive_path: str | Path, image_dir: str | Path,
         page["image_src"] = os.path.relpath(image_path, output_path.parent).replace("\\", "/")
         pages.append(page)
     payload = json.dumps({
-        "archive_sha256": digest(archive_path.read_bytes()),
+        "archive_sha256": archive_hash,
         "run": run,
         "pages": pages,
         "layers": LAYERS,

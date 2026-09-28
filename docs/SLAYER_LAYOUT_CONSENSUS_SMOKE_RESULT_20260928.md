@@ -73,3 +73,9 @@ child. Equal-vote cross-scale clusters both abstain.
 All five accepted objects remain visually plausible under the frozen
 `slayer-layout-ontology-v2.json`. The remaining queue still requires explicit,
 versioned adjudication before it can become a clean training dataset.
+
+The returned v2 evidence ZIP has SHA-256
+`d9c04ea2e893aed7b63364f8f29337f7298e9e7937e568aaf8436816aa7b6138`, pins
+code revision `f851c6fc38efef3a222616c7b5d04cc37bc0e120`, and contains the expected
+three `granularity-conflict` records. Its policy hash and all embedded teacher
+and consensus checksums were verified locally.

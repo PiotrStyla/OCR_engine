@@ -14,7 +14,7 @@ def _jsonl(rows):
     return "".join(json.dumps(row) + "\n" for row in rows)
 
 
-def _evidence(tmp_path, *, tamper=False):
+def _evidence(tmp_path, *, tamper=False, tamper_policy=False):
     image = b"private-image-fixture"
     image_dir = tmp_path / "images"
     image_dir.mkdir(parents=True)
@@ -44,6 +44,7 @@ def _evidence(tmp_path, *, tamper=False):
         "bbox_xyxy": [20, 5, 70, 18],
         "teachers": ["qwen3-vl-4b"],
         "mean_score": 0.5,
+        "score_kinds": ["neutral-unavailable"],
         "reasons": ["below-quorum"],
     }]
     consensus_files = {
@@ -54,11 +55,26 @@ def _evidence(tmp_path, *, tamper=False):
         f"{hashlib.sha256(content.encode()).hexdigest()}  {name}\n"
         for name, content in consensus_files.items()
     )
+    policy = json.dumps({
+        "categories": ["text_region", "heading", "figure"],
+        "quorum": 2,
+        "iou_threshold": 0.5,
+        "conflict_iou": 0.5,
+        "min_score": 0.0,
+        "containment_threshold": 0.9,
+        "granularity_ratio": 2.0,
+    }).encode()
     files = {
         "run.json": json.dumps({
             "pages": 1,
-            "consensus": {"accepted_objects": 1, "review_objects": 1},
+            "consensus": {
+                "accepted_objects": 1,
+                "review_objects": 1,
+                "categories": ["text_region", "heading", "figure"],
+            },
+            "consensus_policy_sha256": hashlib.sha256(policy).hexdigest(),
         }),
+        "consensus-policy.json": policy,
         **{f"consensus/{name}": content for name, content in consensus_files.items()},
         "consensus/checksums.sha256": consensus_checksums,
     }
@@ -78,6 +94,8 @@ def _evidence(tmp_path, *, tamper=False):
         })
     if tamper:
         files["consensus/consensus.jsonl"] += "{}\n"
+    if tamper_policy:
+        files["consensus-policy.json"] += b" "
     archive = tmp_path / "evidence.zip"
     with zipfile.ZipFile(archive, "w") as output:
         for name, content in files.items():
@@ -108,3 +126,9 @@ def test_rejects_tampered_evidence_and_wrong_image(tmp_path):
     (image_dir / "p1.jpg").write_bytes(b"different")
     with pytest.raises(ValueError, match="Missing or mismatched image"):
         build_review(archive, image_dir, tmp_path / "wrong-image.html")
+
+
+def test_rejects_tampered_consensus_policy(tmp_path):
+    archive, image_dir = _evidence(tmp_path, tamper_policy=True)
+    with pytest.raises(ValueError, match="policy checksum mismatch"):
+        build_review(archive, image_dir, tmp_path / "tampered-policy.html")

@@ -32,7 +32,9 @@ ani potwierdzonym silnikiem SOTA.**
   [Wynik smoke i decyzja](docs/SLAYER_LAYOUT_CONSENSUS_SMOKE_RESULT_20260928.md).
 - Polityka konsensusu v2 wykrywa konflikty skali bez mnożenia głosu jednego
   teachera. Zamrożono też definicje klas layoutu; następną bramką jest
-  wersjonowana adjudykacja 7 elementów kolejki i eksport clean datasetu.
+  wersjonowana adjudykacja 7 elementów kolejki. Walidator
+  `training.adjudicate_layout_consensus` odrzuca niepełne decyzje i eksportuje
+  prywatny kandydat JSONL/COCO bez skanów.
 - Zamrożona konfiguracja pilota znajduje się w
   [`experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json`](experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json).
   Wykonano wyłącznie dwustronicowy smoke trzech teacherów. Obrazy, predykcje i

@@ -86,6 +86,23 @@ Generator weryfikuje sumy kontrolne ZIP-a i obrazów, nie osadza obrazów ani
 referencji w HTML i nie nadpisuje istniejącego wyniku. Review oraz
 `training.adjudicate_reviews` pozostają końcową bramką transkrypcji.
 
+Layout ma osobną, zamkniętą bramkę adjudykacji. Pakiet decyzji musi wskazywać
+hash konkretnego ZIP-a konsensusu i ontologii, zawierać dokładnie jedną decyzję
+`accept`, `reject` albo `relabel` dla każdego elementu review oraz nazwę i czas
+reviewera. Niepełny lub obcy pakiet jest odrzucany przed utworzeniem plików:
+
+```bash
+python -m training.adjudicate_layout_consensus \
+  --evidence private/slayer-layout-consensus-evidence.zip \
+  --decisions private/layout-review-decisions.json \
+  --ontology experiments/2026-09-28/slayer-layout-ontology-v2.json \
+  --output private/layout-clean-candidate-v1
+```
+
+Eksport zawiera JSONL i COCO, dowód decyzji, raport, hashe oraz provenance
+obiektów. Nie kopiuje skanów ani transkrypcji i zawsze pozostaje prywatnym
+kandydatem, nie automatyczną publikacją ani ground truth.
+
 ## Zamrożony pilot v1
 
 Pilot używa 60 deterministycznie wybranych stron `train` z 22 kolekcji
