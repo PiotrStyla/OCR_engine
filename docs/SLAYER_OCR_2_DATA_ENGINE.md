@@ -1,7 +1,7 @@
 # SLAYER-OCR 2.0: DATA ENGINE v2
 
-Status: architektura i lokalny moduł konsensusu. Nie wykonano jeszcze inferencji
-teacherów ani treningu RF-DETR.
+Status: architektura, przypięty pilot trzech teacherów i moduł konsensusu.
+Nie wykonano jeszcze inferencji GPU ani treningu RF-DETR.
 
 ## Decyzja
 
@@ -76,6 +76,51 @@ Wyjście jest kandydatem weak-label, nie ground truth. Spory przechodzą do
 istniejącego panelu offline po przygotowaniu widoku bboxów; obecny panel tekstowy
 i `training.adjudicate_reviews` pozostają końcową bramką transkrypcji.
 
+## Zamrożony pilot v1
+
+Pilot używa 60 deterministycznie wybranych stron `train` z 22 kolekcji
+`PiotrSty/impact-psnc-polish-ocr`. Końcowy test i validation nie uczestniczą w
+wyborze. Referencyjna transkrypcja nie jest przekazywana teacherom, a stara
+pisownia nie jest modernizowana. ZIP-y dowodowe nie zawierają skanów ani tekstu
+referencyjnego.
+
+Trzy niezależne rodziny teacherów uruchamiamy w osobnych, świeżych sesjach:
+
+| Teacher | Rola | Score | Licencja wymagająca zachowania w provenance |
+| --- | --- | --- | --- |
+| Qwen3-VL 4B Instruct | semantyczne wskazanie regionów i klas | neutralne `0.5`; model nie zwraca kalibrowanej pewności | Apache-2.0 |
+| DocLayout-YOLO DocStructBench | wyspecjalizowany detektor layoutu | confidence modelu | wagi Apache-2.0, pakiet inferencyjny AGPL-3.0 |
+| Surya Layout fast | drugi niezależny detektor layoutu | confidence modelu albo jawne neutralne `0.5` | AI Pubs OpenRAIL-M |
+
+Źródła techniczne: [Qwen3-VL](https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct),
+[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO) oraz
+[Surya Layout fast](https://huggingface.co/datalab-to/surya_layout2). Zgodność
+dwóch modeli jest słabą etykietą, nie dowodem prawdy. Przed wydaniem datasetu lub
+wag studenta obowiązuje osobny przegląd licencji i ręczny audyt próbki.
+
+Konfiguracja: `experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json`.
+Kod runu zapisuje model/revision, hash promptu, środowisko, wybór stron, błędy,
+surową odpowiedź Qwen, propozycje kanoniczne i sumy kontrolne. Konsensus odrzuca
+ZIP-y z traversal/symlink, zmienionymi hashami, inną konfiguracją, rewizją,
+runem albo zestawem stron.
+
+## Uruchomienie w Colab
+
+1. Otwórz `training/colab_slayer_layout_teacher_pilot_v1.ipynb`, wybierz GPU i
+   pozostaw `PAGES = 2` oraz `TEACHER_ID = "qwen3-vl-4b"`. Uruchom wszystko i
+   pobierz ZIP.
+2. Powtórz w dwóch świeżych runtime'ach dla `doclayout-yolo` oraz
+   `surya-layout2`. Nie zmieniaj liczby stron pomiędzy teacherami.
+3. Otwórz `training/colab_slayer_layout_consensus_v1.ipynb`, wgraj dokładnie te
+   trzy ZIP-y, uruchom wszystko i pobierz ZIP konsensusu.
+4. Sprawdź `run.json`, `consensus/report.json` i `review-queue.jsonl`. Na ich
+   podstawie przygotujemy następnie prywatny widok nakładek bboxów do audytu.
+   Dopiero po poprawnym smoke teście wykonaj ponownie trzy osobne runy z
+   `PAGES = 60` i zbuduj pełny konsensus.
+
+Notebook teacherów potrzebuje GPU; notebook konsensusu działa na CPU. Żaden z
+nich nie publikuje artefaktów na GitHub ani Hugging Face.
+
 ## Plan etapów i bramki
 
 | Etap | Artefakt | Bramka przejścia |
@@ -108,7 +153,8 @@ następnej wersji danych z pełnym pochodzeniem.
 
 ## Najbliższy eksperyment
 
-Na małej, prywatnej próbce development uruchomić co najmniej trzy różne rodziny
-teacherów. Zmierzyć zgodność klas, rozkład IoU, odsetek abstencji i czas review.
-Dopiero po ręcznym audycie zamrozić rewizje teacherów, prompty oraz progi i
-wygenerować większy zbiór do pierwszego treningu RF-DETR.
+Wykonać trzy dwustronicowe smoke runy i audyt wynikowego konsensusu. Po pozytywnym
+smoke uruchomić trzy pełne przebiegi po 60 stron, zmierzyć zgodność klas, rozkład
+IoU, odsetek abstencji i czas review. Dopiero po ręcznym audycie zaakceptować lub
+zmienić zamrożone rewizje, prompt i progi, a następnie przygotować dane do
+pierwszego treningu RF-DETR.

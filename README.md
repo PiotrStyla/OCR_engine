@@ -6,7 +6,7 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 27 września 2026
+## Aktualny stan: 28 września 2026
 
 ### SLAYER-OCR 2.0: DATA ENGINE v2
 
@@ -17,10 +17,18 @@ ani potwierdzonym silnikiem SOTA.**
   propozycje teacherów, przyjmuje wyłącznie kworum różnych modeli, kieruje
   konflikty do review i eksportuje zaakceptowane weak labels jako COCO JSON dla
   RF-DETR. To infrastruktura danych, nie wynik jakości ani deklaracja SOTA.
+- **Gotowy prywatny pilot teacherów:** [uruchom notebook GPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_teacher_pilot_v1.ipynb)
+  osobno w trzech świeżych sesjach dla `qwen3-vl-4b`, `doclayout-yolo` i
+  `surya-layout2`. Zacznij od domyślnych dwóch stron. Każda sesja pobiera
+  przypięte dane i model oraz zwraca osobny ZIP dowodowy bez skanów i referencji.
+- **Konsensus trzech runów:** [otwórz notebook CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v1.ipynb),
+  wgraj dokładnie trzy ZIP-y teacherów i pobierz COCO weak labels, kolejkę review,
+  hard examples oraz pełne provenance. Po kontroli smoke runu powtórz trzy sesje
+  z `PAGES = 60`.
 - Zamrożona konfiguracja pilota znajduje się w
-  [`experiments/2026-09-27/slayer-ocr-2-data-engine/config.json`](experiments/2026-09-27/slayer-ocr-2-data-engine/config.json).
-  Nie wykonano jeszcze inferencji teacherów; obrazy i surowe odpowiedzi pozostają
-  prywatne do czasu osobnej decyzji publikacyjnej.
+  [`experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json`](experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json).
+  Nie wykonano jeszcze inferencji GPU. Obrazy, predykcje i wynik konsensusu
+  pozostają prywatne do czasu osobnej decyzji publikacyjnej oraz przeglądu licencji.
 
 ### Eksperymentalny model SLAYER Vision ONNX
 
