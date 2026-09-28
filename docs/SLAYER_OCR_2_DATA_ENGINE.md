@@ -1,7 +1,7 @@
 # SLAYER-OCR 2.0: DATA ENGINE v2
 
-Status: architektura, przypięty pilot trzech teacherów i moduł konsensusu.
-Nie wykonano jeszcze inferencji GPU ani treningu RF-DETR.
+Status: architektura, przypięty pilot trzech teacherów, moduł konsensusu i
+zweryfikowany technicznie smoke na dwóch stronach. Nie wykonano treningu RF-DETR.
 
 ## Decyzja
 
@@ -72,9 +72,19 @@ python -m training.build_layout_consensus \
   --output private/layout-consensus-v1
 ```
 
-Wyjście jest kandydatem weak-label, nie ground truth. Spory przechodzą do
-istniejącego panelu offline po przygotowaniu widoku bboxów; obecny panel tekstowy
-i `training.adjudicate_reviews` pozostają końcową bramką transkrypcji.
+Wyjście jest kandydatem weak-label, nie ground truth. Prywatny panel bboxów można
+zbudować z ZIP-a konsensusu i lokalnych obrazów poleceniem:
+
+```bash
+python -m training.build_layout_consensus_review \
+  --evidence private/slayer-layout-consensus-evidence.zip \
+  --images private/images \
+  --output private/layout-review/index.html
+```
+
+Generator weryfikuje sumy kontrolne ZIP-a i obrazów, nie osadza obrazów ani
+referencji w HTML i nie nadpisuje istniejącego wyniku. Review oraz
+`training.adjudicate_reviews` pozostają końcową bramką transkrypcji.
 
 ## Zamrożony pilot v1
 
@@ -113,10 +123,9 @@ runem albo zestawem stron.
    `surya-layout2`. Nie zmieniaj liczby stron pomiędzy teacherami.
 3. Otwórz `training/colab_slayer_layout_consensus_v1.ipynb`, wgraj dokładnie te
    trzy ZIP-y, uruchom wszystko i pobierz ZIP konsensusu.
-4. Sprawdź `run.json`, `consensus/report.json` i `review-queue.jsonl`. Na ich
-   podstawie przygotujemy następnie prywatny widok nakładek bboxów do audytu.
-   Dopiero po poprawnym smoke teście wykonaj ponownie trzy osobne runy z
-   `PAGES = 60` i zbuduj pełny konsensus.
+4. Sprawdź `run.json`, `consensus/report.json` i `review-queue.jsonl`, a następnie
+   zbuduj prywatny panel nakładek poleceniem powyżej. Nie zwiększaj `PAGES`,
+   dopóki bramka opisana w wyniku smoke nie zostanie zamknięta.
 
 Notebook teacherów potrzebuje GPU; notebook konsensusu działa na CPU. Żaden z
 nich nie publikuje artefaktów na GitHub ani Hugging Face.
@@ -153,8 +162,9 @@ następnej wersji danych z pełnym pochodzeniem.
 
 ## Najbliższy eksperyment
 
-Wykonać trzy dwustronicowe smoke runy i audyt wynikowego konsensusu. Po pozytywnym
-smoke uruchomić trzy pełne przebiegi po 60 stron, zmierzyć zgodność klas, rozkład
-IoU, odsetek abstencji i czas review. Dopiero po ręcznym audycie zaakceptować lub
-zmienić zamrożone rewizje, prompt i progi, a następnie przygotować dane do
-pierwszego treningu RF-DETR.
+Dwustronicowy smoke został wykonany. Następny krok to zamrożenie definicji
+`heading`, `figure` i poziomu szczegółowości `text_region`, dodanie jawnego powodu
+`granularity-conflict` oraz ponowienie smoke na tych samych dwóch stronach.
+Dopiero po przejściu tej bramki wykonamy trzy pełne przebiegi po 60 stron,
+zmierzymy zgodność klas, rozkład IoU, odsetek abstencji i czas review, a następnie
+przygotujemy dane do pierwszego treningu RF-DETR.

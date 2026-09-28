@@ -26,12 +26,15 @@ ani potwierdzonym silnikiem SOTA.**
   oraz [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_smoke_v1.ipynb).
 - **Konsensus trzech runów:** [otwórz notebook CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v1.ipynb),
   wgraj dokładnie trzy ZIP-y teacherów i pobierz COCO weak labels, kolejkę review,
-  hard examples oraz pełne provenance. Po kontroli smoke runu powtórz trzy sesje
-  z `PAGES = 60`.
+  hard examples oraz pełne provenance. Dwustronicowy smoke zakończył się bez
+  błędów wykonania, ale ujawnił konflikty klas i poziomu szczegółowości; pełny
+  run 60 stron pozostaje wstrzymany do korekty polityki review.
+  [Wynik smoke i decyzja](docs/SLAYER_LAYOUT_CONSENSUS_SMOKE_RESULT_20260928.md).
 - Zamrożona konfiguracja pilota znajduje się w
   [`experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json`](experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json).
-  Nie wykonano jeszcze inferencji GPU. Obrazy, predykcje i wynik konsensusu
-  pozostają prywatne do czasu osobnej decyzji publikacyjnej oraz przeglądu licencji.
+  Wykonano wyłącznie dwustronicowy smoke trzech teacherów. Obrazy, predykcje i
+  wynik konsensusu pozostają prywatne do czasu osobnej decyzji publikacyjnej oraz
+  przeglądu licencji.
 
 ### Eksperymentalny model SLAYER Vision ONNX
 
