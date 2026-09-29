@@ -1,3 +1,4 @@
+import ast
 import json
 from pathlib import Path
 
@@ -14,8 +15,9 @@ def test_rfdetr_notebook_is_pinned_private_and_downloadable():
     assert "b6570a7829fc96651c7a41db8cae35e59c888460" in source
     assert "f0a157c79756276e9a82e4f8010521190bf72dc8b459c81c3806e840681a0c33" in source
     assert "RFDETRSmall" in source
-    assert "from rfdetr.config import TrainConfig" in source
+    assert "from rfdetr.config import RFDETRSmallConfig, TrainConfig" in source
     assert "set(RUN_CONFIG) - set(TrainConfig.model_fields)" in source
+    assert "set(MODEL_CONFIG) - set(RFDETRSmallConfig.model_fields)" in source
     assert "'model': 'RFDETRSmall'" not in source
     assert "batch_size': 4" in source
     assert "grad_accum_steps': 4" in source
@@ -27,6 +29,18 @@ def test_rfdetr_notebook_is_pinned_private_and_downloadable():
     assert "files.download(str(model_zip))" in source
     assert "huggingface_hub" not in source
     assert "github.com/PiotrStyla/OCR_engine/raw" not in source
+
+    training_cell = next(
+        "".join(cell.get("source", [])) for cell in notebook["cells"]
+        if "RUN_CONFIG =" in "".join(cell.get("source", [])))
+    assignments = {
+        node.targets[0].id: ast.literal_eval(node.value)
+        for node in ast.parse(training_cell).body
+        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id in {"MODEL_CONFIG", "RUN_CONFIG"}
+    }
+    assert assignments["MODEL_CONFIG"] == {"resolution": 512}
+    assert "resolution" not in assignments["RUN_CONFIG"]
 
 
 def test_rfdetr_notebook_validates_archive_before_training():
