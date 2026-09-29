@@ -103,6 +103,11 @@ usunięciu wszystkich konfliktów etykiet i granulacji. Panel wskazuje liczbę
 konfliktów na każdej stronie i stosuje tę samą politykę geometrii co adjudykator;
 pakiet zawiera hashe źródłowego ZIP-a i ontologii.
 
+Pomocnik `consensus suggestions` proponuje odrzucenie wyłącznie aktywnych
+obiektów review, które kolidują z już zaakceptowanym obiektem konsensusu.
+Zmiany są stosowane dopiero po potwierdzeniu recenzenta, pozostają odwracalne w
+panelu i nie rozwiązują automatycznie konfliktów review kontra review.
+
 Layout ma osobną, zamkniętą bramkę adjudykacji. Pakiet decyzji musi wskazywać
 hash konkretnego ZIP-a konsensusu i ontologii, zawierać dokładnie jedną decyzję
 `accept`, `reject` albo `relabel` dla każdego elementu review oraz nazwę i czas

@@ -151,7 +151,11 @@ def test_interactive_review_is_bound_to_archive_and_ontology(tmp_path):
     assert "localStorage" in html
     assert "Export JSON" in html
     assert "pageConflicts" in html
-    assert "geometry conflict" in html
+    assert "conflictText" in html
+    assert 'id="next-conflict"' in html
+    assert 'id="apply-consensus"' in html
+    assert "consensusSuggestionIds" in html
+    assert "Consensus-first conflict suggestion." in html
 
 
 def test_rejects_ontology_with_different_categories(tmp_path):

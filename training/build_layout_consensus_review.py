@@ -149,6 +149,8 @@ header {{ min-height: 58px; display: flex; align-items: center; gap: 14px; paddi
 header strong {{ font-size: 17px; }}
 #summary {{ color: #cbd2df; font-size: 13px; }}
 .reviewer {{ margin-left: auto; width: 180px; height: 34px; border: 1px solid #586174; background: #202735; color: white; padding: 0 9px; }}
+.helper {{ height: 34px; border: 1px solid #697386; background: #252d3b; color: white; padding: 0 11px; font-weight: 700; cursor: pointer; }}
+.helper:disabled {{ color: #8e97a7; cursor: not-allowed; }}
 #export {{ height: 34px; border: 1px solid #61a56e; background: #16803c; color: white; padding: 0 13px; font-weight: 700; cursor: pointer; }}
 #export:disabled {{ border-color: #596170; background: #3b4351; color: #aeb5c0; cursor: not-allowed; }}
 .layout {{ display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: calc(100vh - 58px); }}
@@ -173,12 +175,13 @@ th {{ position: sticky; top: 0; background: #f7f8fa; color: #4a566c; }}
 .decision select, .decision input {{ min-width: 0; height: 30px; border: 1px solid #c7ced9; background: white; padding: 0 6px; }}
 .pending {{ color: #a43b33; font-weight: 700; }}
 .conflict {{ color: #a43b33; font-weight: 800; }}
+.bbox-conflict {{ stroke-width: 7; stroke-dasharray: 18 10; }}
 code {{ font-family: Consolas, monospace; }}
 @media (max-width: 780px) {{ .layout {{ grid-template-columns: 1fr; }} aside {{ border-right: 0; border-bottom: 1px solid #d5dae3; }} main {{ grid-template-rows: minmax(360px, 70vh) 220px; }} }}
 </style>
 </head>
 <body>
-<header><strong>SLAYER layout review</strong><span id="summary"></span><input class="reviewer" id="reviewer" placeholder="Reviewer" maxlength="100"><button id="export" disabled>Export JSON</button></header>
+<header><strong>SLAYER layout review</strong><span id="summary"></span><button class="helper" id="next-conflict">Next conflict</button><button class="helper" id="apply-consensus" disabled>Consensus suggestions</button><input class="reviewer" id="reviewer" placeholder="Reviewer" maxlength="100"><button id="export" disabled>Export JSON</button></header>
 <div class="layout">
   <aside><div class="pages" id="pages"></div><div class="layers" id="layers"></div></aside>
   <main><div class="viewer" id="viewer"></div><div class="details"><table><thead><tr><th>Warstwa</th><th>Klasa</th><th>Score</th><th>Teachers / powód</th><th>Bbox</th><th>Decision</th></tr></thead><tbody id="rows"></tbody></table></div></main>
@@ -200,6 +203,9 @@ function iou(left,right){{const intersection=overlap(left,right);return intersec
 function containment(left,right){{return overlap(left,right)/Math.min(area(left),area(right))}}
 function currentObjects(page){{const reviewed=page.review.filter(complete).filter(item=>state.decisions[item.id].action!=='reject').map(item=>({{...item,label:state.decisions[item.id].action==='relabel'?state.decisions[item.id].label:item.label}}));return [...page.accepted,...reviewed]}}
 function pageConflicts(page){{const objects=currentObjects(page),result=[];for(let i=0;i<objects.length;i++)for(let j=i+1;j<objects.length;j++){{const left=objects[i],right=objects[j];if(left.label!==right.label&&iou(left.bbox,right.bbox)>=DATA.policy.conflict_iou)result.push({{reason:'label-conflict',left:left.id,right:right.id}});if(left.label===right.label){{const ratio=Math.max(area(left.bbox),area(right.bbox))/Math.min(area(left.bbox),area(right.bbox));if(ratio>=DATA.policy.granularity_ratio&&containment(left.bbox,right.bbox)>=DATA.policy.containment_threshold)result.push({{reason:'granularity-conflict',left:left.id,right:right.id}})}}}}return result}}
+function consensusSuggestionIds(){{const result=new Set;DATA.pages.forEach(page=>{{const accepted=new Set(page.accepted.map(item=>item.id)),review=new Set(page.review.map(item=>item.id));pageConflicts(page).forEach(item=>{{if(accepted.has(item.left)&&review.has(item.right))result.add(item.right);if(accepted.has(item.right)&&review.has(item.left))result.add(item.left)}})}});return result}}
+function nextConflict(){{for(let offset=1;offset<=DATA.pages.length;offset++){{const index=(state.page+offset)%DATA.pages.length;if(pageConflicts(DATA.pages[index]).length){{state.page=index;render();return}}}}}}
+function applyConsensusSuggestions(){{const ids=consensusSuggestionIds();if(!ids.size||!confirm(`Apply ${{ids.size}} suggested rejects? Each review object conflicts with a stronger accepted consensus object. You can undo every change before export.`))return;ids.forEach(id=>{{const current=state.decisions[id]||{{}};current.action='reject';delete current.label;const marker='Consensus-first conflict suggestion.';current.note=current.note?`${{current.note}} ${{marker}}`:marker;state.decisions[id]=current}});save();render()}}
 function save(){{localStorage.setItem(storageKey,JSON.stringify({{reviewer:state.reviewer,decisions:state.decisions}}))}}
 function render(){{
  const page=DATA.pages[state.page], meta=page.image;
@@ -208,6 +214,8 @@ function render(){{
  document.getElementById('summary').textContent=`${{DATA.run.pages}} strony · ${{DATA.run.consensus.accepted_objects}} accepted · ${{done}}/${{reviewItems.length}} reviewed · ${{conflicts.length}} conflicts`;
  const reviewer=document.getElementById('reviewer'); reviewer.value=state.reviewer;
  reviewer.onchange=()=>{{state.reviewer=reviewer.value.trim();save();render()}};
+ const suggestionIds=consensusSuggestionIds(), suggestionButton=document.getElementById('apply-consensus');suggestionButton.disabled=!suggestionIds.size;suggestionButton.textContent=suggestionIds.size?`Apply ${{suggestionIds.size}} consensus suggestions`:'No consensus suggestions';suggestionButton.onclick=applyConsensusSuggestions;
+ const nextButton=document.getElementById('next-conflict');nextButton.disabled=!conflicts.length;nextButton.onclick=nextConflict;
  const exportButton=document.getElementById('export'); exportButton.disabled=done!==reviewItems.length||conflicts.length>0||!state.reviewer||!DATA.ontology_sha256; exportButton.onclick=exportDecisions;
  document.getElementById('pages').innerHTML=DATA.pages.map((p,i)=>{{const pending=p.review.filter(item=>!complete(item)).length,conflictCount=pageConflicts(p).length;return `<button class="page-button ${{i===state.page?'active':''}}" data-page="${{i}}">${{esc(p.page_id)}}${{pending?` <span class="pending">(${{pending}} pending)</span>`:''}}${{conflictCount?` <span class="conflict">(${{conflictCount}} conflicts)</span>`:''}}</button>`}}).join('');
  document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{{state.page=Number(b.dataset.page);render()}});
@@ -222,9 +230,9 @@ function renderCanvas(){{
  let shapes='', rows='';
  for(const [layer,boxes] of allLayers(page)){{if(!state.visible.has(layer))continue; const color=DATA.layers[layer];
   boxes.forEach((b,i)=>{{const [x1,y1,x2,y2]=b.bbox, label=`${{layer}} · ${{b.label}}`;
-   shapes+=`<g><rect class="bbox" x="${{x1}}" y="${{y1}}" width="${{x2-x1}}" height="${{y2-y1}}" stroke="${{color}}"/><text class="bbox-label" x="${{x1+5}}" y="${{Math.max(28,y1+28)}}" fill="${{color}}">${{esc(label)}}</text></g>`;
+   shapes+=`<g><rect class="bbox ${{conflictIds.has(b.id)?'bbox-conflict':''}}" x="${{x1}}" y="${{y1}}" width="${{x2-x1}}" height="${{y2-y1}}" stroke="${{color}}"/><text class="bbox-label" x="${{x1+5}}" y="${{Math.max(28,y1+28)}}" fill="${{color}}">${{esc(label)}}</text></g>`;
    const note=b.reasons?.length?b.reasons.join(', '):(b.teachers?.join(', ')||'');
-   let control=''; if(layer==='review'){{const d=state.decisions[b.id]||{{action:'',label:'',note:''}};const labels=DATA.categories.map(name=>`<option value="${{esc(name)}}" ${{d.label===name?'selected':''}}>${{esc(name)}}</option>`).join('');control=`<div class="decision"><select data-action="${{esc(b.id)}}"><option value="">Pending</option>${{['accept','reject','relabel'].map(action=>`<option value="${{action}}" ${{d.action===action?'selected':''}}>${{action}}</option>`).join('')}}</select><select data-label="${{esc(b.id)}}" ${{d.action==='relabel'?'':'disabled'}}><option value="">Label</option>${{labels}}</select><input data-note="${{esc(b.id)}}" maxlength="2000" placeholder="Note" value="${{esc(d.note||'')}}"></div>${{conflictIds.has(b.id)?'<div class="conflict">geometry conflict</div>':''}}`}}
+   let control=''; if(layer==='review'){{const d=state.decisions[b.id]||{{action:'',label:'',note:''}},itemConflicts=pageConflicts(page).filter(item=>item.left===b.id||item.right===b.id);const labels=DATA.categories.map(name=>`<option value="${{esc(name)}}" ${{d.label===name?'selected':''}}>${{esc(name)}}</option>`).join(''),conflictText=itemConflicts.map(item=>`${{item.reason}} with ${{item.left===b.id?item.right:item.left}}`).join('; ');control=`<div class="decision"><select data-action="${{esc(b.id)}}"><option value="">Pending</option>${{['accept','reject','relabel'].map(action=>`<option value="${{action}}" ${{d.action===action?'selected':''}}>${{action}}</option>`).join('')}}</select><select data-label="${{esc(b.id)}}" ${{d.action==='relabel'?'':'disabled'}}><option value="">Label</option>${{labels}}</select><input data-note="${{esc(b.id)}}" maxlength="2000" placeholder="Note" value="${{esc(d.note||'')}}"></div>${{conflictText?`<div class="conflict">${{esc(conflictText)}}</div>`:''}}`}}
    rows+=`<tr><td style="color:${{color}};font-weight:700">${{esc(layer)}}</td><td>${{esc(b.label)}}</td><td>${{b.score==null?'—':Number(b.score).toFixed(3)}}</td><td>${{esc(note)}}</td><td><code>${{b.bbox.map(v=>Math.round(v)).join(', ')}}</code></td><td>${{control}}</td></tr>`;
   }});
  }}
