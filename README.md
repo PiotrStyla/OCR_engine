@@ -52,6 +52,12 @@ ani potwierdzonym silnikiem SOTA.**
   eksporter. Notebook sprawdza hash całego ZIP-a i wszystkich plików, nie
   publikuje danych, zapisuje metryki per klasa oraz zwraca osobno ZIP dowodowy i
   ZIP modelu. Wynik jest pilotem deweloperskim, nie pomiarem końcowym.
+- **Wynik pilota RF-DETR:** trening zakończył się early stopping po epoce 30,
+  a najlepszy checkpoint EMA z epoki 15 osiągnął `mAP@50:95 = 0,3273` na
+  12 stronach z czterech rozłącznych kolekcji. Najmocniejsza jest klasa
+  `figure` (`EMA AP = 0,8238`); `table` i `marginalia` pozostają słabe, a trzy klasy
+  nie mają przykładów validation. Checkpoint przechodzi bramkę techniczną, ale
+  jeszcze nie jakościową. [Pełny raport](docs/SLAYER_RFDETR_LAYOUT_V1_RESULT_20260929.md).
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

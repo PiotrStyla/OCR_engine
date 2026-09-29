@@ -1,7 +1,8 @@
 # SLAYER-OCR 2.0: DATA ENGINE v2
 
-Status: pełny pilot teacherów, konsensus, adjudykacja 371 obiektów i prywatny
-pakiet RF-DETR 48/12 są ukończone. Nie wykonano jeszcze treningu RF-DETR.
+Status: pełny pilot teacherów, konsensus, adjudykacja 371 obiektów, prywatny
+pakiet RF-DETR 48/12 i pierwszy trening RF-DETR Small są ukończone. Najlepszy
+checkpoint ma deweloperskie `mAP@50:95 = 0,3273`; trwa jego audyt wizualny.
 
 ## Decyzja
 
@@ -208,13 +209,13 @@ następnej wersji danych z pełnym pochodzeniem.
 
 ## Najbliższy eksperyment
 
-Pełne runy trzech teacherów, konsensus 60 stron i adjudykacja 371 obiektów są
-zamknięte. Clean candidate zawiera 304 obiekty, a prywatny pakiet RF-DETR dzieli
-dane na 48 stron train i 12 stron development bez wspólnych kolekcji ani hashy
-obrazów. Następny krok to przypięty pilot `RFDETRSmall` na tym pakiecie, zapis
-checkpointu i metryk per klasa, a następnie pełnostronicowe OCR A/B na
-rozłącznych dokumentach. `valid` jest zbiorem deweloperskim; końcowy test
-PolOCRBench pozostaje zamknięty.
+Pełne runy trzech teacherów, konsensus 60 stron, adjudykacja 371 obiektów i
+pierwszy trening `RFDETRSmall` są zamknięte. Najlepszy checkpoint EMA z epoki 15
+osiągnął `mAP@50:95 = 0,3273`; wynik końca treningu 0,3029 nie zastępuje wyniku
+najlepszego checkpointu. Następny krok to prywatny audyt wszystkich 12 stron
+development: ponowna ewaluacja checkpointu, nakładki GT/predykcja i kolejka
+FP/FN. Dopiero po tej bramce wykonamy kontrolowane retraining albo pełnostronicowe
+OCR A/B. Końcowy test PolOCRBench pozostaje zamknięty.
 
 Notebook pilota: `training/colab_slayer_rfdetr_layout_v1.ipynb`. Oczekuje
 jednego prywatnego ZIP-a o przypiętym SHA-256, waliduje cały manifest przed
