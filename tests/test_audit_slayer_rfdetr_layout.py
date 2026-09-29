@@ -94,6 +94,11 @@ def test_prediction_labels_prefer_names_and_accept_known_id_schemes():
     names = ["text_region", "heading"]
     assert resolve_prediction_labels([99], ["heading"], names) == ["heading"]
     assert resolve_prediction_labels([0, 1], None, names) == names
+    assert resolve_prediction_labels(
+        [0, 2], ["text_region", "__background__"], names
+    ) == ["text_region", None]
+    assert resolve_prediction_labels([0, 1, 2], None, names) == [
+        "text_region", "heading", None]
     assert resolve_prediction_labels([1, 2], None, names) == names
     with pytest.raises(ValueError, match="Ambiguous predicted class ID scheme"):
         resolve_prediction_labels([1], None, names)

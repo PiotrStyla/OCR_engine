@@ -270,21 +270,30 @@ def _jsonable(value):
     return value
 
 
-def resolve_prediction_labels(class_ids, provided_names, class_names: list[str]) -> list[str]:
+def resolve_prediction_labels(
+        class_ids, provided_names, class_names: list[str]) -> list[str | None]:
     ids = [int(class_id) for class_id in class_ids]
     if provided_names is not None:
         names = [str(name) for name in provided_names]
         if len(names) != len(ids):
             raise ValueError("Prediction class IDs and names have different lengths")
-        if all(name in class_names for name in names):
-            return names
+        if all(name in class_names or name == "__background__" for name in names):
+            for class_id, name in zip(ids, names):
+                if name == "__background__" and class_id != len(class_names):
+                    raise ValueError(
+                        f"Unexpected background class ID: {class_id}; "
+                        f"expected {len(class_names)}")
+            return [None if name == "__background__" else name for name in names]
 
     if not ids:
         return []
     if 0 in ids:
-        if not all(0 <= class_id < len(class_names) for class_id in ids):
+        if not all(0 <= class_id <= len(class_names) for class_id in ids):
             raise ValueError(f"Invalid zero-based predicted class IDs: {ids}")
-        return [class_names[class_id] for class_id in ids]
+        return [
+            None if class_id == len(class_names) else class_names[class_id]
+            for class_id in ids
+        ]
     if len(class_names) in ids:
         if not all(1 <= class_id <= len(class_names) for class_id in ids):
             raise ValueError(f"Invalid one-based predicted class IDs: {ids}")
@@ -342,6 +351,7 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
     overlays.mkdir(parents=True)
     prediction_rows, hard_examples = [], []
     aggregate = Counter()
+    background_detections_discarded = 0
     per_class = {}
     class_names = inputs["class_names"]
     for image_info in valid_coco["images"]:
@@ -352,9 +362,13 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
                 include_source_image=False)
         names = prediction.data.get("class_name")
         labels = resolve_prediction_labels(prediction.class_id, names, class_names)
+        page_background_detections = sum(label is None for label in labels)
+        background_detections_discarded += page_background_detections
         predictions = []
         for box, score, class_id, label in zip(
                 prediction.xyxy, prediction.confidence, prediction.class_id, labels):
+            if label is None:
+                continue
             predictions.append({
                 "label": label,
                 "class_id": int(class_id),
@@ -371,6 +385,7 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
             "page_id": image_info["page_id"],
             "image_sha256": image_info["sha256"],
             "raw_threshold": prediction_threshold,
+            "background_detections_discarded": page_background_detections,
             "predictions": predictions,
             "audit": matching,
         }
@@ -405,6 +420,7 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
         "fixed_threshold_counts": dict(aggregate),
         "fixed_threshold_per_class": {
             label: dict(counts) for label, counts in sorted(per_class.items())},
+        "background_detections_discarded": background_detections_discarded,
         "hard_example_pages": len(hard_examples),
         "images_or_references_included": True,
         "release_status": "private-audit-not-published",
