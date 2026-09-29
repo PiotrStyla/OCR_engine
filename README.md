@@ -63,6 +63,11 @@ ani potwierdzonym silnikiem SOTA.**
   dowodów treningowych, sprawdza ich pełne hashe, ponownie mierzy zapisany
   checkpoint na 12 stronach oraz pobiera jeden prywatny ZIP z predykcjami,
   porównaniami GT/model i kolejką hard examples. Niczego nie publikuje.
+  Audyt został ukończony: checkpoint dokładnie odtwarza `mAP@50:95 = 0,3273`,
+  ale przy progu diagnostycznym 0,25 wszystkie 12 stron zawiera FP lub FN.
+  Nakładki ujawniły także niespójną granulację ramek i prawdopodobne braki GT,
+  dlatego kolejną bramką jest ponowna adjudykacja 12 stron, a nie retrening na
+  tych samych etykietach. [Wynik audytu](docs/SLAYER_RFDETR_LAYOUT_AUDIT_V1_RESULT_20260929.md).
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

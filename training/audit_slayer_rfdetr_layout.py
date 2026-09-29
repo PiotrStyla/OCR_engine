@@ -69,7 +69,7 @@ def _one(root: Path, name: str) -> Path:
 
 
 def verify_checksums(root: str | Path) -> dict[str, str]:
-    root = Path(root)
+    root = Path(root).resolve()
     checksum_path = _one(root, "checksums.sha256")
     base = checksum_path.parent.resolve()
     expected = {}

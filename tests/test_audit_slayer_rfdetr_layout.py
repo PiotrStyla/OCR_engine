@@ -1,5 +1,6 @@
 import hashlib
 import json
+from pathlib import Path
 import zipfile
 
 from PIL import Image
@@ -14,7 +15,7 @@ from training.audit_slayer_rfdetr_layout import (
 )
 
 
-def test_safe_extract_and_checksum_verification(tmp_path):
+def test_safe_extract_and_checksum_verification(tmp_path, monkeypatch):
     archive = tmp_path / "good.zip"
     content = b"payload"
     with zipfile.ZipFile(archive, "w") as output:
@@ -24,6 +25,9 @@ def test_safe_extract_and_checksum_verification(tmp_path):
             hashlib.sha256(content).hexdigest() + "  payload.json\n")
     root = safe_extract_zip(archive, tmp_path / "extracted")
     assert verify_checksums(root) == {
+        "payload.json": hashlib.sha256(content).hexdigest()}
+    monkeypatch.chdir(tmp_path)
+    assert verify_checksums(Path("extracted")) == {
         "payload.json": hashlib.sha256(content).hexdigest()}
 
     (root / "payload.json").write_text("changed")
