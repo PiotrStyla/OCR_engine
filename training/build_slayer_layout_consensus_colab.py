@@ -16,7 +16,13 @@ POLICY_PATH = (
 POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))["consensus"]
 
 
-def build(target: str | Path) -> None:
+def build(target: str | Path, *, code_revision: str = CONSENSUS_CODE_REVISION,
+          policy_path: str | Path = POLICY_PATH) -> None:
+    policy_path = Path(policy_path)
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))["consensus"]
+    if (not isinstance(code_revision, str) or len(code_revision) != 40 or
+            any(character not in "0123456789abcdef" for character in code_revision)):
+        raise ValueError("Invalid code revision")
     setup = f'''import json
 import os
 from pathlib import Path
@@ -24,9 +30,9 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-CODE_REVISION = {CONSENSUS_CODE_REVISION!r}
+CODE_REVISION = {code_revision!r}
 EXPECTED_CONFIG = {CONFIG!r}
-EXPECTED_POLICY = {POLICY!r}
+EXPECTED_POLICY = {policy!r}
 
 repo = Path("/content/OCR_engine")
 if not repo.exists():
@@ -47,7 +53,7 @@ CONFIG = json.loads(
 )
 assert CONFIG == EXPECTED_CONFIG
 POLICY = json.loads(
-    (repo / "experiments/2026-09-28/slayer-layout-consensus-policy-v2.json")
+    (repo / "experiments/2026-09-28/{policy_path.name}")
     .read_text(encoding="utf-8")
 )["consensus"]
 assert POLICY == EXPECTED_POLICY

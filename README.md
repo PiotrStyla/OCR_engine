@@ -24,11 +24,13 @@ ani potwierdzonym silnikiem SOTA.**
   Dla smoke testu są też notebooki bez przełączników:
   [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_smoke_v1.ipynb)
   oraz [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_smoke_v1.ipynb).
-- **Konsensus trzech runów:** [otwórz notebook v2 CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v2.ipynb),
+- **Konsensus pełnych runów:** [otwórz notebook v3 CPU w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_consensus_v3.ipynb),
   wgraj dokładnie trzy ZIP-y teacherów i pobierz COCO weak labels, kolejkę review,
-  hard examples oraz pełne provenance. Dwustronicowy smoke zakończył się bez
-  błędów wykonania, ale ujawnił konflikty klas i poziomu szczegółowości; pełny
-  run 60 stron pozostaje wstrzymany do korekty polityki review.
+  hard examples oraz pełne provenance. Polityka v3 dopuszcza maksymalnie cztery
+  jawne abstencje teachera na 60 stronach; nie liczy ich jako pustych głosów,
+  zachowuje quorum dwóch niezależnych modeli i kieruje każdą taką stronę do
+  hard-example mining. Dwustronicowy smoke ujawnił konflikty klas i poziomu
+  szczegółowości.
   [Wynik smoke i decyzja](docs/SLAYER_LAYOUT_CONSENSUS_SMOKE_RESULT_20260928.md).
 - Polityka konsensusu v2 wykrywa konflikty skali bez mnożenia głosu jednego
   teachera. Zamrożono też definicje klas layoutu; następną bramką jest
@@ -36,8 +38,8 @@ ani potwierdzonym silnikiem SOTA.**
   `training.adjudicate_layout_consensus` odrzuca niepełne decyzje i eksportuje
   prywatny kandydat JSONL/COCO bez skanów.
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
-  błędów. Qwen v1 ukończył 53/60 stron, dlatego należy ponowić wyłącznie Qwen
-  przez poprawiony notebook [Qwen3-VL v3](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_qwen3_vl_4b_full_v3.ipynb).
+  błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
+  zachowane jako jawne abstencje w polityce konsensusu v3.
   Zachowaj istniejące ZIP-y z notebooków
   [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_full_v1.ipynb),
   [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_full_v1.ipynb).
