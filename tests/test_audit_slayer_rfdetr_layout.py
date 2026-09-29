@@ -8,6 +8,7 @@ import pytest
 from training.audit_slayer_rfdetr_layout import (
     match_page,
     render_comparison,
+    resolve_prediction_labels,
     safe_extract_zip,
     verify_checksums,
 )
@@ -87,4 +88,15 @@ def test_render_comparison_creates_private_review_preview(tmp_path):
     with Image.open(target) as rendered:
         assert rendered.width == 412
         assert rendered.height == 328
+
+
+def test_prediction_labels_prefer_names_and_accept_known_id_schemes():
+    names = ["text_region", "heading"]
+    assert resolve_prediction_labels([99], ["heading"], names) == ["heading"]
+    assert resolve_prediction_labels([0, 1], None, names) == names
+    assert resolve_prediction_labels([1, 2], None, names) == names
+    with pytest.raises(ValueError, match="Ambiguous predicted class ID scheme"):
+        resolve_prediction_labels([1], None, names)
+    with pytest.raises(ValueError, match="Invalid zero-based predicted class IDs"):
+        resolve_prediction_labels([0, 99], None, names)
 

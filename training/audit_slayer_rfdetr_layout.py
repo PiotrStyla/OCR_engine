@@ -270,6 +270,30 @@ def _jsonable(value):
     return value
 
 
+def resolve_prediction_labels(class_ids, provided_names, class_names: list[str]) -> list[str]:
+    ids = [int(class_id) for class_id in class_ids]
+    if provided_names is not None:
+        names = [str(name) for name in provided_names]
+        if len(names) != len(ids):
+            raise ValueError("Prediction class IDs and names have different lengths")
+        if all(name in class_names for name in names):
+            return names
+
+    if not ids:
+        return []
+    if 0 in ids:
+        if not all(0 <= class_id < len(class_names) for class_id in ids):
+            raise ValueError(f"Invalid zero-based predicted class IDs: {ids}")
+        return [class_names[class_id] for class_id in ids]
+    if len(class_names) in ids:
+        if not all(1 <= class_id <= len(class_names) for class_id in ids):
+            raise ValueError(f"Invalid one-based predicted class IDs: {ids}")
+        return [class_names[class_id - 1] for class_id in ids]
+    raise ValueError(
+        "Ambiguous predicted class ID scheme; model output omitted usable class names"
+    )
+
+
 def run(dataset_archive: str | Path, model_archive: str | Path,
         evidence_archive: str | Path, expected_hashes: dict[str, str],
         output_root: str | Path = "/content", code_revision: str | None = None,
@@ -327,12 +351,10 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
                 opened.convert("RGB"), threshold=prediction_threshold,
                 include_source_image=False)
         names = prediction.data.get("class_name")
+        labels = resolve_prediction_labels(prediction.class_id, names, class_names)
         predictions = []
-        for index, (box, score, class_id) in enumerate(zip(
-                prediction.xyxy, prediction.confidence, prediction.class_id)):
-            label = str(names[index]) if names is not None else class_names[int(class_id)]
-            if label not in class_names:
-                raise ValueError(f"Unknown predicted class: {label}")
+        for box, score, class_id, label in zip(
+                prediction.xyxy, prediction.confidence, prediction.class_id, labels):
             predictions.append({
                 "label": label,
                 "class_id": int(class_id),
