@@ -24,6 +24,9 @@ def test_audit_notebook_is_pinned_private_and_downloadable():
     assert "dataset_archive = upload_one('dataset')" in source
     assert "model_archive = upload_one('model')" in source
     assert "evidence_archive = upload_one('evidence')" in source
+    assert "REUSED_EXISTING" in source
+    assert "CACHED_VERIFIED" in source
+    assert "len(uploaded) == 1" not in source
     assert "prediction_threshold=0.05" in source
     assert "audit_threshold=0.25" in source
     assert "files.download(str(result_archive))" in source
