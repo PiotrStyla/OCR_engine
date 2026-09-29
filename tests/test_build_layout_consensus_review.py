@@ -132,3 +132,32 @@ def test_rejects_tampered_consensus_policy(tmp_path):
     archive, image_dir = _evidence(tmp_path, tamper_policy=True)
     with pytest.raises(ValueError, match="policy checksum mismatch"):
         build_review(archive, image_dir, tmp_path / "tampered-policy.html")
+
+
+def test_interactive_review_is_bound_to_archive_and_ontology(tmp_path):
+    archive, image_dir = _evidence(tmp_path)
+    ontology = tmp_path / "ontology.json"
+    ontology.write_text(json.dumps({
+        "schema": "slayer-layout-ontology-v2",
+        "classes": {"text_region": {}, "heading": {}, "figure": {}},
+    }), encoding="utf-8")
+    output = build_review(
+        archive, image_dir, tmp_path / "review" / "index.html", ontology)
+    html = output.read_text(encoding="utf-8")
+    assert hashlib.sha256(ontology.read_bytes()).hexdigest() in html
+    assert "slayer-layout-review-patch-v1" in html
+    assert "slayer-layout-review-decisions.json" in html
+    assert "JSON.stringify(packet,null,2)+'\\n'" in html
+    assert "localStorage" in html
+    assert "Export JSON" in html
+
+
+def test_rejects_ontology_with_different_categories(tmp_path):
+    archive, image_dir = _evidence(tmp_path)
+    ontology = tmp_path / "ontology.json"
+    ontology.write_text(json.dumps({
+        "schema": "slayer-layout-ontology-v2",
+        "classes": {"text_region": {}},
+    }), encoding="utf-8")
+    with pytest.raises(ValueError, match="Ontology does not match"):
+        build_review(archive, image_dir, tmp_path / "review.html", ontology)

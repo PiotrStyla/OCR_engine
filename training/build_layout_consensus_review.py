@@ -75,12 +75,22 @@ def _box(item: dict) -> dict:
 
 
 def build_review(archive_path: str | Path, image_dir: str | Path,
-                 output_path: str | Path) -> Path:
+                 output_path: str | Path,
+                 ontology_path: str | Path | None = None) -> Path:
     archive_path, image_dir, output_path = map(Path, (archive_path, image_dir, output_path))
     if output_path.exists():
         raise FileExistsError(output_path)
     files, archive_hash = load_evidence(archive_path)
     run = json.loads(files["run.json"])
+    ontology_hash = None
+    if ontology_path is not None:
+        ontology_bytes = Path(ontology_path).read_bytes()
+        ontology = json.loads(ontology_bytes)
+        if (ontology.get("schema") != "slayer-layout-ontology-v2" or
+                set(ontology.get("classes", {})) !=
+                set(run["consensus"]["categories"])):
+            raise ValueError("Ontology does not match consensus categories")
+        ontology_hash = digest(ontology_bytes)
     consensus = _jsonl(files["consensus/consensus.jsonl"])
     reviews = _jsonl(files["consensus/review-queue.jsonl"])
     by_page = {
@@ -111,6 +121,8 @@ def build_review(archive_path: str | Path, image_dir: str | Path,
         pages.append(page)
     payload = json.dumps({
         "archive_sha256": archive_hash,
+        "ontology_sha256": ontology_hash,
+        "categories": run["consensus"]["categories"],
         "run": run,
         "pages": pages,
         "layers": LAYERS,
@@ -131,9 +143,12 @@ def _html(payload: str) -> str:
 :root {{ color-scheme: light; font-family: Inter, Arial, sans-serif; color: #172033; background: #eef1f5; }}
 * {{ box-sizing: border-box; }}
 body {{ margin: 0; min-height: 100vh; }}
-header {{ height: 58px; display: flex; align-items: center; gap: 18px; padding: 0 20px; background: #161b26; color: white; }}
+header {{ min-height: 58px; display: flex; align-items: center; gap: 14px; padding: 9px 20px; background: #161b26; color: white; flex-wrap: wrap; }}
 header strong {{ font-size: 17px; }}
 #summary {{ color: #cbd2df; font-size: 13px; }}
+.reviewer {{ margin-left: auto; width: 180px; height: 34px; border: 1px solid #586174; background: #202735; color: white; padding: 0 9px; }}
+#export {{ height: 34px; border: 1px solid #61a56e; background: #16803c; color: white; padding: 0 13px; font-weight: 700; cursor: pointer; }}
+#export:disabled {{ border-color: #596170; background: #3b4351; color: #aeb5c0; cursor: not-allowed; }}
 .layout {{ display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: calc(100vh - 58px); }}
 aside {{ padding: 16px; background: white; border-right: 1px solid #d5dae3; }}
 .pages {{ display: grid; gap: 6px; margin-bottom: 18px; }}
@@ -152,27 +167,39 @@ svg {{ display: block; margin: 0 auto; width: min(100%, 1050px); height: auto; b
 table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
 th, td {{ padding: 8px 10px; border-bottom: 1px solid #e2e6ed; text-align: left; vertical-align: top; }}
 th {{ position: sticky; top: 0; background: #f7f8fa; color: #4a566c; }}
+.decision {{ display: grid; grid-template-columns: 105px 125px minmax(130px, 1fr); gap: 6px; min-width: 390px; }}
+.decision select, .decision input {{ min-width: 0; height: 30px; border: 1px solid #c7ced9; background: white; padding: 0 6px; }}
+.pending {{ color: #a43b33; font-weight: 700; }}
 code {{ font-family: Consolas, monospace; }}
 @media (max-width: 780px) {{ .layout {{ grid-template-columns: 1fr; }} aside {{ border-right: 0; border-bottom: 1px solid #d5dae3; }} main {{ grid-template-rows: minmax(360px, 70vh) 220px; }} }}
 </style>
 </head>
 <body>
-<header><strong>SLAYER layout review</strong><span id="summary"></span></header>
+<header><strong>SLAYER layout review</strong><span id="summary"></span><input class="reviewer" id="reviewer" placeholder="Reviewer" maxlength="100"><button id="export" disabled>Export JSON</button></header>
 <div class="layout">
   <aside><div class="pages" id="pages"></div><div class="layers" id="layers"></div></aside>
-  <main><div class="viewer" id="viewer"></div><div class="details"><table><thead><tr><th>Warstwa</th><th>Klasa</th><th>Score</th><th>Teachers / powód</th><th>Bbox</th></tr></thead><tbody id="rows"></tbody></table></div></main>
+  <main><div class="viewer" id="viewer"></div><div class="details"><table><thead><tr><th>Warstwa</th><th>Klasa</th><th>Score</th><th>Teachers / powód</th><th>Bbox</th><th>Decision</th></tr></thead><tbody id="rows"></tbody></table></div></main>
 </div>
 <script>const DATA={payload};
-const state={{page:0, visible:new Set(Object.keys(DATA.layers))}};
+const storageKey=`slayer-layout-review:${{DATA.archive_sha256}}`;
+let saved={{}}; try{{saved=JSON.parse(localStorage.getItem(storageKey)||'{{}}')}}catch(_error){{saved={{}}}}
+const state={{page:0, visible:new Set(Object.keys(DATA.layers)), decisions:saved.decisions||{{}}, reviewer:saved.reviewer||''}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c]));
 function allLayers(page){{return [
   ...Object.entries(page.teachers).map(([name,boxes])=>[name,boxes]),
   ['accepted',page.accepted],['review',page.review]
 ]}}
+const reviewItems=DATA.pages.flatMap(page=>page.review);
+function complete(item){{const d=state.decisions[item.id];return !!d&&['accept','reject','relabel'].includes(d.action)&&(d.action!=='relabel'||(DATA.categories.includes(d.label)&&d.label!==item.label))}}
+function save(){{localStorage.setItem(storageKey,JSON.stringify({{reviewer:state.reviewer,decisions:state.decisions}}))}}
 function render(){{
  const page=DATA.pages[state.page], meta=page.image;
- document.getElementById('summary').textContent=`${{DATA.run.pages}} strony · ${{DATA.run.consensus.accepted_objects}} accepted · ${{DATA.run.consensus.review_objects}} review`;
- document.getElementById('pages').innerHTML=DATA.pages.map((p,i)=>`<button class="page-button ${{i===state.page?'active':''}}" data-page="${{i}}">${{esc(p.page_id)}}</button>`).join('');
+ const done=reviewItems.filter(complete).length;
+ document.getElementById('summary').textContent=`${{DATA.run.pages}} strony · ${{DATA.run.consensus.accepted_objects}} accepted · ${{done}}/${{reviewItems.length}} reviewed`;
+ const reviewer=document.getElementById('reviewer'); reviewer.value=state.reviewer;
+ reviewer.onchange=()=>{{state.reviewer=reviewer.value.trim();save();render()}};
+ const exportButton=document.getElementById('export'); exportButton.disabled=done!==reviewItems.length||!state.reviewer||!DATA.ontology_sha256; exportButton.onclick=exportDecisions;
+ document.getElementById('pages').innerHTML=DATA.pages.map((p,i)=>{{const pending=p.review.filter(item=>!complete(item)).length;return `<button class="page-button ${{i===state.page?'active':''}}" data-page="${{i}}">${{esc(p.page_id)}}${{pending?` <span class="pending">(${{pending}})</span>`:''}}</button>`}}).join('');
  document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{{state.page=Number(b.dataset.page);render()}});
  const layers=allLayers(page);
  document.getElementById('layers').innerHTML=layers.map(([name,boxes])=>`<label class="layer"><input type="checkbox" data-layer="${{name}}" ${{state.visible.has(name)?'checked':''}}><span class="swatch" style="background:${{DATA.layers[name]}}"></span><span>${{esc(name)}}</span><span class="count">${{boxes.length}}</span></label>`).join('');
@@ -186,12 +213,17 @@ function renderCanvas(){{
   boxes.forEach((b,i)=>{{const [x1,y1,x2,y2]=b.bbox, label=`${{layer}} · ${{b.label}}`;
    shapes+=`<g><rect class="bbox" x="${{x1}}" y="${{y1}}" width="${{x2-x1}}" height="${{y2-y1}}" stroke="${{color}}"/><text class="bbox-label" x="${{x1+5}}" y="${{Math.max(28,y1+28)}}" fill="${{color}}">${{esc(label)}}</text></g>`;
    const note=b.reasons?.length?b.reasons.join(', '):(b.teachers?.join(', ')||'');
-   rows+=`<tr><td style="color:${{color}};font-weight:700">${{esc(layer)}}</td><td>${{esc(b.label)}}</td><td>${{b.score==null?'—':Number(b.score).toFixed(3)}}</td><td>${{esc(note)}}</td><td><code>${{b.bbox.map(v=>Math.round(v)).join(', ')}}</code></td></tr>`;
+   let control=''; if(layer==='review'){{const d=state.decisions[b.id]||{{action:'',label:'',note:''}};const labels=DATA.categories.map(name=>`<option value="${{esc(name)}}" ${{d.label===name?'selected':''}}>${{esc(name)}}</option>`).join('');control=`<div class="decision"><select data-action="${{esc(b.id)}}"><option value="">Pending</option>${{['accept','reject','relabel'].map(action=>`<option value="${{action}}" ${{d.action===action?'selected':''}}>${{action}}</option>`).join('')}}</select><select data-label="${{esc(b.id)}}" ${{d.action==='relabel'?'':'disabled'}}><option value="">Label</option>${{labels}}</select><input data-note="${{esc(b.id)}}" maxlength="2000" placeholder="Note" value="${{esc(d.note||'')}}"></div>`}}
+   rows+=`<tr><td style="color:${{color}};font-weight:700">${{esc(layer)}}</td><td>${{esc(b.label)}}</td><td>${{b.score==null?'—':Number(b.score).toFixed(3)}}</td><td>${{esc(note)}}</td><td><code>${{b.bbox.map(v=>Math.round(v)).join(', ')}}</code></td><td>${{control}}</td></tr>`;
   }});
  }}
  document.getElementById('viewer').innerHTML=`<svg viewBox="0 0 ${{meta.width}} ${{meta.height}}" aria-label="${{esc(page.page_id)}}"><image href="${{page.image_src}}" width="${{meta.width}}" height="${{meta.height}}"/>${{shapes}}</svg>`;
  document.getElementById('rows').innerHTML=rows;
+ document.querySelectorAll('[data-action]').forEach(input=>input.onchange=()=>{{const id=input.dataset.action, current=state.decisions[id]||{{note:''}};if(!input.value)delete state.decisions[id];else{{current.action=input.value;if(input.value!=='relabel')delete current.label;state.decisions[id]=current}}save();render()}});
+ document.querySelectorAll('[data-label]').forEach(input=>input.onchange=()=>{{const current=state.decisions[input.dataset.label];if(current){{current.label=input.value;save();render()}}}});
+ document.querySelectorAll('[data-note]').forEach(input=>input.onchange=()=>{{const id=input.dataset.note, current=state.decisions[id]||{{action:''}};current.note=input.value;state.decisions[id]=current;save();render()}});
 }}
+function exportDecisions(){{const decisions=reviewItems.map(item=>{{const value=state.decisions[item.id], result={{review_id:item.id,action:value.action,note:value.note||''}};if(value.action==='relabel')result.label=value.label;return result}});const packet={{schema:'slayer-layout-review-patch-v1',source_evidence_sha256:DATA.archive_sha256,ontology_sha256:DATA.ontology_sha256,reviewer:state.reviewer,timestamp:new Date().toISOString(),decisions}};const blob=new Blob([JSON.stringify(packet,null,2)+'\\n'],{{type:'application/json'}}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='slayer-layout-review-decisions.json';link.click();URL.revokeObjectURL(url)}}
 render();</script>
 </body></html>'''
 
@@ -201,8 +233,9 @@ def main() -> None:
     parser.add_argument("--evidence", required=True)
     parser.add_argument("--images", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--ontology")
     args = parser.parse_args()
-    print(build_review(args.evidence, args.images, args.output))
+    print(build_review(args.evidence, args.images, args.output, args.ontology))
 
 
 if __name__ == "__main__":

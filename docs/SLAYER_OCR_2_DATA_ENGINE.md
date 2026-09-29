@@ -72,19 +72,34 @@ python -m training.build_layout_consensus \
   --output private/layout-consensus-v1
 ```
 
-Wyjście jest kandydatem weak-label, nie ground truth. Prywatny panel bboxów można
-zbudować z ZIP-a konsensusu i lokalnych obrazów poleceniem:
+Wyjście jest kandydatem weak-label, nie ground truth. Zamrożony zestaw obrazów
+do prywatnego panelu można odtworzyć z manifestu teachera. Narzędzie pobiera
+wyłącznie przypiętą rewizję datasetu, sprawdza SHA-256 każdej strony i zapisuje
+manifest oraz sumy kontrolne:
+
+```bash
+python -m training.materialize_layout_review_images \
+  --selection private/teacher-selection.json \
+  --config experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json \
+  --output private/layout-review-images
+```
+
+Interaktywny panel bboxów można następnie zbudować z ZIP-a konsensusu,
+zweryfikowanych obrazów i zamrożonej ontologii:
 
 ```bash
 python -m training.build_layout_consensus_review \
   --evidence private/slayer-layout-consensus-evidence.zip \
-  --images private/images \
+  --images private/layout-review-images \
+  --ontology experiments/2026-09-28/slayer-layout-ontology-v2.json \
   --output private/layout-review/index.html
 ```
 
 Generator weryfikuje sumy kontrolne ZIP-a i obrazów, nie osadza obrazów ani
-referencji w HTML i nie nadpisuje istniejącego wyniku. Review oraz
-`training.adjudicate_reviews` pozostają końcową bramką transkrypcji.
+referencji w HTML i nie nadpisuje istniejącego wyniku. Decyzje
+`accept`/`reject`/`relabel` są zapisywane lokalnie w przeglądarce. Eksport JSON
+jest dostępny dopiero po rozstrzygnięciu całej kolejki i podaniu recenzenta;
+pakiet zawiera hashe źródłowego ZIP-a i ontologii.
 
 Layout ma osobną, zamkniętą bramkę adjudykacji. Pakiet decyzji musi wskazywać
 hash konkretnego ZIP-a konsensusu i ontologii, zawierać dokładnie jedną decyzję
