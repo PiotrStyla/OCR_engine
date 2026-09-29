@@ -17,7 +17,7 @@ def test_audit_notebook_is_pinned_private_and_downloadable():
     assert notebook["nbformat"] == 4
     assert notebook["metadata"]["accelerator"] == "GPU"
     assert 'rfdetr[train]==1.11.0' in source
-    assert "9cc606208c6789e799ed42a227f8de037e7caa64" in source
+    assert "4e49211f1bafd35b0f05ade8f8d94888363b351c" in source
     assert "f0a157c79756276e9a82e4f8010521190bf72dc8b459c81c3806e840681a0c33" in source
     assert "68578a6e008788fd41b6b9f64d31b3a9def82f25c615ead8fc97da5a9962fb0b" in source
     assert "ce5e68096866ab903d7722a75da1b0b5cf44215d597da49c7a8137859773fbde" in source
