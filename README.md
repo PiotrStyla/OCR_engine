@@ -58,6 +58,11 @@ ani potwierdzonym silnikiem SOTA.**
   `figure` (`EMA AP = 0,8238`); `table` i `marginalia` pozostają słabe, a trzy klasy
   nie mają przykładów validation. Checkpoint przechodzi bramkę techniczną, ale
   jeszcze nie jakościową. [Pełny raport](docs/SLAYER_RFDETR_LAYOUT_V1_RESULT_20260929.md).
+- **Audyt najlepszego checkpointu:** [otwórz prywatny audyt RF-DETR w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_rfdetr_layout_audit_v1.ipynb),
+  wybierz GPU i uruchom wszystko. Notebook prosi osobno o ZIP danych, modelu i
+  dowodów treningowych, sprawdza ich pełne hashe, ponownie mierzy zapisany
+  checkpoint na 12 stronach oraz pobiera jeden prywatny ZIP z predykcjami,
+  porównaniami GT/model i kolejką hard examples. Niczego nie publikuje.
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

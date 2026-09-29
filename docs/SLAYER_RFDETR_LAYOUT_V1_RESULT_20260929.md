@@ -64,6 +64,9 @@ improvement over the existing OCR pipeline, final-test quality or SOTA.
 The quality gate stays open because the development sample is small, three
 classes have no validation support, and `table` and `marginalia` remain weak.
 The next experiment is a private visual audit of the best checkpoint on all 12
-development pages. It will preserve raw predictions, render GT/prediction
-comparisons, and mine fixed-threshold false positives and false negatives.
-Retraining or full-page OCR A/B follows only after that review.
+development pages. The pinned Colab notebook is
+`training/colab_slayer_rfdetr_layout_audit_v1.ipynb`. It verifies all three
+input archive hashes, re-evaluates the saved checkpoint, preserves raw
+predictions, renders GT/prediction comparisons, and mines fixed-threshold false
+positives and false negatives. Retraining or full-page OCR A/B follows only
+after that review.
