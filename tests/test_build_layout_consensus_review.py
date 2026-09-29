@@ -150,6 +150,8 @@ def test_interactive_review_is_bound_to_archive_and_ontology(tmp_path):
     assert "JSON.stringify(packet,null,2)+'\\n'" in html
     assert "localStorage" in html
     assert "Export JSON" in html
+    assert "pageConflicts" in html
+    assert "geometry conflict" in html
 
 
 def test_rejects_ontology_with_different_categories(tmp_path):

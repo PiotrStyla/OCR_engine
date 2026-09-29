@@ -98,7 +98,9 @@ python -m training.build_layout_consensus_review \
 Generator weryfikuje sumy kontrolne ZIP-a i obrazów, nie osadza obrazów ani
 referencji w HTML i nie nadpisuje istniejącego wyniku. Decyzje
 `accept`/`reject`/`relabel` są zapisywane lokalnie w przeglądarce. Eksport JSON
-jest dostępny dopiero po rozstrzygnięciu całej kolejki i podaniu recenzenta;
+jest dostępny dopiero po rozstrzygnięciu całej kolejki, podaniu recenzenta oraz
+usunięciu wszystkich konfliktów etykiet i granulacji. Panel wskazuje liczbę
+konfliktów na każdej stronie i stosuje tę samą politykę geometrii co adjudykator;
 pakiet zawiera hashe źródłowego ZIP-a i ontologii.
 
 Layout ma osobną, zamkniętą bramkę adjudykacji. Pakiet decyzji musi wskazywać

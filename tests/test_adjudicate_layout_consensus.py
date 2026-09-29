@@ -4,7 +4,11 @@ import json
 import pytest
 
 from tests.test_build_layout_consensus_review import _evidence
-from training.adjudicate_layout_consensus import adjudicate, file_digest
+from training.adjudicate_layout_consensus import (
+    adjudicate,
+    file_digest,
+    geometry_conflicts,
+)
 
 
 def _ontology(tmp_path):
@@ -100,3 +104,18 @@ def test_tampered_ontology_is_rejected(tmp_path):
     ontology.write_text(ontology.read_text() + " ")
     with pytest.raises(ValueError, match="identity mismatch"):
         adjudicate(archive, packet, ontology, tmp_path / "candidate")
+
+
+def test_geometry_conflicts_are_reported_together():
+    pages = [{"page_id": "p1", "objects": [
+        {"id": "a", "label": "text_region", "bbox_xyxy": [0, 0, 100, 100]},
+        {"id": "b", "label": "text_region", "bbox_xyxy": [10, 10, 30, 30]},
+        {"id": "c", "label": "figure", "bbox_xyxy": [0, 0, 100, 100]},
+    ]}]
+    conflicts = geometry_conflicts(pages, {
+        "conflict_iou": 0.5, "granularity_ratio": 2.0,
+        "containment_threshold": 0.9,
+    })
+    assert {item["reason"] for item in conflicts} == {
+        "granularity-conflict", "label-conflict"}
+    assert all(item["page_id"] == "p1" for item in conflicts)

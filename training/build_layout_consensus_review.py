@@ -82,6 +82,7 @@ def build_review(archive_path: str | Path, image_dir: str | Path,
         raise FileExistsError(output_path)
     files, archive_hash = load_evidence(archive_path)
     run = json.loads(files["run.json"])
+    policy = json.loads(files["consensus-policy.json"])
     ontology_hash = None
     if ontology_path is not None:
         ontology_bytes = Path(ontology_path).read_bytes()
@@ -123,6 +124,7 @@ def build_review(archive_path: str | Path, image_dir: str | Path,
         "archive_sha256": archive_hash,
         "ontology_sha256": ontology_hash,
         "categories": run["consensus"]["categories"],
+        "policy": policy,
         "run": run,
         "pages": pages,
         "layers": LAYERS,
@@ -170,6 +172,7 @@ th {{ position: sticky; top: 0; background: #f7f8fa; color: #4a566c; }}
 .decision {{ display: grid; grid-template-columns: 105px 125px minmax(130px, 1fr); gap: 6px; min-width: 390px; }}
 .decision select, .decision input {{ min-width: 0; height: 30px; border: 1px solid #c7ced9; background: white; padding: 0 6px; }}
 .pending {{ color: #a43b33; font-weight: 700; }}
+.conflict {{ color: #a43b33; font-weight: 800; }}
 code {{ font-family: Consolas, monospace; }}
 @media (max-width: 780px) {{ .layout {{ grid-template-columns: 1fr; }} aside {{ border-right: 0; border-bottom: 1px solid #d5dae3; }} main {{ grid-template-rows: minmax(360px, 70vh) 220px; }} }}
 </style>
@@ -191,15 +194,22 @@ function allLayers(page){{return [
 ]}}
 const reviewItems=DATA.pages.flatMap(page=>page.review);
 function complete(item){{const d=state.decisions[item.id];return !!d&&['accept','reject','relabel'].includes(d.action)&&(d.action!=='relabel'||(DATA.categories.includes(d.label)&&d.label!==item.label))}}
+function area(box){{return (box[2]-box[0])*(box[3]-box[1])}}
+function overlap(left,right){{const x1=Math.max(left[0],right[0]),y1=Math.max(left[1],right[1]),x2=Math.min(left[2],right[2]),y2=Math.min(left[3],right[3]);return Math.max(0,x2-x1)*Math.max(0,y2-y1)}}
+function iou(left,right){{const intersection=overlap(left,right);return intersection/(area(left)+area(right)-intersection||1)}}
+function containment(left,right){{return overlap(left,right)/Math.min(area(left),area(right))}}
+function currentObjects(page){{const reviewed=page.review.filter(complete).filter(item=>state.decisions[item.id].action!=='reject').map(item=>({{...item,label:state.decisions[item.id].action==='relabel'?state.decisions[item.id].label:item.label}}));return [...page.accepted,...reviewed]}}
+function pageConflicts(page){{const objects=currentObjects(page),result=[];for(let i=0;i<objects.length;i++)for(let j=i+1;j<objects.length;j++){{const left=objects[i],right=objects[j];if(left.label!==right.label&&iou(left.bbox,right.bbox)>=DATA.policy.conflict_iou)result.push({{reason:'label-conflict',left:left.id,right:right.id}});if(left.label===right.label){{const ratio=Math.max(area(left.bbox),area(right.bbox))/Math.min(area(left.bbox),area(right.bbox));if(ratio>=DATA.policy.granularity_ratio&&containment(left.bbox,right.bbox)>=DATA.policy.containment_threshold)result.push({{reason:'granularity-conflict',left:left.id,right:right.id}})}}}}return result}}
 function save(){{localStorage.setItem(storageKey,JSON.stringify({{reviewer:state.reviewer,decisions:state.decisions}}))}}
 function render(){{
  const page=DATA.pages[state.page], meta=page.image;
  const done=reviewItems.filter(complete).length;
- document.getElementById('summary').textContent=`${{DATA.run.pages}} strony · ${{DATA.run.consensus.accepted_objects}} accepted · ${{done}}/${{reviewItems.length}} reviewed`;
+ const conflicts=DATA.pages.flatMap(page=>pageConflicts(page));
+ document.getElementById('summary').textContent=`${{DATA.run.pages}} strony · ${{DATA.run.consensus.accepted_objects}} accepted · ${{done}}/${{reviewItems.length}} reviewed · ${{conflicts.length}} conflicts`;
  const reviewer=document.getElementById('reviewer'); reviewer.value=state.reviewer;
  reviewer.onchange=()=>{{state.reviewer=reviewer.value.trim();save();render()}};
- const exportButton=document.getElementById('export'); exportButton.disabled=done!==reviewItems.length||!state.reviewer||!DATA.ontology_sha256; exportButton.onclick=exportDecisions;
- document.getElementById('pages').innerHTML=DATA.pages.map((p,i)=>{{const pending=p.review.filter(item=>!complete(item)).length;return `<button class="page-button ${{i===state.page?'active':''}}" data-page="${{i}}">${{esc(p.page_id)}}${{pending?` <span class="pending">(${{pending}})</span>`:''}}</button>`}}).join('');
+ const exportButton=document.getElementById('export'); exportButton.disabled=done!==reviewItems.length||conflicts.length>0||!state.reviewer||!DATA.ontology_sha256; exportButton.onclick=exportDecisions;
+ document.getElementById('pages').innerHTML=DATA.pages.map((p,i)=>{{const pending=p.review.filter(item=>!complete(item)).length,conflictCount=pageConflicts(p).length;return `<button class="page-button ${{i===state.page?'active':''}}" data-page="${{i}}">${{esc(p.page_id)}}${{pending?` <span class="pending">(${{pending}} pending)</span>`:''}}${{conflictCount?` <span class="conflict">(${{conflictCount}} conflicts)</span>`:''}}</button>`}}).join('');
  document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{{state.page=Number(b.dataset.page);render()}});
  const layers=allLayers(page);
  document.getElementById('layers').innerHTML=layers.map(([name,boxes])=>`<label class="layer"><input type="checkbox" data-layer="${{name}}" ${{state.visible.has(name)?'checked':''}}><span class="swatch" style="background:${{DATA.layers[name]}}"></span><span>${{esc(name)}}</span><span class="count">${{boxes.length}}</span></label>`).join('');
@@ -208,12 +218,13 @@ function render(){{
 }}
 function renderCanvas(){{
  const page=DATA.pages[state.page], meta=page.image;
+ const conflictIds=new Set(pageConflicts(page).flatMap(item=>[item.left,item.right]));
  let shapes='', rows='';
  for(const [layer,boxes] of allLayers(page)){{if(!state.visible.has(layer))continue; const color=DATA.layers[layer];
   boxes.forEach((b,i)=>{{const [x1,y1,x2,y2]=b.bbox, label=`${{layer}} · ${{b.label}}`;
    shapes+=`<g><rect class="bbox" x="${{x1}}" y="${{y1}}" width="${{x2-x1}}" height="${{y2-y1}}" stroke="${{color}}"/><text class="bbox-label" x="${{x1+5}}" y="${{Math.max(28,y1+28)}}" fill="${{color}}">${{esc(label)}}</text></g>`;
    const note=b.reasons?.length?b.reasons.join(', '):(b.teachers?.join(', ')||'');
-   let control=''; if(layer==='review'){{const d=state.decisions[b.id]||{{action:'',label:'',note:''}};const labels=DATA.categories.map(name=>`<option value="${{esc(name)}}" ${{d.label===name?'selected':''}}>${{esc(name)}}</option>`).join('');control=`<div class="decision"><select data-action="${{esc(b.id)}}"><option value="">Pending</option>${{['accept','reject','relabel'].map(action=>`<option value="${{action}}" ${{d.action===action?'selected':''}}>${{action}}</option>`).join('')}}</select><select data-label="${{esc(b.id)}}" ${{d.action==='relabel'?'':'disabled'}}><option value="">Label</option>${{labels}}</select><input data-note="${{esc(b.id)}}" maxlength="2000" placeholder="Note" value="${{esc(d.note||'')}}"></div>`}}
+   let control=''; if(layer==='review'){{const d=state.decisions[b.id]||{{action:'',label:'',note:''}};const labels=DATA.categories.map(name=>`<option value="${{esc(name)}}" ${{d.label===name?'selected':''}}>${{esc(name)}}</option>`).join('');control=`<div class="decision"><select data-action="${{esc(b.id)}}"><option value="">Pending</option>${{['accept','reject','relabel'].map(action=>`<option value="${{action}}" ${{d.action===action?'selected':''}}>${{action}}</option>`).join('')}}</select><select data-label="${{esc(b.id)}}" ${{d.action==='relabel'?'':'disabled'}}><option value="">Label</option>${{labels}}</select><input data-note="${{esc(b.id)}}" maxlength="2000" placeholder="Note" value="${{esc(d.note||'')}}"></div>${{conflictIds.has(b.id)?'<div class="conflict">geometry conflict</div>':''}}`}}
    rows+=`<tr><td style="color:${{color}};font-weight:700">${{esc(layer)}}</td><td>${{esc(b.label)}}</td><td>${{b.score==null?'—':Number(b.score).toFixed(3)}}</td><td>${{esc(note)}}</td><td><code>${{b.bbox.map(v=>Math.round(v)).join(', ')}}</code></td><td>${{control}}</td></tr>`;
   }});
  }}

@@ -91,14 +91,19 @@ def _area(box):
     return (box[2] - box[0]) * (box[3] - box[1])
 
 
-def _validate_clean_geometry(pages, policy):
+def geometry_conflicts(pages, policy):
+    conflicts = []
     for page in pages:
         objects = page["objects"]
         for left_index, left in enumerate(objects):
             for right in objects[left_index + 1:]:
                 if (left["label"] != right["label"] and
                         iou(left["bbox_xyxy"], right["bbox_xyxy"]) >= policy["conflict_iou"]):
-                    raise ValueError(f"Unresolved label conflict: {left['id']} / {right['id']}")
+                    conflicts.append({
+                        "page_id": page["page_id"], "reason": "label-conflict",
+                        "left_id": left["id"], "left_label": left["label"],
+                        "right_id": right["id"], "right_label": right["label"],
+                    })
                 if left["label"] != right["label"]:
                     continue
                 left_area, right_area = _area(left["bbox_xyxy"]), _area(right["bbox_xyxy"])
@@ -106,7 +111,20 @@ def _validate_clean_geometry(pages, policy):
                 if (ratio >= policy.get("granularity_ratio", math.inf) and
                         containment(left["bbox_xyxy"], right["bbox_xyxy"]) >=
                         policy.get("containment_threshold", 1.0)):
-                    raise ValueError(f"Unresolved granularity conflict: {left['id']} / {right['id']}")
+                    conflicts.append({
+                        "page_id": page["page_id"], "reason": "granularity-conflict",
+                        "left_id": left["id"], "left_label": left["label"],
+                        "right_id": right["id"], "right_label": right["label"],
+                    })
+    return conflicts
+
+
+def _validate_clean_geometry(pages, policy):
+    conflicts = geometry_conflicts(pages, policy)
+    if conflicts:
+        raise ValueError(
+            f"Unresolved geometry conflicts ({len(conflicts)}): "
+            + json.dumps(conflicts, ensure_ascii=False))
 
 
 def adjudicate(evidence_path: str | Path, decisions_path: str | Path,
