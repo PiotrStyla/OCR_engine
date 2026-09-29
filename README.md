@@ -6,7 +6,7 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 28 września 2026
+## Aktualny stan: 29 września 2026
 
 ### SLAYER-OCR 2.0: DATA ENGINE v2
 
@@ -31,10 +31,15 @@ ani potwierdzonym silnikiem SOTA.**
   zachowuje quorum dwóch niezależnych modeli i kieruje każdą taką stronę do
   hard-example mining. Dwustronicowy smoke ujawnił konflikty klas i poziomu
   szczegółowości.
+  Pełny przebieg 60 stron zakończył się technicznie poprawnie: 161 obiektów
+  przyjęto, 371 skierowano do review, a 58/60 stron oznaczono jako hard examples.
+  Wynik pozostaje prywatnym kandydatem i wymaga pełnej adjudykacji przed
+  treningiem RF-DETR. [Raport pełnego przebiegu](docs/SLAYER_LAYOUT_CONSENSUS_FULL_RESULT_20260929.md).
   [Wynik smoke i decyzja](docs/SLAYER_LAYOUT_CONSENSUS_SMOKE_RESULT_20260928.md).
-- Polityka konsensusu v2 wykrywa konflikty skali bez mnożenia głosu jednego
-  teachera. Zamrożono też definicje klas layoutu; następną bramką jest
-  wersjonowana adjudykacja 7 elementów kolejki. Walidator
+- Polityka konsensusu v3 wykrywa konflikty skali bez mnożenia głosu jednego
+  teachera i jawnie rejestruje ograniczone abstencje. Zamrożono też definicje
+  klas layoutu; następną bramką jest wersjonowana adjudykacja 371 elementów
+  pełnej kolejki. Walidator
   `training.adjudicate_layout_consensus` odrzuca niepełne decyzje i eksportuje
   prywatny kandydat JSONL/COCO bez skanów.
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
@@ -44,15 +49,16 @@ ani potwierdzonym silnikiem SOTA.**
   [DocLayout-YOLO](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_doclayout_yolo_full_v1.ipynb),
   [Surya Layout](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_layout_surya_full_v1.ipynb).
   Notebook Qwen v3 ponawia odpowiedź o złym JSON-ie, zachowuje surowe odpowiedzi
-  przy błędzie i odrzuca wadliwe ramki bez utraty całej strony. Konsensus odrzuca
-  każdy niekompletny run. Przed pobraniem notebook sprawdza kompletność i commit,
-  a wynik nazywa `qwen3-vl-4b-evidence-v3.zip`. Notebooki są zablokowane na właściwym teacherze i
-  `PAGES = 60`; ZIP zapisuje przypięty commit kodu i nie zawiera skanów ani
-  tekstu referencyjnego.
+  przy błędzie i odrzuca wadliwe ramki bez utraty całej strony. Domyślnie
+  konsensus odrzuca niekompletny run; zamrożona polityka v3 dopuszcza wyłącznie
+  cztery udokumentowane abstencje bez detekcji. Przed pobraniem notebook sprawdza
+  commit, a wynik nazywa `qwen3-vl-4b-evidence-v3.zip`. Notebooki są zablokowane
+  na właściwym teacherze i `PAGES = 60`; ZIP zapisuje przypięty commit kodu i nie
+  zawiera skanów ani tekstu referencyjnego.
 - Zamrożona konfiguracja pilota znajduje się w
   [`experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json`](experiments/2026-09-28/slayer-layout-teacher-pilot-v1/config.json).
-  Wykonano wyłącznie dwustronicowy smoke trzech teacherów. Obrazy, predykcje i
-  wynik konsensusu pozostają prywatne do czasu osobnej decyzji publikacyjnej oraz
+  Wykonano smoke oraz pełny prywatny przebieg 60 stron. Obrazy, predykcje i wynik
+  konsensusu pozostają prywatne do czasu osobnej decyzji publikacyjnej oraz
   przeglądu licencji.
 
 ### Eksperymentalny model SLAYER Vision ONNX
