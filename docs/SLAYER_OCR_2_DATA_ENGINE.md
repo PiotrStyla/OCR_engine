@@ -1,7 +1,7 @@
 # SLAYER-OCR 2.0: DATA ENGINE v2
 
-Status: architektura, przypięty pilot trzech teacherów, moduł konsensusu i
-zweryfikowany technicznie smoke na dwóch stronach. Nie wykonano treningu RF-DETR.
+Status: pełny pilot teacherów, konsensus, adjudykacja 371 obiektów i prywatny
+pakiet RF-DETR 48/12 są ukończone. Nie wykonano jeszcze treningu RF-DETR.
 
 ## Decyzja
 
@@ -208,10 +208,10 @@ następnej wersji danych z pełnym pochodzeniem.
 
 ## Najbliższy eksperyment
 
-Dwustronicowy smoke został wykonany i przeliczony polityką v2. Zamrożono definicje
-klas oraz dodano jawny powód `granularity-conflict`; większościowe boksy pozostały
-stabilne. Następny krok to wersjonowana adjudykacja siedmiu pozycji review i
-eksport pierwszego clean datasetu. Dopiero po sprawdzeniu tego eksportu wykonamy
-trzy pełne przebiegi po 60 stron, zmierzymy zgodność klas, rozkład IoU, odsetek
-abstencji i czas review, a następnie przygotujemy dane do pierwszego treningu
-RF-DETR.
+Pełne runy trzech teacherów, konsensus 60 stron i adjudykacja 371 obiektów są
+zamknięte. Clean candidate zawiera 304 obiekty, a prywatny pakiet RF-DETR dzieli
+dane na 48 stron train i 12 stron development bez wspólnych kolekcji ani hashy
+obrazów. Następny krok to przypięty pilot `RFDETRSmall` na tym pakiecie, zapis
+checkpointu i metryk per klasa, a następnie pełnostronicowe OCR A/B na
+rozłącznych dokumentach. `valid` jest zbiorem deweloperskim; końcowy test
+PolOCRBench pozostaje zamknięty.

@@ -33,15 +33,20 @@ ani potwierdzonym silnikiem SOTA.**
   szczegółowości.
   Pełny przebieg 60 stron zakończył się technicznie poprawnie: 161 obiektów
   przyjęto, 371 skierowano do review, a 58/60 stron oznaczono jako hard examples.
-  Wynik pozostaje prywatnym kandydatem i wymaga pełnej adjudykacji przed
-  treningiem RF-DETR. [Raport pełnego przebiegu](docs/SLAYER_LAYOUT_CONSENSUS_FULL_RESULT_20260929.md).
+  Pełna adjudykacja została zakończona: 143 obiekty review przyjęto (w tym 5
+  relabeli), 228 odrzucono, a clean candidate zawiera 304 obiekty na 60
+  stronach. Prywatny eksporter RF-DETR tworzy zweryfikowany split 48/12 bez
+  wspólnych kolekcji i dokładnych hashy obrazów. Dane i skany nadal nie są
+  publikowane. [Raport pełnego przebiegu](docs/SLAYER_LAYOUT_CONSENSUS_FULL_RESULT_20260929.md).
   [Wynik smoke i decyzja](docs/SLAYER_LAYOUT_CONSENSUS_SMOKE_RESULT_20260928.md).
 - Polityka konsensusu v3 wykrywa konflikty skali bez mnożenia głosu jednego
   teachera i jawnie rejestruje ograniczone abstencje. Zamrożono też definicje
-  klas layoutu; następną bramką jest wersjonowana adjudykacja 371 elementów
-  pełnej kolejki. Walidator
+  klas layoutu. Walidator
   `training.adjudicate_layout_consensus` odrzuca niepełne decyzje i eksportuje
-  prywatny kandydat JSONL/COCO bez skanów.
+  prywatny kandydat JSONL/COCO bez skanów. Następnie
+  `training.build_layout_rfdetr_dataset` sprawdza candidate i obrazy po SHA-256,
+  buduje rozłączny kolekcyjnie format `train/valid` zgodny z RF-DETR oraz zapisuje
+  manifest, provenance i sumy kontrolne.
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

@@ -2,7 +2,7 @@
 
 Date: 2026-09-29
 
-Status: **private candidate, not reviewed, not published as data**
+Status: **reviewed private training candidate, not published as data**
 
 ## Inputs
 
@@ -53,3 +53,23 @@ Next gate:
 
 This result demonstrates a reproducible weak-supervision pipeline. It is not
 human ground truth, OCR accuracy evidence or a SOTA claim.
+
+## Adjudication and RF-DETR package update
+
+The complete 371-item queue was reviewed by one named reviewer. The sealed
+adjudication retained 143 review objects, including five relabels, rejected 228,
+and combined them with 161 consensus objects. The resulting private candidate
+contains 304 objects on all 60 pages and passes the frozen geometry-conflict
+gate.
+
+`training.build_layout_rfdetr_dataset` materializes the verified scans into the
+RF-DETR COCO directory contract. The deterministic, collection-disjoint split
+contains 48 train pages from 18 collections and 12 internal-development pages
+from four collections. Exact image SHA-256 overlap and collection overlap are
+both zero. The package remains private and the internal `valid` split is not the
+final PolOCRBench test.
+
+Rare classes remain a material limitation: `header` has one object and `footer`
+has two, all in train; `table` has only three objects in total. Results for these
+classes cannot support reliable conclusions. The next gate is a pinned RF-DETR
+pilot followed by full-page OCR A/B, not a SOTA claim.
