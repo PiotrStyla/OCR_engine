@@ -215,3 +215,9 @@ obrazów. Następny krok to przypięty pilot `RFDETRSmall` na tym pakiecie, zapi
 checkpointu i metryk per klasa, a następnie pełnostronicowe OCR A/B na
 rozłącznych dokumentach. `valid` jest zbiorem deweloperskim; końcowy test
 PolOCRBench pozostaje zamknięty.
+
+Notebook pilota: `training/colab_slayer_rfdetr_layout_v1.ipynb`. Oczekuje
+jednego prywatnego ZIP-a o przypiętym SHA-256, waliduje cały manifest przed
+treningiem i używa `RFDETRSmall` z RF-DETR 1.11.0. Dla T4 ustawiono batch 4,
+cztery kroki akumulacji gradientu, rozdzielczość 512 i early stopping. Zwracane
+są osobne archiwa modelu i dowodów; skany nie trafiają do publicznego repo.

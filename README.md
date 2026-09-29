@@ -47,6 +47,11 @@ ani potwierdzonym silnikiem SOTA.**
   `training.build_layout_rfdetr_dataset` sprawdza candidate i obrazy po SHA-256,
   buduje rozłączny kolekcyjnie format `train/valid` zgodny z RF-DETR oraz zapisuje
   manifest, provenance i sumy kontrolne.
+- **Następny run:** [otwórz przypięty trening RF-DETR Small w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_rfdetr_layout_v1.ipynb),
+  wybierz GPU, uruchom wszystko i wgraj prywatny ZIP przygotowany przez
+  eksporter. Notebook sprawdza hash całego ZIP-a i wszystkich plików, nie
+  publikuje danych, zapisuje metryki per klasa oraz zwraca osobno ZIP dowodowy i
+  ZIP modelu. Wynik jest pilotem deweloperskim, nie pomiarem końcowym.
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.
