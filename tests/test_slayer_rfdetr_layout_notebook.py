@@ -14,6 +14,9 @@ def test_rfdetr_notebook_is_pinned_private_and_downloadable():
     assert "b6570a7829fc96651c7a41db8cae35e59c888460" in source
     assert "f0a157c79756276e9a82e4f8010521190bf72dc8b459c81c3806e840681a0c33" in source
     assert "RFDETRSmall" in source
+    assert "from rfdetr.config import TrainConfig" in source
+    assert "set(RUN_CONFIG) - set(TrainConfig.model_fields)" in source
+    assert "'model': 'RFDETRSmall'" not in source
     assert "batch_size': 4" in source
     assert "grad_accum_steps': 4" in source
     assert "resolution': 512" in source
