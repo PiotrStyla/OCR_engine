@@ -6,7 +6,7 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 29 września 2026
+## Aktualny stan: 30 września 2026
 
 ### SLAYER-OCR 2.0: DATA ENGINE v2
 
@@ -68,6 +68,12 @@ ani potwierdzonym silnikiem SOTA.**
   Nakładki ujawniły także niespójną granulację ramek i prawdopodobne braki GT,
   dlatego kolejną bramką jest ponowna adjudykacja 12 stron, a nie retrening na
   tych samych etykietach. [Wynik audytu](docs/SLAYER_RFDETR_LAYOUT_AUDIT_V1_RESULT_20260929.md).
+- **Prywatna adjudykacja GT:** `python -m training.build_rfdetr_layout_adjudication
+  --dataset-archive <private-dataset.zip> --audit-archive <private-audit.zip>
+  --output-dir <private-review-dir>` buduje offline editor 12 stron z warstwami
+  oryginalnego GT i predykcji RF-DETR, edycją ramek, statusem strony oraz
+  eksportem decyzji JSON. Obrazy, predykcje i decyzje pozostają lokalne; repo
+  zawiera tylko generator i [zamrożoną politykę anotacji](docs/SLAYER_LAYOUT_ANNOTATION_POLICY_V1.md).
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.
