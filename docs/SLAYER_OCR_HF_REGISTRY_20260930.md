@@ -19,9 +19,9 @@ Frozen artifact source commit: `4ce2215d45814d2fd1e9749c394b95fde6a240af`
 
 | Artifact class | Repository | HF revision | Manifest SHA-256 | Manifest files | Bytes |
 | --- | --- | --- | --- | ---: | ---: |
-| Models | `PiotrSty/slayer-ocr-private-models` | `c425d7ccf44a4adfb8113c5584ffbf940437a173` | `4e088256a4cbfb74de084227c3bd64a420962b73b0305bf1ac0d4b4787fce9eb` | 23 | 1,586,825,086 |
-| Datasets | `PiotrSty/slayer-ocr-private-datasets` | `e7c902d5e942780f7491896664eb84d4b38b3398` | `1da737a49ee409812f2e2498d6079257d10eaec55ca9f6cab2254cadbaae2b48` | 2,292 | 1,266,214,923 |
-| Evidence | `PiotrSty/slayer-ocr-experiment-evidence` | `055133d776209b0841a95f638db60eef89ffe1d9` | `5f13f23fe0e72b77f5101255e35c73e8116285b282ca9fc8a9d56d549f66494f` | 1,103 | 1,426,377,679 |
+| Models | `PiotrSty/slayer-ocr-models` | `12132885beb68a579b77ffc5c7c9c5b7497476e1` | `98e8a2863308163e1410db234a565f2a0894b98dc2d0a9e081378bb5306e64c4` | 23 | 1,586,825,060 |
+| Datasets | `PiotrSty/slayer-ocr-datasets` | `09a4978402b0508795a16a8cc0350b5a7ee1e024` | `eb8c6f2661d546b47b6b7cc9644304707935bccadf2653b7c6795ded1c4e4e29` | 2,292 | 1,266,214,905 |
+| Evidence | `PiotrSty/slayer-ocr-experiment-evidence` | `e99e06045824daa577d7d80104663b416420a299` | `0ca2aeb4d62a3653db3381c3131c0be476c37bd49681daa2f9eb9fbc1073d097` | 1,104 | 1,426,381,205 |
 
 Collection: `PiotrSty/slayer-ocr-experiment-registry-6abca642387af872378a7fee`
 
