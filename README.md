@@ -13,6 +13,9 @@ ani potwierdzonym silnikiem SOTA.**
 - Projekt przechodzi na ścieżkę `generator -> teacher ensemble -> consensus ->
   annotation review -> clean dataset -> RF-DETR layout -> recognizer ->
   hard-example mining`. [Architektura, granice twierdzeń i bramki](docs/SLAYER_OCR_2_DATA_ENGINE.md).
+- Dane, checkpointy i dowody eksperymentalne są archiwizowane poza repozytorium
+  kodu w [prywatnej kolekcji SLAYER-OCR na Hugging Face](https://huggingface.co/collections/PiotrSty/slayer-ocr-experiment-registry-6abca642387af872378a7fee).
+  Każda część ma manifest SHA-256 i wskazanie commita źródłowego. [Raport rejestru](docs/SLAYER_OCR_HF_REGISTRY_20260930.md).
 - Dodano deterministyczny, lokalny moduł konsensusu layoutu. Zachowuje pełne
   propozycje teacherów, przyjmuje wyłącznie kworum różnych modeli, kieruje
   konflikty do review i eksportuje zaakceptowane weak labels jako COCO JSON dla
