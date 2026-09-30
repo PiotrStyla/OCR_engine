@@ -86,6 +86,8 @@ ani potwierdzonym silnikiem SOTA.**
   lineage oraz SHA-256. Audytor rozróżnia odtworzenie starego GT od ponownego
   pomiaru tego samego checkpointu na poprawionym GT; stare `mAP=0,3273` nie jest
   wtedy traktowane jako oczekiwany wynik. [Protokół v2](docs/SLAYER_RFDETR_CORRECTED_GT_V2.md).
+  Po zbudowaniu ZIP-a uruchom
+  [notebook ponownego audytu v2 w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_rfdetr_corrected_gt_v2.ipynb).
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

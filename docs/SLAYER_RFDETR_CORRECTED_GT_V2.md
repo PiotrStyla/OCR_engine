@@ -64,6 +64,16 @@ For v2, the measured mAP is intentionally not compared with `0.3273`; changing
 ground truth changes the metric. The checkpoint hash, class order, page split,
 collection separation and all archive checksums remain hard requirements.
 
+Run the pinned GPU notebook:
+
+[Open corrected-GT v2 audit in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_rfdetr_corrected_gt_v2.ipynb)
+
+It accepts the newly generated dataset ZIP, the existing
+`slayer-rfdetr-layout-v1-model.zip` and
+`slayer-rfdetr-layout-v1-evidence.zip`. The latter two remain pinned by their
+known SHA-256 values; the new dataset hash is computed at upload and recorded in
+the resulting audit evidence.
+
 ## Publication
 
 After successful reanalysis, publish the corrected dataset and evidence as new
