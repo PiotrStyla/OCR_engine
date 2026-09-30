@@ -95,11 +95,14 @@ DESKTOP_ARCHIVE_TERMS = (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build private, code-free Hugging Face staging trees."
+        description="Build code-free Hugging Face staging trees."
     )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--desktop", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--visibility", choices=("private", "public"), default="public"
+    )
     return parser.parse_args()
 
 
@@ -224,12 +227,12 @@ def history_rows(repo: Path) -> list[dict]:
     return rows
 
 
-def card(kind: str, head: str, generated_at: str) -> str:
+def card(kind: str, head: str, generated_at: str, visibility: str) -> str:
     if kind == "models":
         frontmatter = "---\nlanguage:\n- pl\nlicense: other\n---"
-        title = "SLAYER-OCR private model registry"
+        title = "SLAYER-OCR model registry"
         body = (
-            "Private model artifacts for reproducible SLAYER-OCR experiments. "
+            "Model artifacts for reproducible SLAYER-OCR experiments. "
             "Every payload is accompanied by hashes and provenance. The public "
             "SLAYER Vision ONNX artifact remains at `PiotrSty/slayer-vision-onnx`."
         )
@@ -237,17 +240,17 @@ def card(kind: str, head: str, generated_at: str) -> str:
         frontmatter = (
             "---\ntask_categories:\n- image-to-text\nlanguage:\n- pl\nlicense: other\n---"
         )
-        title = "SLAYER-OCR private dataset registry"
+        title = "SLAYER-OCR dataset registry"
         body = (
-            "Private scans, annotations, frozen benchmark inputs, development splits, "
-            "review workspaces and clean layout candidates. This archive is not a "
-            "public release and does not grant redistribution rights."
+            "Scans, annotations, frozen benchmark inputs, development splits, "
+            "review workspaces and clean layout candidates. Upstream provenance and "
+            "license limitations remain attached to their source artifacts."
         )
     else:
         frontmatter = "---\nlanguage:\n- pl\nlicense: other\n---"
         title = "SLAYER-OCR experiment evidence registry"
         body = (
-            "Private evidence, metrics, predictions, environment records, result reports "
+            "Evidence, metrics, predictions, environment records, result reports "
             "and the non-code artifact timeline recovered from GitHub. Failed and negative "
             "experiments are intentionally retained."
         )
@@ -256,15 +259,22 @@ def card(kind: str, head: str, generated_at: str) -> str:
         f"- Source repository: `PiotrStyla/OCR_engine`\n"
         f"- Source commit: `{head}`\n"
         f"- Registry generated: `{generated_at}`\n"
-        "- Visibility: private\n"
+        f"- Visibility: {visibility}\n"
         "- Integrity: see `MANIFEST.jsonl` and `MANIFEST.sha256`\n\n"
         "Historical Polish spelling and transcription variants are preserved. "
         "No normalization from historical glyphs or diacritics to modern spelling is implied.\n"
     )
 
 
-def finalize(root: Path, kind: str, head: str, generated_at: str, rows: list[dict]) -> dict:
-    write_text(root / "README.md", card(kind, head, generated_at))
+def finalize(
+    root: Path,
+    kind: str,
+    head: str,
+    generated_at: str,
+    visibility: str,
+    rows: list[dict],
+) -> dict:
+    write_text(root / "README.md", card(kind, head, generated_at, visibility))
     rows = sorted(rows, key=lambda row: row["path"])
     write_jsonl(root / "SOURCE-MANIFEST.jsonl", rows)
 
@@ -358,12 +368,12 @@ def main() -> None:
     )
 
     summary = {
-        "schema": "slayer-ocr-hf-private-registry-v1",
+        "schema": "slayer-ocr-hf-registry-v1",
         "generated_at": generated_at,
         "source_commit": head,
         "source_repository": "https://github.com/PiotrStyla/OCR_engine",
         "code_included": False,
-        "visibility": "private",
+        "visibility": args.visibility,
         "repositories": {},
     }
     registry_metadata = {
@@ -372,7 +382,9 @@ def main() -> None:
     for kind, root in roots.items():
         write_json(root / "REGISTRY.json", {**registry_metadata, "artifact_class": kind})
     for kind, root in roots.items():
-        summary["repositories"][kind] = finalize(root, kind, head, generated_at, rows[kind])
+        summary["repositories"][kind] = finalize(
+            root, kind, head, generated_at, args.visibility, rows[kind]
+        )
     write_json(output / "registry-summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 

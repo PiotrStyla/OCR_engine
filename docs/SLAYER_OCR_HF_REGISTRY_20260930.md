@@ -1,8 +1,8 @@
-# SLAYER-OCR private Hugging Face registry
+# SLAYER-OCR public Hugging Face registry
 
 Date: 2026-09-30
 
-Status: **uploaded, private, and manifest-verified**
+Status: **uploaded, public, and manifest-verified**
 
 ## Scope
 
@@ -15,7 +15,7 @@ Source repository: `https://github.com/PiotrStyla/OCR_engine`
 
 Frozen artifact source commit: `4ce2215d45814d2fd1e9749c394b95fde6a240af`
 
-## Private repositories
+## Public repositories
 
 | Artifact class | Repository | HF revision | Manifest SHA-256 | Manifest files | Bytes |
 | --- | --- | --- | --- | ---: | ---: |
@@ -27,18 +27,19 @@ Collection: `PiotrSty/slayer-ocr-experiment-registry-6abca642387af872378a7fee`
 
 The collection also references the existing public
 `PiotrSty/slayer-vision-onnx` model. Its audit evidence is retained in the
-private evidence repository instead of duplicating the ONNX payload.
+evidence repository instead of duplicating the ONNX payload.
 
 ## Verification
 
-All three repositories were confirmed as private through the Hub API. Their
+All three repositories and the collection were confirmed as public through
+anonymous Hub API requests. Their
 `MANIFEST.jsonl` and `MANIFEST.sha256` files were downloaded back from the exact
 revisions above. Each downloaded manifest hash matched its local source exactly.
 
 The staging tree was scanned for executable/code extensions and common token
 patterns before upload. No matching code files or credential patterns were
-found. The registry is a private research archive, not a statement that every
-source artifact is cleared for public redistribution.
+found. The registry is an open research archive. Upstream provenance and
+license limitations remain attached to their source artifacts.
 
 ## Reproduction
 
