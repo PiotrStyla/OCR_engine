@@ -23,7 +23,7 @@ Frozen artifact source commit: `4ce2215d45814d2fd1e9749c394b95fde6a240af`
 | Datasets | `PiotrSty/slayer-ocr-datasets` | `09a4978402b0508795a16a8cc0350b5a7ee1e024` | `eb8c6f2661d546b47b6b7cc9644304707935bccadf2653b7c6795ded1c4e4e29` | 2,292 | 1,266,214,905 |
 | Evidence | `PiotrSty/slayer-ocr-experiment-evidence` | `e99e06045824daa577d7d80104663b416420a299` | `0ca2aeb4d62a3653db3381c3131c0be476c37bd49681daa2f9eb9fbc1073d097` | 1,104 | 1,426,381,205 |
 
-Collection: `PiotrSty/slayer-ocr-experiment-registry-6abca642387af872378a7fee`
+Collection: `PiotrSty/ocr-experiment-registry-6abca642387af872378a7fee`
 
 The collection also references the existing public
 `PiotrSty/slayer-vision-onnx` model. Its audit evidence is retained in the
