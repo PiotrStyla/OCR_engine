@@ -1,0 +1,72 @@
+# SLAYER-OCR RF-DETR corrected GT v2
+
+Date: 2026-09-30
+
+Status: **pipeline ready; completed human review export still required**
+
+## Goal
+
+Measure the frozen epoch-15 RF-DETR checkpoint against corrected ground truth
+without retraining it and without confusing the result with the original
+development score.
+
+The original `mAP@50:95 = 0.3272939026` remains a reproduction result for the
+original v1 labels. The v2 score will be a separate reanalysis against reviewed
+labels.
+
+## Required final review
+
+Open the generated offline review editor, inspect all 12 pages and export the
+final JSON. A valid final packet must:
+
+1. use schema `slayer-layout-gt-review-v1` and state `complete`;
+2. name the reviewer and include a valid timestamp;
+3. cover every frozen validation page exactly once;
+4. mark unchanged pages `verified` and changed pages `edited`;
+5. preserve source annotation links for retained boxes;
+6. use only the nine frozen layout classes and in-bounds boxes.
+
+The importer recomputes every `changed` flag. It does not trust the browser's
+status alone.
+
+## Build the corrected dataset
+
+```bash
+python -m training.apply_rfdetr_layout_gt_review \
+  --review final-review.json \
+  --review-source data/slayer-rfdetr-layout-gt-review-v1-20260930 \
+  --dataset data/slayer-layout-rfdetr-private-v1-20260929 \
+  --output data/slayer-layout-rfdetr-corrected-v2-20260930 \
+  --archive data/slayer-layout-rfdetr-corrected-v2-20260930.zip
+```
+
+The legacy v1 directory name contains `private`; this is an immutable input
+identifier, not the current publication policy.
+
+The output preserves the training split, rewrites only reviewed validation
+annotations, copies the exact page images and records:
+
+- original dataset, COCO, audit and checkpoint hashes;
+- review packet and review-source hashes;
+- reviewer, timestamp and policy version;
+- per-page additions, deletions, relabels and box moves;
+- a complete file manifest and `checksums.sha256`.
+
+## Reaudit contract
+
+`training.audit_slayer_rfdetr_layout` accepts both dataset schemas:
+
+- v1 becomes `original-gt-reproduction` and must reproduce the logged best mAP;
+- v2 becomes `corrected-gt-reanalysis`, must descend from the model's training
+  dataset and must point to the same checkpoint used during review.
+
+For v2, the measured mAP is intentionally not compared with `0.3273`; changing
+ground truth changes the metric. The checkpoint hash, class order, page split,
+collection separation and all archive checksums remain hard requirements.
+
+## Publication
+
+After successful reanalysis, publish the corrected dataset and evidence as new
+versioned artifacts in the public
+[OCR experiment registry](https://huggingface.co/collections/PiotrSty/ocr-experiment-registry-6abca642387af872378a7fee).
+Do not overwrite the v1 dataset or its audit evidence.

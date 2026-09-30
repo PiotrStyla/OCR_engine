@@ -38,15 +38,16 @@ ani potwierdzonym silnikiem SOTA.**
   przyjęto, 371 skierowano do review, a 58/60 stron oznaczono jako hard examples.
   Pełna adjudykacja została zakończona: 143 obiekty review przyjęto (w tym 5
   relabeli), 228 odrzucono, a clean candidate zawiera 304 obiekty na 60
-  stronach. Prywatny eksporter RF-DETR tworzy zweryfikowany split 48/12 bez
-  wspólnych kolekcji i dokładnych hashy obrazów. Dane i skany nadal nie są
-  publikowane. [Raport pełnego przebiegu](docs/SLAYER_LAYOUT_CONSENSUS_FULL_RESULT_20260929.md).
+  stronach. Eksporter RF-DETR tworzy zweryfikowany split 48/12 bez wspólnych
+  kolekcji i dokładnych hashy obrazów. Artefakty eksperymentalne są publicznie
+  katalogowane w [OCR experiment registry](https://huggingface.co/collections/PiotrSty/ocr-experiment-registry-6abca642387af872378a7fee).
+  [Raport pełnego przebiegu](docs/SLAYER_LAYOUT_CONSENSUS_FULL_RESULT_20260929.md).
   [Wynik smoke i decyzja](docs/SLAYER_LAYOUT_CONSENSUS_SMOKE_RESULT_20260928.md).
 - Polityka konsensusu v3 wykrywa konflikty skali bez mnożenia głosu jednego
   teachera i jawnie rejestruje ograniczone abstencje. Zamrożono też definicje
   klas layoutu. Walidator
   `training.adjudicate_layout_consensus` odrzuca niepełne decyzje i eksportuje
-  prywatny kandydat JSONL/COCO bez skanów. Następnie
+  wersjonowany kandydat JSONL/COCO. Następnie
   `training.build_layout_rfdetr_dataset` sprawdza candidate i obrazy po SHA-256,
   buduje rozłączny kolekcyjnie format `train/valid` zgodny z RF-DETR oraz zapisuje
   manifest, provenance i sumy kontrolne.
@@ -71,12 +72,20 @@ ani potwierdzonym silnikiem SOTA.**
   Nakładki ujawniły także niespójną granulację ramek i prawdopodobne braki GT,
   dlatego kolejną bramką jest ponowna adjudykacja 12 stron, a nie retrening na
   tych samych etykietach. [Wynik audytu](docs/SLAYER_RFDETR_LAYOUT_AUDIT_V1_RESULT_20260929.md).
-- **Prywatna adjudykacja GT:** `python -m training.build_rfdetr_layout_adjudication
-  --dataset-archive <private-dataset.zip> --audit-archive <private-audit.zip>
-  --output-dir <private-review-dir>` buduje offline editor 12 stron z warstwami
+- **Adjudykacja GT:** `python -m training.build_rfdetr_layout_adjudication
+  --dataset <dataset-dir> --audit <audit-dir> --audit-archive-sha256 <sha256>
+  --output <review-dir>` buduje offline editor 12 stron z warstwami
   oryginalnego GT i predykcji RF-DETR, edycją ramek, statusem strony oraz
-  eksportem decyzji JSON. Obrazy, predykcje i decyzje pozostają lokalne; repo
-  zawiera tylko generator i [zamrożoną politykę anotacji](docs/SLAYER_LAYOUT_ANNOTATION_POLICY_V1.md).
+  eksportem decyzji JSON. Repo zawiera generator i
+  [zamrożoną politykę anotacji](docs/SLAYER_LAYOUT_ANNOTATION_POLICY_V1.md).
+- **Po zakończeniu review:** `python -m training.apply_rfdetr_layout_gt_review
+  --review <final-review.json> --review-source <review-dir>
+  --dataset <dataset-dir> --output <corrected-v2-dir>
+  --archive <corrected-v2.zip>` odrzuca niepełny lub niespójny eksport, zachowuje
+  treningowy split bez zmian i tworzy poprawiony validation COCO z pełnym
+  lineage oraz SHA-256. Audytor rozróżnia odtworzenie starego GT od ponownego
+  pomiaru tego samego checkpointu na poprawionym GT; stare `mAP=0,3273` nie jest
+  wtedy traktowane jako oczekiwany wynik. [Protokół v2](docs/SLAYER_RFDETR_CORRECTED_GT_V2.md).
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

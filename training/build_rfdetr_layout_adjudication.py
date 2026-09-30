@@ -1,4 +1,4 @@
-"""Build a private offline editor for RF-DETR development-page ground truth."""
+"""Build an offline editor for RF-DETR development-page ground truth."""
 from __future__ import annotations
 
 import argparse
@@ -133,7 +133,7 @@ def build(dataset_dir: str | Path, audit_dir: str | Path,
             "default_prediction_threshold": report["audit_threshold"],
             "pages": pages,
             "provenance": provenance,
-            "release_status": "private-review-not-published",
+            "release_status": "public-review-candidate",
         }
         embedded = json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c")
         html = f'''<!doctype html>
@@ -145,7 +145,7 @@ def build(dataset_dir: str | Path, audit_dir: str | Path,
         (output_dir / "source.json").write_text(
             json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (output_dir / "README.txt").write_text(
-            "Private offline layout GT review. Open index.html. Export a draft at any "
+            "Offline layout GT review. Open index.html. Export a draft at any "
             "time; final export requires every page to be verified or edited.\n",
             encoding="utf-8", newline="\n")
         artifacts = sorted(path for path in output_dir.rglob("*") if path.is_file())
@@ -161,7 +161,7 @@ def build(dataset_dir: str | Path, audit_dir: str | Path,
         "pages": len(pages),
         "annotations": sum(len(page["original_annotations"]) for page in pages),
         "output": str(output_dir / "index.html"),
-        "release_status": "private-review-not-published",
+        "release_status": "public-review-candidate",
     }
 
 

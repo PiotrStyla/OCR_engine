@@ -11,6 +11,7 @@ from training.audit_slayer_rfdetr_layout import (
     render_comparison,
     resolve_prediction_labels,
     safe_extract_zip,
+    validate_dataset_lineage,
     verify_checksums,
 )
 
@@ -108,4 +109,33 @@ def test_prediction_labels_prefer_names_and_accept_known_id_schemes():
         resolve_prediction_labels([1], None, names)
     with pytest.raises(ValueError, match="Invalid zero-based predicted class IDs"):
         resolve_prediction_labels([0, 99], None, names)
+
+
+def test_dataset_lineage_distinguishes_original_and_corrected_gt():
+    model_run = {"dataset_zip_sha256": "a" * 64}
+    assert validate_dataset_lineage(
+        {"schema": "slayer-layout-rfdetr-dataset-v1"},
+        model_run, "a" * 64, "b" * 64,
+    ) == "original-gt-reproduction"
+    corrected = {
+        "schema": "slayer-layout-rfdetr-dataset-v2",
+        "release_status": "public-development-dataset",
+        "source": {
+            "original_dataset_archive_sha256": "a" * 64,
+            "checkpoint_sha256": "b" * 64,
+            "gt_review_sha256": "c" * 64,
+            "gt_review_source_sha256": "d" * 64,
+            "source_audit_sha256": "e" * 64,
+            "source_audit_report_sha256": "f" * 64,
+            "policy_version": "policy-v1",
+            "reviewer": "reviewer",
+            "review_timestamp": "2026-09-30T12:00:00Z",
+        },
+    }
+    assert validate_dataset_lineage(
+        corrected, model_run, "9" * 64, "b" * 64,
+    ) == "corrected-gt-reanalysis"
+    corrected["source"]["checkpoint_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="different checkpoint"):
+        validate_dataset_lineage(corrected, model_run, "9" * 64, "b" * 64)
 

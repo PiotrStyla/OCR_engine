@@ -11,7 +11,7 @@ def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def test_builds_private_editable_review_workspace(tmp_path):
+def test_builds_public_editable_review_workspace(tmp_path):
     dataset = tmp_path / "dataset"
     valid = dataset / "valid"
     valid.mkdir(parents=True)
@@ -75,7 +75,7 @@ def test_builds_private_editable_review_workspace(tmp_path):
     result = build(dataset, audit, output, "a" * 64)
     assert result["pages"] == 12
     assert result["annotations"] == 12
-    assert result["release_status"] == "private-review-not-published"
+    assert result["release_status"] == "public-review-candidate"
     assert len(list((output / "images").glob("*.jpg"))) == 12
     html = (output / "index.html").read_text(encoding="utf-8")
     script = (output / "app.js").read_text(encoding="utf-8")

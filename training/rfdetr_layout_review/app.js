@@ -418,7 +418,7 @@
           origin: item.origin || "human-review",
         })),
       })),
-      release_status: "private-review-not-published",
+      release_status: "public-review-candidate",
     };
     const blob = new Blob([JSON.stringify(packet, null, 2) + "\n"], {type: "application/json"});
     const url = URL.createObjectURL(blob);

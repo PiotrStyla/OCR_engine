@@ -1,4 +1,4 @@
-"""Audit a private RF-DETR checkpoint against the frozen layout dev split."""
+"""Audit a frozen RF-DETR checkpoint against original or corrected layout GT."""
 from __future__ import annotations
 
 from collections import Counter
@@ -106,6 +106,33 @@ def _best_metric_row(metrics_path: Path) -> dict:
     }
 
 
+def validate_dataset_lineage(provenance: dict, model_run: dict,
+                             dataset_archive_sha256: str,
+                             checkpoint_sha256: str) -> str:
+    """Return the audit mode after verifying dataset-to-checkpoint lineage."""
+    schema = provenance.get("schema")
+    if schema == "slayer-layout-rfdetr-dataset-v1":
+        if model_run.get("dataset_zip_sha256") != dataset_archive_sha256:
+            raise ValueError("Run manifest points to a different dataset")
+        return "original-gt-reproduction"
+    if schema == "slayer-layout-rfdetr-dataset-v2":
+        source = provenance.get("source", {})
+        if provenance.get("release_status") != "public-development-dataset":
+            raise ValueError("Corrected dataset is not a released development artifact")
+        if source.get("original_dataset_archive_sha256") != model_run.get(
+                "dataset_zip_sha256"):
+            raise ValueError("Corrected GT does not descend from the training dataset")
+        if source.get("checkpoint_sha256") != checkpoint_sha256:
+            raise ValueError("Corrected GT was reviewed against a different checkpoint")
+        if not all(source.get(key) for key in (
+                "gt_review_sha256", "gt_review_source_sha256",
+                "source_audit_sha256", "source_audit_report_sha256",
+                "policy_version", "reviewer", "review_timestamp")):
+            raise ValueError("Corrected GT lineage is incomplete")
+        return "corrected-gt-reanalysis"
+    raise ValueError("Unexpected RF-DETR dataset schema")
+
+
 def prepare_inputs(dataset_archive: str | Path, model_archive: str | Path,
                    evidence_archive: str | Path, output_dir: str | Path,
                    expected_hashes: dict[str, str]) -> dict:
@@ -139,12 +166,12 @@ def prepare_inputs(dataset_archive: str | Path, model_archive: str | Path,
         (model_root / "training_config.json").read_text(encoding="utf-8"))
     if model_run != evidence_run:
         raise ValueError("Model and evidence run manifests differ")
-    if (provenance.get("schema") != "slayer-layout-rfdetr-dataset-v1" or
-            model_run.get("schema") != "slayer-layout-rfdetr-run-v1" or
+    if (model_run.get("schema") != "slayer-layout-rfdetr-run-v1" or
             model_run.get("status") != "completed"):
         raise ValueError("Unexpected RF-DETR artifact schema or state")
-    if model_run.get("dataset_zip_sha256") != expected_hashes["dataset"]:
-        raise ValueError("Run manifest points to a different dataset")
+    checkpoint_sha256 = checksum_manifests["model"]["checkpoint_best_total.pth"]
+    audit_mode = validate_dataset_lineage(
+        provenance, model_run, expected_hashes["dataset"], checkpoint_sha256)
     if (provenance.get("collection_overlap") or provenance.get("image_hash_overlap") or
             provenance.get("train", {}).get("pages") != 48 or
             provenance.get("valid", {}).get("pages") != 12):
@@ -168,7 +195,8 @@ def prepare_inputs(dataset_archive: str | Path, model_archive: str | Path,
         "model_root": model_root,
         "evidence_root": evidence_root,
         "checkpoint": model_root / "checkpoint_best_total.pth",
-        "checkpoint_sha256": checksum_manifests["model"]["checkpoint_best_total.pth"],
+        "checkpoint_sha256": checkpoint_sha256,
+        "audit_mode": audit_mode,
         "provenance": provenance,
         "run_manifest": model_run,
         "training_config": training_config,
@@ -328,8 +356,10 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
         device="cuda", log_per_class_metrics=True, tensorboard=False, wandb=False))
     measured_map = best_metrics.get("val/mAP_50_95")
     expected_map = inputs["best_logged_metrics"]["val/mAP_50_95"]
-    if measured_map is None or not math.isclose(
-            measured_map, expected_map, rel_tol=0.0, abs_tol=5e-4):
+    if measured_map is None:
+        raise ValueError("RF-DETR evaluation returned no validation mAP")
+    if (inputs["audit_mode"] == "original-gt-reproduction" and not math.isclose(
+            measured_map, expected_map, rel_tol=0.0, abs_tol=5e-4)):
         raise ValueError(
             f"Best checkpoint mAP mismatch: measured={measured_map}, expected={expected_map}")
 
@@ -411,6 +441,7 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
         "code_revision": code_revision,
         "input_archives": inputs["archive_hashes"],
         "checkpoint_sha256": inputs["checkpoint_sha256"],
+        "audit_mode": inputs["audit_mode"],
         "best_logged_metrics": inputs["best_logged_metrics"],
         "best_checkpoint_metrics": best_metrics,
         "pages": len(valid_coco["images"]),
@@ -423,12 +454,16 @@ def run(dataset_archive: str | Path, model_archive: str | Path,
         "background_detections_discarded": background_detections_discarded,
         "hard_example_pages": len(hard_examples),
         "images_or_references_included": True,
-        "release_status": "private-audit-not-published",
+        "release_status": (
+            "public-experiment-evidence"
+            if inputs["audit_mode"] == "corrected-gt-reanalysis"
+            else "private-audit-not-published"
+        ),
         "limitations": [
             "The 12-page valid split is internal development, not the final PolOCRBench test.",
             "Fixed-threshold TP/FP/FN is diagnostic and is not COCO mAP.",
             "Rare and absent valid classes do not support reliable per-class conclusions.",
-            "Overlay images and predictions remain private review evidence.",
+            "Overlay images and predictions are experiment evidence, not final benchmark results.",
         ],
     }
     (output / "audit.json").write_text(
