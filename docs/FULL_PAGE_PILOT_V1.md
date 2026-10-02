@@ -20,9 +20,23 @@ contamination audits are not complete.
 
 ## Run one notebook
 
-Open `training/colab_full_page_pilot_v1.ipynb` in Colab, choose GPU and Run all.
+[Open the pinned notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/6cf6e87331466fc61401af13bc991ea1ecc0336d/training/colab_full_page_pilot_v1.ipynb), choose GPU and Run all.
 There are no data uploads, authentication requirements or model-selector fields.
 The default run processes two deterministically selected validation pages.
+
+## Published inputs and audit
+
+- [All 80 candidate pages and source XML on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/5f4cc0c677b7eb38be55695e67cd13df3329ecb4/data/full-page-pilot-review-v1-20261002).
+- [Code-free source-reference audit on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/8370d9ad540556a072dcfd0bcb0e7d94bc34986b/experiments/2026-10-02/full-page-reference-audit-v1).
+
+The publication is public. All 167 expected dataset paths were checked;
+the manifest and one downloaded image/XML pair passed SHA-256 verification,
+and the downloaded PNG decoded successfully. This is sample download validation,
+not a fresh download of every scan. All local source images/XML passed the staging audit.
+The 43 focused tests and notebook schema validation passed. GPU inference for
+the new Ovis adapter remains pending; no measured quality gain is claimed.
+
+## Model environments
 
 The first model environment uses mixed-v3 with Transformers 4.57.6. It produces
 three separate predictions: automatic row-major, automatic column ordering and
