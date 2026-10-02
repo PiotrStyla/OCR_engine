@@ -88,6 +88,13 @@ ani potwierdzonym silnikiem SOTA.**
   wtedy traktowane jako oczekiwany wynik. [Protokół v2](docs/SLAYER_RFDETR_CORRECTED_GT_V2.md).
   Po zbudowaniu ZIP-a uruchom
   [notebook ponownego audytu v2 w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_slayer_rfdetr_corrected_gt_v2.ipynb).
+  Reanaliza została ukończona: po 18 dodaniach, 3 usunięciach, 4 relabelach i
+  13 korektach geometrii ten sam checkpoint osiąga `mAP@50:95 = 0,2570`, wobec
+  `0,3273` na starym GT. Przy stałym progu F1 lekko rośnie z `0,4583` do
+  `0,4780`, ale wszystkie 12 stron nadal jest hard examples. Checkpoint nie
+  przechodzi bramki jakości; następny etap to rozszerzenie i zbalansowanie
+  zweryfikowanych danych, nie strojenie jednego progu na dev secie.
+  [Raport reanalizy v2](docs/SLAYER_RFDETR_CORRECTED_GT_V2_RESULT_20261002.md).
 - **Pełny pilot 60 stron:** DocLayout-YOLO i Surya ukończyły kompletne runy bez
   błędów. Poprawiony Qwen v3 ukończył 56/60 stron; cztery błędy generacji są
   zachowane jako jawne abstencje w polityce konsensusu v3.

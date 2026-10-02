@@ -2,7 +2,7 @@
 
 Date: 2026-09-30
 
-Status: **pipeline ready; completed human review export still required**
+Status: **completed; corrected dataset and frozen-checkpoint reanalysis verified**
 
 ## Goal
 
@@ -82,3 +82,6 @@ After successful reanalysis, publish the corrected dataset and evidence as new
 versioned artifacts in the public
 [OCR experiment registry](https://huggingface.co/collections/PiotrSty/ocr-experiment-registry-6abca642387af872378a7fee).
 Do not overwrite the v1 dataset or its audit evidence.
+
+The completed run and decision are documented in
+[SLAYER_RFDETR_CORRECTED_GT_V2_RESULT_20261002.md](SLAYER_RFDETR_CORRECTED_GT_V2_RESULT_20261002.md).
