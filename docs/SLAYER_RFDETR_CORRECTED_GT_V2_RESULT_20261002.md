@@ -52,6 +52,19 @@ Corrected-GT mAP@50:95 is 21.5% lower relative to the original-GT result. The
 original `0.3273` remains a valid reproduction result for v1 labels, but it is
 not the accepted quality estimate after review.
 
+Interpretation correction: the class support also changed. The v1 mean covers
+six classes; v2 covers eight after adding header/footer support. The v2 mean
+over the original six supported classes is approximately `0.2726`. Therefore
+the overall 21.5% difference is not an isolated measure of label correction
+or model degradation. Ground truth changed and the checkpoint did not train
+again. A clean counterfactual requires rescoring identical frozen predictions
+with both label versions and reporting common-class as well as full means.
+
+The single review pass is still provisional. Visual inspection found a library
+inventory mark on `Diariusz_FT__436661` labeled as `figure`, contrary to the
+annotation policy for non-content library artifacts. This finding is recorded
+for targeted adjudication; the published GT v2 has not been silently modified.
+
 Corrected-GT per-class AP is:
 
 | Class | AP@50:95 |

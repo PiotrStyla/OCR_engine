@@ -1,0 +1,49 @@
+{
+  "schema": "slayer-full-page-pilot-config-v1",
+  "scope": "historical Polish development diagnostics; not a gold benchmark or SOTA evaluation",
+  "target_review_pages": 100,
+  "available_non_test_pages": 80,
+  "default_inference_pages": 2,
+  "selection_salt": "slayer-full-page-pilot-v1",
+  "dataset": {
+    "repo": "PiotrSty/impact-psnc-polish-ocr",
+    "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+    "license": "CC-BY-3.0",
+    "splits": {
+      "validation": {"pages": 15, "metadata_sha256": "536fc014963c2c55626e89f9bd07500826cb930f05ca3f8848352ca80c8856b1"},
+      "train": {"pages": 65, "metadata_sha256": "991ef94a2e2fb3ac519ec3582fa588b1a75a92a87b1b002468cf7c31d3c10427"}
+    },
+    "excluded_collections": ["NA2_FT", "Nowiny_z_Rakuz_FT", "Powodzenia_FT"]
+  },
+  "models": {
+    "mixed-v3": {
+      "repo": "PiotrSty/trocr-pl-mixed-v3",
+      "revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+      "weights_sha256": "19437f5769b8df8be5af1fb0c5bbcc3acccae9d889f337f0c4b9e94fa80d8bb7",
+      "packages": ["transformers==4.57.6", "tokenizers==0.22.2", "huggingface_hub==0.36.2", "sentencepiece==0.2.1", "pillow==11.3.0", "opencv-python-headless==4.12.0.88", "langdetect==1.0.9"],
+      "batch_size": 8,
+      "line_padding": 5
+    },
+    "ovis-ocr2": {
+      "repo": "ATH-MaaS/OvisOCR2",
+      "revision": "1fc9221b7823a371d6e97f92d527cc847e24e107",
+      "packages": ["transformers==5.18.0", "pillow==11.3.0"],
+      "max_new_tokens": 8192,
+      "min_pixels": 200704,
+      "max_pixels": 8294400,
+      "adapter_status": "Transformers SDPA portability pilot; GPU execution not yet verified",
+      "upstream_inference": "https://huggingface.co/ATH-MaaS/OvisOCR2"
+    }
+  },
+  "policy": {
+    "reference_status": "source-unreviewed",
+    "normalization": "Unicode NFC + whitespace only",
+    "modernize_spelling": false,
+    "send_reference_text_to_model": false,
+    "final_test_used": false,
+    "automatic_model_promotion": false,
+    "automatic_publication": false,
+    "missing_and_error_predictions": "score as empty text; retain error and raw output",
+    "oracle_geometry": "diagnostic only; never mix oracle and automatic full-page results"
+  }
+}

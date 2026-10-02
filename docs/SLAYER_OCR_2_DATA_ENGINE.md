@@ -1,8 +1,10 @@
 # SLAYER-OCR 2.0: DATA ENGINE v2
 
-Status: pełny pilot teacherów, konsensus, adjudykacja 371 obiektów, prywatny
-pakiet RF-DETR 48/12 i pierwszy trening RF-DETR Small są ukończone. Najlepszy
-checkpoint ma deweloperskie `mAP@50:95 = 0,3273`; trwa jego audyt wizualny.
+Status: pełny pilot teacherów, konsensus, adjudykacja 371 obiektów, pakiet
+RF-DETR 48/12 i pierwszy trening są ukończone. Reanaliza poprawionego GT daje
+`mAP@50:95 = 0,2570`, z zastrzeżeniem zmiany zakresu klas oraz pozostałych
+błędów oznaczeń. Artefakty są publicznie katalogowane na HF. Następny etap to
+[audyt pełnych transkrypcji i porównanie modeli dokumentowych](FULL_PAGE_PILOT_V1.md).
 
 ## Decyzja
 

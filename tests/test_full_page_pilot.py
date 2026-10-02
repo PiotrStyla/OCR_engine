@@ -1,0 +1,214 @@
+import hashlib
+import io
+import json
+from pathlib import Path
+import sys
+from types import SimpleNamespace
+import zipfile
+
+import pytest
+from PIL import Image
+
+from training.full_page_pilot import (
+    digest, inspect_reference, markdown_text, package, safe_relative, score,
+    run_worker, select_pages, stage, validate_inputs, write_json, write_rows,
+)
+from training.build_full_page_pilot_colab import build
+
+
+def xml(width=20, height=30):
+    return f'''<PcGts><Page imageWidth="{width}" imageHeight="{height}">
+    <ReadingOrder><OrderedGroup><RegionRefIndexed index="0" regionRef="r"/></OrderedGroup></ReadingOrder>
+    <TextRegion id="r"><Coords points="1,2 18,2 18,10 1,10"/>
+    <TextLine id="l"><Coords points="1,2 18,2 18,10 1,10"/>
+    <TextEquiv><Unicode>Do not send this reference to the model</Unicode></TextEquiv>
+    </TextLine></TextRegion></Page></PcGts>'''.encode()
+
+
+def fixture(tmp_path):
+    stream = io.BytesIO()
+    Image.new("RGB", (20, 30), "white").save(stream, format="JPEG")
+    image = stream.getvalue()
+    row = {"id": "p", "split": "validation", "collection": "C", "width": 20, "height": 30,
+           "file_name": "images/p.jpg", "pagexml": "pages/validation/pagexml/p.xml",
+           "image_sha256": hashlib.sha256(image).hexdigest(),
+           "pagexml_sha256": hashlib.sha256(xml()).hexdigest(),
+           "text": "W świetne błáwaty ſtara pisownia", "license": "CC-BY-3.0"}
+    metadata = (json.dumps(row) + "\n").encode()
+    data = {"pages/validation/metadata.jsonl": metadata,
+            "pages/validation/images/p.jpg": image, "pages/validation/pagexml/p.xml": xml()}
+    config = {"dataset": {"repo": "Owner/data", "revision": "a" * 40, "license": "CC-BY-3.0",
+                          "splits": {"validation": {"pages": 1, "metadata_sha256": hashlib.sha256(metadata).hexdigest()}},
+                          "excluded_collections": ["Forbidden"]},
+              "selection_salt": "v1", "target_review_pages": 100, "available_non_test_pages": 1}
+    def opener(url, **kwargs):
+        return io.BytesIO(data[url.split("/resolve/" + "a" * 40 + "/")[1]])
+    output = tmp_path / "dataset"
+    stage(config, output, opener=opener)
+    return config, output, opener
+
+
+def test_stage_is_repeatable_and_never_gold(tmp_path):
+    config, output, opener = fixture(tmp_path)
+    original = digest(output / "manifest.jsonl")
+    report = stage(config, output, opener=opener)
+    assert digest(output / "manifest.jsonl") == original
+    assert report["gold_pages"] == 0
+    assert report["additional_pages_needed"] == 99
+    rows = validate_inputs(output / "inference-inputs.jsonl")
+    assert "text" not in rows[0]
+    assert "Unicode" not in json.dumps(rows)
+    assert rows[0]["source_regions"][0]["bbox_xyxy"] == [1, 2, 19, 11]
+
+
+def test_zero_page_scope_is_rejected(tmp_path):
+    config, output, opener = fixture(tmp_path)
+    with pytest.raises(ValueError, match="Page count"):
+        stage(config, output, count=0, opener=opener)
+
+
+@pytest.mark.parametrize("path", ["../x", "/x", "C:/x", "x\\y", ""])
+def test_paths_cannot_escape(path):
+    with pytest.raises(ValueError):
+        safe_relative(path)
+
+
+def test_source_flags_are_not_completeness_proof():
+    row = {"id": "p", "width": 20, "height": 30, "split": "validation",
+           "collection": "C", "text": "á ſ \ufffd \ue000"}
+    audit = inspect_reference(row, xml())
+    assert audit["completeness"] == "unverified"
+    assert audit["replacement_characters"] == 1
+    assert audit["private_use_characters"] == 1
+    with pytest.raises(ValueError, match="dimensions"):
+        inspect_reference(row, xml(21))
+
+
+def test_selection_is_independent_of_ocr_and_prefers_validation():
+    rows = [{"id": str(i), "split": "validation" if i < 2 else "train",
+             "collection": str(i % 2)} for i in range(8)]
+    assert select_pages(rows, 2, "v1") == select_pages(list(reversed(rows)), 2, "v1")
+    assert all(row["split"] == "validation" for row in select_pages(rows, 2, "v1"))
+    with pytest.raises(ValueError):
+        select_pages(rows, 9, "v1")
+
+
+def test_changed_config_is_rejected(tmp_path):
+    config, output, opener = fixture(tmp_path)
+    config["selection_salt"] = "changed"
+    with pytest.raises(ValueError, match="configuration"):
+        stage(config, output, opener=opener)
+
+
+def test_reference_cannot_enter_inference_inputs(tmp_path):
+    _, output, _ = fixture(tmp_path)
+    path = output / "inference-inputs.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    rows[0]["text"] = "SECRET"
+    write_rows(path, rows)
+    with pytest.raises(ValueError, match="Reference"):
+        validate_inputs(path)
+
+
+def test_nested_reference_is_rejected(tmp_path):
+    _, output, _ = fixture(tmp_path)
+    path = output / "inference-inputs.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    rows[0]["source_regions"][0]["text"] = "SECRET"
+    write_rows(path, rows)
+    with pytest.raises(ValueError, match="Reference"):
+        validate_inputs(path)
+
+
+def test_markdown_projection_preserves_historical_letters_and_tables():
+    text = markdown_text("# W świetne **błáwaty**\n\nſłowo <table><tr><td>á</td><td>ſ</td></tr></table>")
+    assert "błáwaty" in text and "ſłowo" in text
+    assert "á ſ" in " ".join(text.split())
+
+
+def test_scoring_counts_errors_and_never_promotes(tmp_path):
+    _, output, _ = fixture(tmp_path)
+    predictions = tmp_path / "predictions" / "test"
+    predictions.mkdir(parents=True)
+    write_rows(predictions / "candidate.jsonl", [{"id": "p", "status": "error", "text": "ignored"}])
+    report = score(output / "manifest.jsonl", predictions.parent, tmp_path / "scores")
+    assert report["reports"]["candidate"]["cer_micro"] == 1
+    assert report["reports"]["candidate"]["errors_or_missing"] == 1
+    assert report["model_promotion"] is False
+    assert report["sota_claim"] is False
+
+
+def test_historical_text_survives_scoring(tmp_path):
+    _, output, _ = fixture(tmp_path)
+    predictions = tmp_path / "predictions" / "test"
+    predictions.mkdir(parents=True)
+    write_rows(predictions / "candidate.jsonl", [{"id": "p", "status": "ok",
+               "text": "# W świetne **błáwaty** ſtara pisownia", "format": "markdown"}])
+    report = score(output / "manifest.jsonl", predictions.parent, tmp_path / "scores")
+    assert report["reports"]["candidate"]["cer_micro"] == 0
+    assert report["reports"]["candidate"]["eligible_for_model_promotion"] is False
+
+
+def test_worker_load_failure_is_recorded_and_resume_does_not_erase_it(tmp_path, monkeypatch):
+    from training import full_page_pilot as pilot
+    _, dataset, _ = fixture(tmp_path)
+    fake_torch = SimpleNamespace(manual_seed=lambda seed: None, cuda=SimpleNamespace(
+        is_available=lambda: True, reset_peak_memory_stats=lambda: None,
+        synchronize=lambda: None, max_memory_allocated=lambda: 123,
+        get_device_name=lambda index: "fixture"))
+    monkeypatch.setitem(sys.modules, "torch", fake_torch)
+    monkeypatch.setattr(pilot.importlib.metadata, "version", lambda name: "fixture")
+    calls = []
+    def fail(spec):
+        calls.append(spec)
+        raise ImportError("fixture model load failed")
+    monkeypatch.setattr(pilot, "load_mixed", fail)
+    config = {"models": {"mixed-v3": {"revision": "a" * 40}}}
+    output = tmp_path / "predictions"
+    run_worker("mixed-v3", config, dataset / "inference-inputs.jsonl", output)
+    before = (output / "mixed-v3-row-major.jsonl").read_bytes()
+    run_worker("mixed-v3", config, dataset / "inference-inputs.jsonl", output)
+    assert (output / "mixed-v3-row-major.jsonl").read_bytes() == before
+    assert len(calls) == 1
+    row = json.loads(before)
+    assert row["status"] == "error" and "fixture model load failed" in row["error"]
+    config["models"]["mixed-v3"]["revision"] = "b" * 40
+    with pytest.raises(ValueError, match="different"):
+        run_worker("mixed-v3", config, dataset / "inference-inputs.jsonl", output)
+
+
+def test_evidence_reruns_and_excludes_scans_weights(tmp_path):
+    _, output, _ = fixture(tmp_path)
+    write_json(output / "metrics.json", {"cer": 1})
+    for _ in range(2):
+        archive = package(output)
+        with zipfile.ZipFile(archive) as stream:
+            names = stream.namelist()
+            assert "metrics.json" in names and "checksums.json" in names
+            assert not any(name.endswith((".jpg", ".png", ".safetensors", ".zip")) for name in names)
+            checksums = json.loads(stream.read("checksums.json"))
+            assert all(hashlib.sha256(stream.read(name)).hexdigest() == value for name, value in checksums.items())
+
+
+def test_notebook_embeds_matching_runner_and_all_python_cells_compile(tmp_path):
+    path = tmp_path / "pilot.ipynb"
+    build(path)
+    notebook = json.loads(path.read_text(encoding="utf-8"))
+    combined = "\n".join("".join(cell["source"]) for cell in notebook["cells"])
+    assert "files.upload" not in combined
+    assert "system_site_packages=True" in combined
+    assert "PARTIAL_EVIDENCE_READY" in combined
+    assert "files.download(str(evidence_zip))" in combined
+    for cell in notebook["cells"]:
+        assert not cell.get("outputs")
+        if cell["cell_type"] == "code" and not cell["source"][0].startswith("%"):
+            compile("".join(cell["source"]), cell["id"], "exec")
+
+
+def test_publication_rejects_short_sha_and_incomplete_pool(tmp_path):
+    from tools.publish_full_page_pilot_inputs import prepare
+    _, dataset, _ = fixture(tmp_path)
+    with pytest.raises(ValueError, match="Git commit"):
+        prepare(dataset, tmp_path / "publication", "abcdef")
+    with pytest.raises(ValueError, match="80-page"):
+        prepare(dataset, tmp_path / "publication", "a" * 40)

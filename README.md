@@ -6,7 +6,20 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 30 września 2026
+## Aktualny stan: 2 października 2026
+
+### Następny etap: OCR całych stron
+
+Przygotowano [jeden notebook Colab](training/colab_full_page_pilot_v1.ipynb)
+porównujący nasz mixed-v3 z OvisOCR2 na dwóch przypiętych stronach development.
+Dane i modele pobierają się automatycznie z HF; modele działają w osobnych
+środowiskach, a ZIP zawiera surowe predykcje, błędy i metryki. Nowy adapter
+wymaga jeszcze smoke testu GPU. Referencje źródłowe są niezweryfikowane, więc
+wynik pozostaje diagnostyczny i nie promuje modelu.
+
+Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
+100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
+[Protokół i kolejność następnych etapów](docs/FULL_PAGE_PILOT_V1.md).
 
 ### SLAYER-OCR 2.0: DATA ENGINE v2
 
