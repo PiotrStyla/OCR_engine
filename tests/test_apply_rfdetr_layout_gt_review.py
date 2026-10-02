@@ -161,10 +161,21 @@ def test_apply_review_builds_corrected_dataset_and_archive(tmp_path):
     assert expected == actual
 
 
-def test_apply_review_rejects_inconsistent_completion(tmp_path):
+def test_apply_review_accepts_verified_pages_with_edits(tmp_path):
     dataset, source_dir, review_path = fixture(tmp_path)
     review = json.loads(review_path.read_text(encoding="utf-8"))
     review["pages"][1]["status"] = "verified"
     write_json(review_path, review)
-    with pytest.raises(ValueError, match="status does not match"):
+    report = apply_review(
+        review_path, source_dir, dataset, tmp_path / "output")
+    assert report["changes"] == {
+        "added": 1, "deleted": 0, "relabeled": 1, "moved": 1}
+
+
+def test_apply_review_rejects_incomplete_page_status(tmp_path):
+    dataset, source_dir, review_path = fixture(tmp_path)
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    review["pages"][1]["status"] = "pending"
+    write_json(review_path, review)
+    with pytest.raises(ValueError, match="Incomplete page status"):
         apply_review(review_path, source_dir, dataset, tmp_path / "output")

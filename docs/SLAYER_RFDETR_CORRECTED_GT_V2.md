@@ -22,12 +22,14 @@ final JSON. A valid final packet must:
 1. use schema `slayer-layout-gt-review-v1` and state `complete`;
 2. name the reviewer and include a valid timestamp;
 3. cover every frozen validation page exactly once;
-4. mark unchanged pages `verified` and changed pages `edited`;
+4. mark every completed page `verified` or `edited`;
 5. preserve source annotation links for retained boxes;
 6. use only the nine frozen layout classes and in-bounds boxes.
 
-The importer recomputes every `changed` flag. It does not trust the browser's
-status alone.
+The importer recomputes the actual annotation difference. The browser's
+`changed` flag is retained as an interaction trace, not treated as ground truth,
+because it remains set after an edit is reverted. Both `verified` and `edited`
+are valid final review statuses.
 
 ## Build the corrected dataset
 

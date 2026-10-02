@@ -195,12 +195,12 @@ def _validate_review(review: dict, source: dict, source_pages: dict[str, dict]) 
                 "origin": str(item.get("origin") or "human-review"),
             })
         actual_changed = _page_changed(source_page["original_annotations"], normalized)
-        if bool(page.get("changed")) != actual_changed:
-            raise ValueError(f"Review changed flag is inconsistent: {page_id}")
-        expected_status = "edited" if actual_changed else "verified"
-        if page["status"] != expected_status:
-            raise ValueError(f"Review status does not match annotation changes: {page_id}")
-        reviewed[page_id] = {**page, "annotations": normalized}
+        reviewed[page_id] = {
+            **page,
+            "annotations": normalized,
+            "reported_changed": bool(page.get("changed")),
+            "actual_changed": actual_changed,
+        }
     if set(reviewed) != set(source_pages):
         raise ValueError("Review does not cover the frozen page set")
     return reviewed
@@ -263,6 +263,8 @@ def _corrected_coco(valid_coco: dict, reviewed: dict[str, dict]) -> tuple[dict, 
         report_pages.append({
             "page_id": image["page_id"],
             "status": page["status"],
+            "reported_changed": page["reported_changed"],
+            "actual_changed": page["actual_changed"],
             "before": len(before),
             "after": len(page["annotations"]),
             "added": added,
