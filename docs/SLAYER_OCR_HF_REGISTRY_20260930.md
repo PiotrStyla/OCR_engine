@@ -1,6 +1,8 @@
 # SLAYER-OCR public Hugging Face registry
 
-Date: 2026-09-30
+Created: 2026-09-30
+
+Last verified update: 2026-10-02
 
 Status: **uploaded, public, and manifest-verified**
 
@@ -13,15 +15,15 @@ and temporary test fixtures are excluded. Historical OCR spelling is preserved.
 
 Source repository: `https://github.com/PiotrStyla/OCR_engine`
 
-Frozen artifact source commit: `4ce2215d45814d2fd1e9749c394b95fde6a240af`
+Latest artifact source commit: `4ae4eb9f2d4d5dcf3f94d052d739602fd2989d27`
 
 ## Public repositories
 
 | Artifact class | Repository | HF revision | Manifest SHA-256 | Manifest files | Bytes |
 | --- | --- | --- | --- | ---: | ---: |
 | Models | `PiotrSty/slayer-ocr-models` | `12132885beb68a579b77ffc5c7c9c5b7497476e1` | `98e8a2863308163e1410db234a565f2a0894b98dc2d0a9e081378bb5306e64c4` | 23 | 1,586,825,060 |
-| Datasets | `PiotrSty/slayer-ocr-datasets` | `09a4978402b0508795a16a8cc0350b5a7ee1e024` | `eb8c6f2661d546b47b6b7cc9644304707935bccadf2653b7c6795ded1c4e4e29` | 2,292 | 1,266,214,905 |
-| Evidence | `PiotrSty/slayer-ocr-experiment-evidence` | `e99e06045824daa577d7d80104663b416420a299` | `0ca2aeb4d62a3653db3381c3131c0be476c37bd49681daa2f9eb9fbc1073d097` | 1,104 | 1,426,381,205 |
+| Datasets | `PiotrSty/slayer-ocr-datasets` | `8fda75dd9a7612b8c64bedbade6a29bce579b739` | `7fd1778332ba5950e59a4b07785c10649979608b421c41b9bc9d4466ad2c3b7f` | 2,361 | 1,486,536,176 |
+| Evidence | `PiotrSty/slayer-ocr-experiment-evidence` | `48af34860e6ed48a251b3cec3c459797775d93f8` | `ec397763cddf163dbf53be69b93b695feca2a1d3fccd63d00b4606fb18ad7032` | 1,124 | 1,438,242,821 |
 
 Collection: `PiotrSty/ocr-experiment-registry-6abca642387af872378a7fee`
 
@@ -35,6 +37,15 @@ All three repositories and the collection were confirmed as public through
 anonymous Hub API requests. Their
 `MANIFEST.jsonl` and `MANIFEST.sha256` files were downloaded back from the exact
 revisions above. Each downloaded manifest hash matched its local source exactly.
+
+The 2026-10-02 incremental update adds the complete corrected RF-DETR dataset
+v2, its deterministic ZIP, the corrected-GT audit ZIP, extracted predictions
+and overlays, and the result report. Critical dataset provenance and audit JSON
+files were downloaded from the exact revisions in the table and matched the
+local sources byte-for-byte. The published archive hashes are:
+
+- corrected dataset ZIP: `1cfb920217c15e1c2b4f0de50a972ca30bc6cbf975022dbfc9597fdbee83732d`;
+- corrected-GT audit ZIP: `84efbe41837a42f94eea27c3176b6c6af78e837d7184d3356ceae311eaa87e51`.
 
 The staging tree was scanned for executable/code extensions and common token
 patterns before upload. No matching code files or credential patterns were
