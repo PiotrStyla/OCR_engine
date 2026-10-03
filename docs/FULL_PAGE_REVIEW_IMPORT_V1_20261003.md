@@ -69,6 +69,13 @@ The ZIP contains all 15 scans, all 15 unchanged source XML files and the complet
 review evidence. No program files or weights. Preparation and existing safeguards
 passed **90 focused CPU tests**.
 
+Public, immutable snapshots (downloaded back and SHA-256 verified):
+
+- [Complete ZIP with scans and review data](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/ad936dd059487c363cd6f71c67bdaaca07841399/data/full-page-validation-v4-single-review-draft-20261003/full-page-validation-v4-single-review-draft.zip?download=true)
+- [Dataset files](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/ad936dd059487c363cd6f71c67bdaaca07841399/data/full-page-validation-v4-single-review-draft-20261003)
+- [Review evidence and unapplied follow-up proposals](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/689f9055fe872dca94738b5c28fba93218080bd6/experiments/2026-10-03/full-page-review-import-v1)
+- [Importer and tests at the publication revision](https://github.com/PiotrStyla/OCR_engine/tree/f2a28a9e905693efdf88d8b67ca4e74d0bff543a)
+
 Next: resolve the two word proposals and inclusion-policy notes, then compare
 another supported full-page backend using these explicitly provisional references.
 Keep a separate independent, reviewed test before selecting training targets or
