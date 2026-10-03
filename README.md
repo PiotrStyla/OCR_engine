@@ -10,14 +10,24 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Następny etap: OCR całych stron
 
+**Wynik v7 (pełne 4 MP):** 15/15 stron na T4, 15 EOS, bez OOM,
+limitów i błędów wykonania. CER wynosi **17,52%**, WER **61,63%**, wobec
+**63,35% / 132,72%** zachowanego v5. CER poprawił się na 12 stronach,
+pogorszył na 3. Dużą część poprawy daje usunięcie dawnej pętli; na 14 stronach
+bez niej CER spada z 19,51% do 16,97% (diagnostyka wtórna).
+Audyt sprawdził 69 plików i odtworzył metryki; **143 testy CPU przeszły**.
+`Poſłał` nadal jest błędne, a referencje nie są gold. To techniczny baseline,
+nie zatwierdzony teacher ani SOTA.
+[Wynik i ograniczenia v7](docs/FULL_PAGE_VALIDATION_4MP_V7_RESULT_20261003.md).
+
 **Wynik v6:** oba warianty wykonały po 3 strony na T4. Przy 4 MP zniknęła
 pętla `44.`: wszystkie odpowiedzi zakończyły się EOS, bez OOM. CER całej
 próby spadł z **217,82% do 21,76%**, głównie przez usunięcie tej pętli.
 Na dwóch stronach tekstowych CER spadł z **22,10% do 19,45%** (diagnostyka
 wtórna, nie nowy benchmark). Oba warianty nadal nie emitują `ſ`, a `Poſłał`
 pozostaje błędne. Sprawdzono 40 plików i odtworzono metryki.
-4 MP jest kandydatem do walidacji na wszystkich 15 stronach, nie zatwierdzonym
-teacherem ani rozwiązaniem historycznej pisowni.
+Późniejszy v7 potwierdził wykonanie na wszystkich 15 stronach, lecz nie rozwiązał
+historycznej pisowni ani nie zatwierdził automatycznego teachera.
 [Wynik i ograniczenia v6](docs/FULL_PAGE_RESOLUTION_V6_RESULT_20261003.md).
 
 **Wynik porównania v5:** Qwen3-VL-4B wykonał 15/15 stron na raportowanym T4,
@@ -46,19 +56,18 @@ zachowując m.in. `ſt`, `ſi`, `ſł` i `á`. Powstał osobny draft z oryginał
 historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
 4 zapętlenia. [Import korekt i pozostałe kwestie](docs/FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
 
-**Następny run: jeden notebook pełnej walidacji 4 MP v7.**
-[Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_validation_4mp_v7.ipynb)
+**V7 zakończone; nie trzeba powtarzać runu.**
+[Notebook do odtworzenia w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/9e1b98c2d429489609b64d4e0f115e535d72df32/training/colab_full_page_validation_4mp_v7.ipynb)
 pobiera 15 stron i zweryfikowane predykcje Qwen 1 MP z v5 z HF, bez uploadów.
 Uruchamia tylko niezmieniony profil Qwen 4 MP z v6, na wszystkich stronach.
-Wybierz GPU, uruchom wszystkie komórki i odeślij
-`full-page-validation-4mp-v7-evidence.zip`. V5 nie jest uruchamiany ponownie.
+V5 nie jest uruchamiany ponownie.
 To porównanie różnych sesji, nie kontrolowany test szybkości; wszystkie błędy
 i limity pozostają w metrykach. Referencje nadal nie są gold.
-134 testy CPU przeszły; sprawdzono rzeczywiste pobranie i audyt ZIP-u v5,
-wszystkie 15 skanów oraz format notebooka. Pełny run GPU v7 jest jeszcze przed nami.
 [Zakres, konfiguracja i ograniczenia v7](docs/FULL_PAGE_VALIDATION_4MP_V7_PROTOCOL_20261003.md).
-V6 jest zakończone i nie wymaga powtarzania. Po pełnej walidacji technicznej
-pozostaje ukierunkowane poprawianie odczytu historycznych znaków.
+Następny etap DATA ENGINE: hard-example mining dla `ſ`, `á`, `ɇ`, review
+wycinków i transkrypcji dyplomatycznych, następnie trening specjalizowanego
+recognizera na rozłącznych dokumentach. Nie zamieniamy draftów ani predykcji
+Qwen automatycznie w etykiety treningowe.
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.

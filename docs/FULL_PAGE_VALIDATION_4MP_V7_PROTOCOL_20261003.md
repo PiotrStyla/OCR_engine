@@ -79,3 +79,10 @@ The focused suite passes 134 CPU tests. All 15 source images/hashes and the
 real published v5 download were checked; v5 CER 63.3478% / WER 132.7211%
 were reproduced unchanged. All 15 absent candidate predictions were verified
 to score as empty rather than be excluded. nbformat and all eight code cells validate.
+
+## Completed Run Follow-Up
+
+The user returned the full v7 evidence; the frozen protocol/configuration above
+remain unchanged. All 15 pages ended with EOS, with no OOM or capped output.
+An independent audit verified 69 members and reproduced all scores. The updated
+focused suite passes 143 CPU tests. See the [audited result and limitations](FULL_PAGE_VALIDATION_4MP_V7_RESULT_20261003.md).
