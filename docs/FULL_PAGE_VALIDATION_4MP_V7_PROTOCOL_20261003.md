@@ -3,6 +3,13 @@
 Status: frozen protocol, first complete 15-page 4MP GPU run pending.
 The three-page v6 result is not a result for this protocol.
 
+[Public frozen protocol and CPU validation on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/a66694ffcb39fbcd9c07a8b98d7d39aa18c7b498/experiments/2026-10-03/full-page-validation-4mp-v7-protocol).
+All four files were downloaded and SHA-256 verified. This link is a later
+publication receipt; the frozen snapshot remains unchanged.
+Notebook code is pinned to `990146abb83005205e50dc28238c9767915a7efb`.
+The published notebook at `9e1b98c2d429489609b64d4e0f115e535d72df32` was
+independently downloaded, JSON-compared, nbformat-validated and syntax-checked.
+
 ## One Notebook
 
 Open [the single v7 notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_validation_4mp_v7.ipynb), select GPU, then Run all.
