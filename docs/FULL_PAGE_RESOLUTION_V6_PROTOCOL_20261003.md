@@ -2,6 +2,10 @@
 
 Status: frozen protocol, GPU execution pending. No v6 model result exists yet.
 
+Follow-up: the returned run has now been independently audited.
+[Completed result and remaining historical-spelling failures](FULL_PAGE_RESOLUTION_V6_RESULT_20261003.md).
+The original pre-run protocol snapshot on HF remains unchanged.
+
 [Public frozen protocol and CPU validation on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/6d92cebae68172c4acb7b21b1ecbd04a14444aa6/experiments/2026-10-03/full-page-resolution-v6-protocol).
 All four published files were independently downloaded and SHA-256 verified.
 The original protocol snapshot remains unchanged; this link is a later receipt.

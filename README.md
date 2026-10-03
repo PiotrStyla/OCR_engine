@@ -10,6 +10,16 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Następny etap: OCR całych stron
 
+**Wynik v6:** oba warianty wykonały po 3 strony na T4. Przy 4 MP zniknęła
+pętla `44.`: wszystkie odpowiedzi zakończyły się EOS, bez OOM. CER całej
+próby spadł z **217,82% do 21,76%**, głównie przez usunięcie tej pętli.
+Na dwóch stronach tekstowych CER spadł z **22,10% do 19,45%** (diagnostyka
+wtórna, nie nowy benchmark). Oba warianty nadal nie emitują `ſ`, a `Poſłał`
+pozostaje błędne. Sprawdzono 40 plików i odtworzono metryki.
+4 MP jest kandydatem do walidacji na wszystkich 15 stronach, nie zatwierdzonym
+teacherem ani rozwiązaniem historycznej pisowni.
+[Wynik i ograniczenia v6](docs/FULL_PAGE_RESOLUTION_V6_RESULT_20261003.md).
+
 **Wynik porównania v5:** Qwen3-VL-4B wykonał 15/15 stron na raportowanym T4,
 zakończył 14 odpowiedzi EOS i jedną zapętlił na `44.`. Na prowizorycznych
 referencjach v2 ma CER **63,35%**, WER **132,72%**, wobec **237,23% / 514,01%**
@@ -36,16 +46,18 @@ zachowując m.in. `ſt`, `ſi`, `ſł` i `á`. Powstał osobny draft z oryginał
 historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
 4 zapętlenia. [Import korekt i pozostałe kwestie](docs/FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
 
-**Następny run: jeden notebook rozdzielczości v6.**
+**Zakończona diagnostyka: notebook rozdzielczości v6.**
 [Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_resolution_v6.ipynb)
 pobiera komplet danych z HF i wybiera trzy trudne strony. Qwen3-VL-4B odczytuje
 je ponownie przy limitach 1 MP i 4 MP, w tej samej sesji i z niezmienionym
 promptem oraz dekodowaniem. Bez uploadów. Wybierz GPU, uruchom wszystkie
 komórki i odeślij `full-page-resolution-v6-evidence.zip`.
-119 testów CPU przeszło; pierwszy test GPU v6 i dopasowanie 4 MP do T4 są
-jeszcze do wykonania. Wybór stron jest diagnostyczny, po analizie v5,
+Pierwszy test GPU v6 zakończył się poprawnie, również przy 4 MP na T4.
+Wybór stron jest diagnostyczny, po analizie v5,
 nie niezależnym benchmarkiem. Referencje nadal nie są gold.
 [Zakres, konfiguracja i ograniczenia](docs/FULL_PAGE_RESOLUTION_V6_PROTOCOL_20261003.md).
+Nie trzeba powtarzać v6; następny etap to niezmieniony profil 4 MP na pełnym
+splicie validation, a potem ukierunkowane poprawianie odczytu historycznych znaków.
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
