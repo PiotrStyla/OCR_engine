@@ -407,6 +407,65 @@ def load_ovis(spec):
     return infer
 
 
+def load_qwen(spec):
+    import torch
+    from PIL import Image
+    from transformers import AutoProcessor, BitsAndBytesConfig, Qwen3VLForConditionalGeneration
+
+    quantization = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type='nf4',
+                                      bnb_4bit_compute_dtype=torch.float16,
+                                      bnb_4bit_use_double_quant=True)
+    model = Qwen3VLForConditionalGeneration.from_pretrained(
+        spec['repo'], revision=spec['revision'], device_map={'': 0},
+        torch_dtype=torch.float16, attn_implementation='sdpa',
+        quantization_config=quantization).eval()
+    processor = AutoProcessor.from_pretrained(
+        spec['repo'], revision=spec['revision'],
+        min_pixels=spec['min_pixels'], max_pixels=spec['max_pixels'])
+    eos = model.generation_config.eos_token_id
+    eos = eos if isinstance(eos, list) else [eos]
+    if not eos or any(value is None for value in eos):
+        raise ValueError('Qwen requires an explicit model EOS token')
+
+    def infer(path, page):
+        with Image.open(path) as source:
+            image = source.convert('RGB')
+        messages = [{'role': 'user', 'content': [
+            {'type': 'image', 'image': image}, {'type': 'text', 'text': spec['prompt']}]}]
+        inputs = processor.apply_chat_template(
+            messages, tokenize=True, add_generation_prompt=True,
+            return_dict=True, return_tensors='pt')
+        grid = inputs['image_grid_thw'].tolist()
+        patch = processor.image_processor.patch_size
+        merge = processor.image_processor.merge_size
+        geometry = {'original_width': image.width, 'original_height': image.height,
+                    'image_grid_thw': grid, 'patch_size': patch, 'merge_size': merge,
+                    'processed_width': grid[0][2]*patch, 'processed_height': grid[0][1]*patch,
+                    'processed_pixels': grid[0][1]*grid[0][2]*patch*patch,
+                    'visual_tokens': sum(t*h*w//(merge*merge) for t,h,w in grid),
+                    'min_pixels': spec['min_pixels'], 'max_pixels': spec['max_pixels']}
+        inputs = inputs.to(model.device)
+        with torch.inference_mode():
+            outputs = model.generate(**inputs, max_new_tokens=spec['max_new_tokens'],
+                                     do_sample=False, eos_token_id=eos,
+                                     pad_token_id=processor.tokenizer.pad_token_id)
+        generated = outputs[0][inputs['input_ids'].shape[1]:]
+        ids = generated.tolist()
+        ended = bool(ids and ids[-1] in eos)
+        capped = len(ids) >= spec['max_new_tokens'] and not ended
+        raw = processor.decode(generated, skip_special_tokens=True,
+                               clean_up_tokenization_spaces=False)
+        return {'qwen3-vl-4b-full-page': {
+            'text': raw, 'format': 'plain', 'generated_tokens': len(ids),
+            'finish_reason': 'eos' if ended else ('length' if capped else 'unknown'),
+            'token_limit_reached': capped, 'input_geometry': geometry,
+            'generation_trace': {'generated_token_ids': ids, 'eos_token_ids': eos,
+                'decoded_with_special_tokens': processor.decode(
+                    generated, skip_special_tokens=False, clean_up_tokenization_spaces=False)}}}
+
+    return infer
+
+
 def run_worker(engine, config, inputs, output):
     import torch
     output = Path(output)
@@ -422,8 +481,9 @@ def run_worker(engine, config, inputs, output):
     if not torch.cuda.is_available():
         raise RuntimeError("Select a GPU runtime in Colab")
     torch.manual_seed(42)
-    variants = (["mixed-v3-row-major", "mixed-v3-column-order", "mixed-v3-source-regions"]
-                if engine == "mixed-v3" else ["ovis-ocr2-full-page"])
+    variants = {'mixed-v3': ['mixed-v3-row-major', 'mixed-v3-column-order', 'mixed-v3-source-regions'],
+                'ovis-ocr2': ['ovis-ocr2-full-page'],
+                'qwen3-vl-4b': ['qwen3-vl-4b-full-page']}[engine]
     existing = {}
     for variant in variants:
         path = output / f"{variant}.jsonl"
@@ -437,7 +497,8 @@ def run_worker(engine, config, inputs, output):
     load_error = None
     started = time.perf_counter()
     try:
-        infer = (load_mixed if engine == "mixed-v3" else load_ovis)(spec) if pending else None
+        loader = {'mixed-v3': load_mixed, 'ovis-ocr2': load_ovis, 'qwen3-vl-4b': load_qwen}[engine]
+        infer = loader(spec) if pending else None
     except Exception as exc:
         infer, load_error = None, f"{type(exc).__name__}: {exc}"
     load_seconds = time.perf_counter() - started
@@ -469,6 +530,9 @@ def run_worker(engine, config, inputs, output):
                    "reference_text_sent_to_model": False, "packages": {}}
     for package in ("torch", "transformers", "huggingface_hub", "tokenizers", "Pillow"):
         environment["packages"][package] = importlib.metadata.version(package)
+    if engine == 'qwen3-vl-4b':
+        for name in ('bitsandbytes', 'accelerate'):
+            environment['packages'][name] = importlib.metadata.version(name)
     write_json(output / "environment.json", environment)
     failed = {row['id'] for variant in variants for row in read_rows(output / f'{variant}.jsonl')
               if row.get('status') != 'ok'}
@@ -586,7 +650,7 @@ def main():
     parser.add_argument("--config", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--pages", type=int)
-    parser.add_argument("--engine", choices=("mixed-v3", "ovis-ocr2"))
+    parser.add_argument("--engine", choices=("mixed-v3", "ovis-ocr2", "qwen3-vl-4b"))
     parser.add_argument("--inputs")
     args = parser.parse_args()
     config = json.loads(Path(args.config).read_text(encoding="utf-8"))
