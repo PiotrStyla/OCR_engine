@@ -9,6 +9,14 @@ unchanged reference fields, model/input identities and generated token traces
 passed the audit. No training pages or final-test pages entered inference.
 Raw micro CER/WER were independently recomputed and match the supplied report.
 
+[Public HF evidence and audit](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/308da61cbc389c23f9cc9876d461dfc2d5f15f75/experiments/2026-10-03/full-page-validation-v4-result).
+[Complete code-free review ZIP, including all 15 scans](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/e1bbed0e83db24842a0481bc3b6b4c27c87e3243/data/full-page-validation-v4-review-20261003/full-page-validation-v4-review-inputs.zip?download=true).
+The publication contains 25 evidence files and 10 dataset paths. Both ZIPs were
+downloaded from their published revisions and SHA-256 verified. Images and XML
+are included inside the complete review ZIP; its size is 59,736,080 bytes.
+Code remains on GitHub, with publication provenance pinned to
+`1e6382d47cc74c98c6af545e6db406e01d3969d4`.
+
 ## Observed Result
 
 - Worker execution: 15/15 pages, zero inference exceptions or OOM.
