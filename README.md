@@ -28,6 +28,14 @@ zachowując m.in. `ſt`, `ſi`, `ſł` i `á`. Powstał osobny draft z oryginał
 historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
 4 zapętlenia. [Import korekt i pozostałe kwestie](docs/FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
 
+**Następny run: jeden notebook porównawczy v5.**
+[Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_comparison_v5.ipynb)
+pobiera komplet 15 stron v2 z HF, uruchamia Qwen3-VL-4B i porównuje go z zapisanym
+Ovis, bez ponownej inferencji Ovis i bez uploadów. Wybierz GPU, uruchom wszystkie
+komórki i odeślij `full-page-comparison-v5-evidence.zip`.
+Profil Qwen wymaga pierwszego testu GPU; referencje pozostają prowizoryczne.
+[Zakres, konfiguracja i ograniczenia](docs/FULL_PAGE_COMPARISON_V5_PROTOCOL_20261003.md).
+
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
 [Protokół i kolejność następnych etapów](docs/FULL_PAGE_PILOT_V1.md).
