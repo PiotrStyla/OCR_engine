@@ -1,6 +1,7 @@
 # Full-page validation v4: EOS fix does not generalize reliably
 
 Date: 2026-10-03. Expanded development diagnostics, not an independent benchmark.
+Follow-up: [all 15 review decisions imported as a single-review draft, preserving the original score](FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
 Evidence ZIP SHA-256: `475510b3436d93d3dd65401a1630254a319d436b871d060b07faf131529f258f`.
 
 All 17 archive members passed checksum verification. The frozen config,

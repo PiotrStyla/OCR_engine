@@ -22,6 +22,12 @@ Przygotowano komplet 15 skanów i oryginalnych transkrypcji do review.
 [Raport walidacji v4 i instrukcja](docs/FULL_PAGE_VALIDATION_V4_RESULT_20261003.md).
 Nie usuwamy nieudanych stron ani powtórzeń z metryk; zachowujemy starą pisownię.
 
+Zaimportowano decyzje dla wszystkich 15 stron: 14 propozycji i 1 weryfikacja
+jednego recenzenta. W proponowanych transkrypcjach usunięto 117 znaków PUA/`�`,
+zachowując m.in. `ſt`, `ſi`, `ſł` i `á`. Powstał osobny draft z oryginałami i
+historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
+4 zapętlenia. [Import korekt i pozostałe kwestie](docs/FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
+
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
 [Protokół i kolejność następnych etapów](docs/FULL_PAGE_PILOT_V1.md).

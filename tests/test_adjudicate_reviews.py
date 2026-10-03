@@ -49,6 +49,76 @@ def test_two_agreeing_reviewers_create_traceable_candidate(tmp_path):
         adjudicate(manifest, paths, output)
 
 
+@pytest.mark.parametrize('decision',['proposed','verified','needs-review'])
+def test_single_review_draft_preserves_decisions_and_never_promotes(tmp_path, decision):
+    from training.prepare_single_review_draft import prepare
+    manifest,row=source(tmp_path)
+    original=manifest.read_bytes()
+    correction=event(row,'A',after='błáwaty ſt',decision=decision)
+    correction['note']='Marginalia: retain separately, not the transcription'
+    review=export(tmp_path,manifest,'review.json',[correction])
+    predictions=tmp_path/'predictions.jsonl'
+    predictions.write_text(json.dumps({'id':'page','text':'błáwaty ſt','status':'ok',
+        'finish_reason':'eos','token_limit_reached':False})+'\n',encoding='utf-8')
+    output=tmp_path/'draft'
+    report=prepare(manifest,review,output,predictions)
+    draft=json.loads((output/'manifest.jsonl').read_text(encoding='utf-8'))
+    assert draft['text']=='błáwaty ſt' and draft['source_reference_text']==row['text']
+    assert draft['annotation_notes']==correction['note']
+    assert draft['review_status']==decision and draft['review_event_id']==correction['id']
+    assert draft['completeness_verified'] is False
+    assert draft['eligible_for_evaluation'] is False and draft['eligible_for_training'] is False
+    assert report['gold_pages']==0 and report['draft_unicode_issues']==0
+    assert manifest.read_bytes()==original
+    assert (output/'original-review.json').read_bytes()==review.read_bytes()
+    assert (output/'retained-projected-predictions.jsonl').read_bytes()==predictions.read_bytes()
+    diagnostic=json.loads((output/'diagnostic-comparison.json').read_text())
+    assert diagnostic['model_improved'] is False and diagnostic['content_scope_verified'] is False
+    import zipfile
+    with zipfile.ZipFile(report['archive']) as stream:
+        checksums=json.loads(stream.read('checksums.json'))
+        import hashlib
+        assert set(checksums)==set(stream.namelist())-{'checksums.json'}
+        assert all(hashlib.sha256(stream.read(name)).hexdigest()==checksum for name,checksum in checksums.items())
+    with pytest.raises(FileExistsError):
+        prepare(manifest,review,output)
+
+
+def test_single_review_draft_rejects_multiple_reviewers_before_writing(tmp_path):
+    from training.prepare_single_review_draft import prepare
+    manifest,row=source(tmp_path)
+    a=event(row,'A',after='Correct')
+    b=event(row,'B',after='Correct',before='Correct')
+    review=export(tmp_path,manifest,'review.json',[a,b])
+    output=tmp_path/'draft'
+    with pytest.raises(ValueError,match='exactly one reviewer'):
+        prepare(manifest,review,output)
+    assert not output.exists()
+
+
+def test_single_review_draft_retains_source_xml_unchanged(tmp_path):
+    from training.prepare_single_review_draft import prepare
+    manifest,row=source(tmp_path)
+    xml=tmp_path/'source.xml'
+    xml.write_text('<PcGts/>')
+    row.update(pagexml_local=xml.name,pagexml_sha256=digest(xml))
+    manifest.write_text(json.dumps(row),encoding='utf-8')
+    review=export(tmp_path,manifest,'review.json',[event(row,'A',decision='proposed')])
+    output=tmp_path/'draft'
+    prepare(manifest,review,output)
+    draft=json.loads((output/'manifest.jsonl').read_text(encoding='utf-8'))
+    assert (output/draft['pagexml_local']).read_bytes()==xml.read_bytes()
+    assert draft['pagexml_reference_status']=='source-unreviewed-unchanged'
+
+
+def test_glyph_proposals_are_evidence_not_automatic_global_replacements():
+    from training.prepare_single_review_draft import glyph_proposals
+    report=glyph_proposals([{'before':'błáwaty \ueada','after':'błáwaty ſt','page_id':'p','id':'e'}])
+    assert report['mappings']==[{'codepoint':'U+EADA','replacement':'ſt','observations':1}]
+    assert report['automatic_application_allowed'] is False
+    assert report['evidence'][0]['event_id']=='e'
+
+
 @pytest.mark.parametrize('other,decision,expected', [
     ('Different', 'verified', 'conflict'), ('Correct', 'proposed', 'pending'),
     ('Correct', 'needs-review', 'pending'),
