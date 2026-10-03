@@ -1,6 +1,9 @@
 # Full-page validation v4
 
-Status: prepared, GPU run pending. OvisOCR2 inference only; no training.
+Status: executed on Tesla T4. 15/15 runtime success, 11 EOS, 4 capped repetitions.
+Raw CER 243.7391%, WER 515.8644%; no deployment or automatic-teacher promotion.
+[Result and reference-review gate](../../../docs/FULL_PAGE_VALIDATION_V4_RESULT_20261003.md).
+OvisOCR2 inference only; no training. Do not rerun a larger unchanged profile.
 
 Run `training/colab_full_page_validation_v4.ipynb` with GPU and Run all.
 Inputs and weights download automatically from pinned public sources. No uploads.

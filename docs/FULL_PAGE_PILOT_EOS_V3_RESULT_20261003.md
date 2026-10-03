@@ -1,6 +1,7 @@
 # Full-page EOS v3: termination verified on two pages
 
 Date: 2026-10-03. Development diagnostics, not an independent benchmark.
+Follow-up: [15-page validation v4 found four capped repetitions; reference review is now the next gate](FULL_PAGE_VALIDATION_V4_RESULT_20261003.md).
 Archive SHA-256: `d69c45d244e5dea495f5a46357193337b018d7089f57af9dc00417bd4f47fee7`.
 
 All 17 ZIP members passed SHA-256 coverage verification. The archived configuration,

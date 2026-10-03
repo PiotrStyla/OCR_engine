@@ -10,19 +10,17 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Następny etap: OCR całych stron
 
-Następny test: [notebook Colab walidacja v4](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_validation_v4.ipynb),
-uruchamiający tylko OvisOCR2 na wszystkich 15 stronach splitu validation.
-Dane i modele pobierają się automatycznie z HF; modele działają w osobnych
-środowiskach, a ZIP zawiera surowe predykcje, błędy i metryki. W pierwszym przebiegu
-mixed-v3 odczytał 2/2 strony, a Ovis załadował się, lecz zwrócił 2/2 błędy OOM.
-Profil T4 v2 usunął OOM: Ovis wygenerował 2/2 odpowiedzi, ale obie zapętliły się
-i osiągnęły limit 4096 tokenów. EOS v3 zakończył 2/2 odpowiedzi prawidłowym
-tokenem, bez zapętlenia i limitu: diagnostyczny CER 24,59%, WER 70,82%.
-Naprawiono zakończenie generacji, nie wytrenowano nowego modelu. Walidacja v4
-wyklucza trening; dwie z jej stron były już oglądane w v3, więc nie jest niezależnym testem.
-[Raport EOS v3 i następny pomiar](docs/FULL_PAGE_PILOT_EOS_V3_RESULT_20261003.md).
-Referencje źródłowe są niezweryfikowane, więc
-wynik pozostaje diagnostyczny i nie promuje modelu.
+Walidacja v4 objęła wszystkie 15 stron splitu validation: 15/15 wykonań bez OOM,
+ale tylko 11 zakończeń EOS i 4 zapętlone odpowiedzi na limicie 4096 tokenów.
+Surowy wynik całego testu: **CER 243,74%, WER 515,86%**. EOS v3 działał na dwóch
+stronach, lecz ta poprawka nie zapewniła niezawodności na większej próbie.
+13/15 referencji zawiera prywatne znaki Unicode; oględziny skanu potwierdziły też
+przestawione strofy w jednej referencji. Nie promujemy tego profilu Ovis do
+produkcji ani automatycznego teachera. Następny etap: kontrola referencji i
+trudnych przypadków, potem porównanie drugiego backendu na sprawdzonych tekstach.
+Przygotowano komplet 15 skanów i oryginalnych transkrypcji do review.
+[Raport walidacji v4 i instrukcja](docs/FULL_PAGE_VALIDATION_V4_RESULT_20261003.md).
+Nie usuwamy nieudanych stron ani powtórzeń z metryk; zachowujemy starą pisownię.
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.

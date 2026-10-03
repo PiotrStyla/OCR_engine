@@ -595,3 +595,72 @@ def test_archive_audit_checks_pinned_reference_and_complete_scope(tmp_path, corr
     write_json(path,config)
     with pytest.raises(ValueError,match=message):
         audit(package(tmp_path),tmp_path/'verified',path)
+
+
+def test_triage_preserves_failed_pages_and_labels_eos_subset_as_biased():
+    from tools.triage_full_page_pilot import summarize
+    rows = [{'id':str(index),'text':'historical text','collection':'C'} for index in range(3)]
+    predictions = [
+        {'id':'0','text':'historical text','status':'ok','finish_reason':'eos'},
+        {'id':'1','text':'historical text '*20,'status':'ok','finish_reason':'length','token_limit_reached':True},
+        {'id':'2','text':'ignored','status':'error','finish_reason':None}]
+    reference = {'results':[{'id':row['id'],'flags':[]} for row in rows]}
+    result = summarize(rows,predictions,reference)
+    assert result['partitions']['all_pages']['pages'] == 3
+    assert result['partitions']['all_pages']['selection_biased'] is False
+    assert result['partitions']['eos_only_diagnostic']['pages'] == 1
+    assert result['partitions']['eos_only_diagnostic']['selection_biased'] is True
+    assert predictions[1]['text'] == 'historical text '*20
+    assert result['results'][0]['id'] == '1'
+    assert result['flag_counts']['inference-error'] == 1
+    with pytest.raises(ValueError,match='every prediction'):
+        summarize(rows,predictions[:2],reference)
+
+
+def test_triage_flags_historical_unicode_without_modernizing():
+    from tools.triage_full_page_pilot import summarize
+    text = 'błáwaty ſtara \ue000'
+    row = {'id':'p','text':text,'collection':'C'}
+    prediction = {'id':'p','text':text+' моего <img src="imaginary.png" />',
+                  'status':'ok','finish_reason':'eos','format':'markdown'}
+    result = summarize([row],[prediction],{'results':[{'id':'p','flags':['private-use-character']}]})
+    item = result['results'][0]
+    assert item['reference'] == text
+    assert 'błáwaty ſtara' in item['hypothesis']
+    assert {'private-use-character','cyrillic-output-review','generated-image-placeholder'} <= set(item['flags'])
+
+
+def test_prepare_review_keeps_sources_predictions_and_code_free_zip(tmp_path):
+    import shutil
+    from tools.triage_full_page_pilot import prepare
+    config, pool, _ = fixture(tmp_path)
+    audited = tmp_path/'audited'
+    evidence = audited/'evidence'
+    evidence.mkdir(parents=True)
+    shutil.copytree(pool,evidence/'dataset')
+    write_json(evidence/'config.json',config)
+    predictions = evidence/'predictions/ovis-ocr2'
+    predictions.mkdir(parents=True)
+    original = json.loads((pool/'manifest.jsonl').read_text(encoding='utf-8'))
+    write_rows(predictions/'ovis-ocr2-full-page.jsonl',[{
+        'id':'p','text':original['text'],'status':'ok','finish_reason':'eos','generated_tokens':10}])
+    write_json(audited/'audit.json',{'source_archive_sha256':'a'*64})
+    write_json(audited/'checksums.json',{path.relative_to(audited).as_posix():digest(path)
+        for path in audited.rglob('*') if path.is_file()})
+    output = tmp_path/'review-data'
+    result = prepare(audited,pool,output)
+    assert result['gold_pages']==0 and result['pages']==1
+    staged = json.loads((output/'manifest.jsonl').read_text(encoding='utf-8'))
+    assert staged['text'] == original['text']
+    assert staged['inference_png_sha256'] == original['sha256']
+    assert staged['review_status']=='pending'
+    assert (output/'raw-predictions.jsonl').read_bytes() == (predictions/'ovis-ocr2-full-page.jsonl').read_bytes()
+    with zipfile.ZipFile(result['archive']) as archive:
+        assert all(Path(name).suffix in {'.json','.jsonl','.xml','.png'} for name in archive.namelist())
+        checksums = json.loads(archive.read('checksums.json'))
+        assert set(checksums)==set(archive.namelist())-{'checksums.json'}
+        for name, expected in checksums.items():
+            assert hashlib.sha256(archive.read(name)).hexdigest()==expected
+    assert (output/'review/index.html').exists()
+    with pytest.raises(FileExistsError):
+        prepare(audited,pool,output)
