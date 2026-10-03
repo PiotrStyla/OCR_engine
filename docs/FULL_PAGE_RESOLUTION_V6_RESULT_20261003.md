@@ -4,6 +4,12 @@ Status: both arms completed on a reported Tesla T4. This is a three-page,
 post-hoc development diagnostic, not a held-out benchmark or SOTA result.
 The exact v2 references are single-review drafts, not adjudicated gold.
 
+[Public evidence and independent audit on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/bf2bf8372ea99c8fb3175fe12a8689f57f8e3fd9/experiments/2026-10-03/full-page-resolution-v6-result).
+All nine published files were downloaded and SHA-256 verified. The snapshot
+contains the unchanged user ZIP, recomputed scores, report and publication manifest;
+no source code, scans or weights were uploaded to this evidence prefix.
+Audit code revision: `a81bc2c394e931fe0f2cba828d190093dd3e1b14`.
+
 ## Integrity and Reproduction
 
 Returned archive SHA-256:
