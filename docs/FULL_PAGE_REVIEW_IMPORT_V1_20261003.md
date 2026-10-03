@@ -76,7 +76,24 @@ Public, immutable snapshots (downloaded back and SHA-256 verified):
 - [Review evidence and unapplied follow-up proposals](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/689f9055fe872dca94738b5c28fba93218080bd6/experiments/2026-10-03/full-page-review-import-v1)
 - [Importer and tests at the publication revision](https://github.com/PiotrStyla/OCR_engine/tree/f2a28a9e905693efdf88d8b67ca4e74d0bff543a)
 
-Next: resolve the two word proposals and inclusion-policy notes, then compare
+## Confirmed Word Corrections: v2
+
+The user explicitly confirmed both occurrences as `Poſłał` in the conversation:
+"Tak ma być Poſłał w obu przypadkach". The separate v2 draft changes only
+`Poſtał wnet Turczyn/ Czauſá do Hetmáná/` and the initial `Połtał/ że tym...`
+on `Choragiew_FT__436799`. Every other page and all page-level decisions remain
+unchanged. This is scoped word confirmation, not independent or full-page approval.
+
+The exact original export and the v1 snapshot remain unchanged. The complete v2
+ZIP retains the parent manifest, parent reports, pre-confirmation transcription,
+the explicit confirmation and all scans/XML. `training.apply_review_text_confirmation`
+requires the exact parent manifest hash and a unique matching context for each edit.
+**91 focused CPU tests passed**. v2 manifest SHA-256:
+`c278194894d2ebf9993384ff9e225e855f8e2ff737e2c7f5b31f05d9ec194b19`.
+v2 ZIP SHA-256:
+`a8f050a7136676fb5f86bcba4441bdd8e3a1f04bd0078913daaaeb6328d8820b`.
+
+Next: resolve the inclusion-policy notes, then compare
 another supported full-page backend using these explicitly provisional references.
 Keep a separate independent, reviewed test before selecting training targets or
 claiming SOTA. The existing validation pages must not be repurposed as training data.

@@ -119,6 +119,51 @@ def test_glyph_proposals_are_evidence_not_automatic_global_replacements():
     assert report['evidence'][0]['event_id']=='e'
 
 
+def test_scoped_confirmation_preserves_source_and_page_status(tmp_path):
+    from training.prepare_single_review_draft import prepare
+    from training.apply_review_text_confirmation import apply
+    manifest, row = source(tmp_path)
+    review = export(tmp_path, manifest, 'review.json',
+                    [event(row, 'A', after='Poſtał/ błáwaty Połtał/', decision='proposed')])
+    draft = tmp_path/'draft'
+    prepare(manifest, review, draft)
+    old_manifest = (draft/'manifest.jsonl').read_bytes()
+    confirmation = tmp_path/'confirmation.json'
+    packet = {'schema': 'polocrbench-scoped-text-confirmation-v1', 'approved': True,
+              'user_message': 'Both should be Poſłał',
+              'parent_manifest_sha256': digest(draft/'manifest.jsonl'),
+              'corrections': [{'id': str(i), 'page_id': 'page', 'before': word, 'after': 'Poſłał/'}
+                              for i, word in enumerate(('Poſtał/', 'Połtał/'))]}
+    confirmation.write_text(json.dumps(packet), encoding='utf-8')
+    output = tmp_path/'confirmed'
+    report = apply(draft, confirmation, output)
+    corrected = json.loads((output/'manifest.jsonl').read_text(encoding='utf-8'))
+    assert corrected['text'] == 'Poſłał/ błáwaty Poſłał/'
+    assert corrected['review_status'] == 'proposed'
+    assert corrected['eligible_for_training'] is corrected['completeness_verified'] is False
+    assert corrected['pre_confirmation_text'] == 'Poſtał/ błáwaty Połtał/'
+    assert (draft/'manifest.jsonl').read_bytes() == old_manifest
+    assert (output/'parent-manifest.jsonl').read_bytes() == old_manifest
+    assert (output/'original-review.json').read_bytes() == review.read_bytes()
+    assert report['changes'] == 2
+    import hashlib
+    import zipfile
+    with zipfile.ZipFile(report['archive']) as stream:
+        checksums = json.loads(stream.read('checksums.json'))
+        assert set(checksums) == set(stream.namelist())-{'checksums.json'}
+        assert all(hashlib.sha256(stream.read(name)).hexdigest() == sha for name, sha in checksums.items())
+    packet['approved'] = False
+    confirmation.write_text(json.dumps(packet), encoding='utf-8')
+    with pytest.raises(ValueError, match='Explicit scoped confirmation'):
+        apply(draft, confirmation, tmp_path/'unapproved')
+    packet['approved'] = True
+    packet['corrections'][0]['before'] = 'missing context'
+    confirmation.write_text(json.dumps(packet), encoding='utf-8')
+    with pytest.raises(ValueError, match='exactly one'):
+        apply(draft, confirmation, tmp_path/'mismatched')
+    assert not (tmp_path/'mismatched').exists()
+
+
 @pytest.mark.parametrize('other,decision,expected', [
     ('Different', 'verified', 'conflict'), ('Correct', 'proposed', 'pending'),
     ('Correct', 'needs-review', 'pending'),
