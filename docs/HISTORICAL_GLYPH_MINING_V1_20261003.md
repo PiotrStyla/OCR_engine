@@ -84,3 +84,16 @@ corresponding draft span; the flagged filter returns 14 pages. Text mutation
 blocks stale offsets. A temporary proposed decision updates progress and
 exports a valid-named JSON history; that browser-test storage was cleared.
 No human review was performed by these tests.
+
+## Public Data
+
+[Complete data ZIP with all 15 scans](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/1975e77973d12f7c37ef42d4436159c2d99121f8/data/historical-glyph-mining-v1-20261003/historical-glyph-mining-v1-data.zip)
+and [publication/provenance files](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/1975e77973d12f7c37ef42d4436159c2d99121f8/data/historical-glyph-mining-v1-20261003)
+are public. All six published files and every data ZIP member were downloaded
+and verified by SHA-256. ZIP SHA-256:
+`1059a0599e839fde03d980b4b488f94d4a9baee4f4dccb6ed0c63c7ade0012fa`.
+Both manifests resolve to their correct original scans. The ZIP contains data
+only, with CC-BY-3.0 source URLs/attribution retained in the manifests; review
+program files remain on GH. Rebuild the UI with the command above.
+Mining code revision: `1b2126b` (full revision in HF publication.json).
+The HF README is the pre-publication snapshot; this section is a later receipt.
