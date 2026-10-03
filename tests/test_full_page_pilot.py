@@ -1,7 +1,9 @@
 import hashlib
+import importlib.util
 import io
 import json
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 import zipfile
@@ -13,7 +15,7 @@ from training.full_page_pilot import (
     digest, inspect_reference, markdown_text, package, safe_relative, score,
     run_worker, select_pages, stage, validate_inputs, write_json, write_rows,
 )
-from training.build_full_page_pilot_colab import build
+from training.build_full_page_pilot_colab import ENVIRONMENT_SETUP_SOURCE, build
 
 
 def xml(width=20, height=30):
@@ -197,12 +199,62 @@ def test_notebook_embeds_matching_runner_and_all_python_cells_compile(tmp_path):
     combined = "\n".join("".join(cell["source"]) for cell in notebook["cells"])
     assert "files.upload" not in combined
     assert "system_site_packages=True" in combined
+    assert "with_pip=False" in combined
+    assert "with_pip=True" not in combined
+    assert "'--python', str(python)" in combined
     assert "PARTIAL_EVIDENCE_READY" in combined
     assert "files.download(str(evidence_zip))" in combined
     for cell in notebook["cells"]:
         assert not cell.get("outputs")
         if cell["cell_type"] == "code" and not cell["source"][0].startswith("%"):
             compile("".join(cell["source"]), cell["id"], "exec")
+
+
+@pytest.mark.parametrize("partial_environment", [False, True])
+def test_environment_install_without_ensurepip_and_rerun(tmp_path, monkeypatch, partial_environment):
+    import venv
+    namespace = {}
+    exec(ENVIRONMENT_SETUP_SOURCE, namespace)
+    environment = tmp_path / "model-env"
+    marker = environment / "preserve.txt"
+    if partial_environment:
+        venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
+        marker.write_text("preserve existing files")
+    def ensurepip_must_not_run(*args, **kwargs):
+        raise AssertionError("ensurepip is unavailable in the simulated runtime")
+    monkeypatch.setattr(venv.EnvBuilder, "_setup_pip", ensurepip_must_not_run)
+    python = namespace["prepare_pilot_environment"](environment)
+    wheel = tmp_path / "pilot_env_probe-1.0-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as stream:
+        stream.writestr("pilot_env_probe.py", "VALUE = 'isolated'\n")
+        stream.writestr("pilot_env_probe-1.0.dist-info/METADATA",
+                        "Metadata-Version: 2.1\nName: pilot-env-probe\nVersion: 1.0\n")
+        stream.writestr("pilot_env_probe-1.0.dist-info/WHEEL",
+                        "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n")
+        stream.writestr("pilot_env_probe-1.0.dist-info/RECORD", "")
+    command = namespace["pilot_pip_command"](
+        python, "install", "--no-index", "--no-deps", "--disable-pip-version-check", str(wheel))
+    installation = subprocess.run(command, capture_output=True, text=True, timeout=120)
+    assert installation.returncode == 0, installation.stdout + installation.stderr
+    namespace["prepare_pilot_environment"](environment)
+    probe = subprocess.check_output([str(python), "-c",
+        "import json,pilot_env_probe; print(json.dumps([pilot_env_probe.VALUE,pilot_env_probe.__file__]))"], text=True)
+    value, location = json.loads(probe)
+    assert value == "isolated"
+    assert Path(location).is_relative_to(environment)
+    if partial_environment:
+        assert marker.read_text() == "preserve existing files"
+    assert not importlib.util.find_spec("pilot_env_probe")
+
+
+def test_environment_rejects_wrong_interpreter_prefix(tmp_path, monkeypatch):
+    import venv
+    namespace = {}
+    exec(ENVIRONMENT_SETUP_SOURCE, namespace)
+    monkeypatch.setattr(venv.EnvBuilder, "create", lambda *args: None)
+    monkeypatch.setattr(subprocess, "check_output", lambda *args, **kwargs: str(tmp_path))
+    with pytest.raises(RuntimeError, match="outside"):
+        namespace["prepare_pilot_environment"](tmp_path / "target")
 
 
 def test_publication_rejects_short_sha_and_incomplete_pool(tmp_path):

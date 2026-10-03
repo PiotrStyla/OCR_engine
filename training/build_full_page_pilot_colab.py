@@ -12,6 +12,30 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE_CODE_REVISION = "ad8c3908a41949719a29ea259c5d286e078f788f"
 CONFIG_PATH = ROOT / "experiments/2026-10-02/full-page-pilot-v1/config.json"
 
+ENVIRONMENT_SETUP_SOURCE = '''import os
+from pathlib import Path
+import subprocess
+import sys
+import venv
+
+
+def prepare_pilot_environment(environment):
+    environment = Path(environment)
+    # Colab can lack ensurepip; repair a partial venv without deleting its files.
+    venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
+    python = environment / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
+    prefix = subprocess.check_output(
+        [str(python), '-c', 'import sys; print(sys.prefix)'], text=True).strip()
+    if Path(prefix).resolve() != environment.resolve():
+        raise RuntimeError('Refusing installation outside the requested model environment.')
+    return python
+
+
+def pilot_pip_command(python, *arguments):
+    # Host pip manages the target interpreter even when its venv has no local pip.
+    return [sys.executable, '-m', 'pip', '--python', str(python), *arguments]
+'''
+
 
 def markdown(identifier, text):
     return {"cell_type": "markdown", "id": identifier, "metadata": {}, "source": [text]}
@@ -60,6 +84,7 @@ spec.loader.exec_module(pilot)
 pilot.write_json(WORK / 'code-provenance.json', {{
     'base_code_revision': BASE_CODE_REVISION, 'embedded_runner_sha256': RUNNER_SHA256,
     'gpu_inference_previously_verified': False,
+    'environment_bootstrap': 'venv-without-pip-host-pip-python-v2',
 }})
 print('WORK:', WORK)
 print('PAGES:', PAGES)
@@ -70,18 +95,19 @@ print(json.dumps({key: value for key, value in audit.items() if key != 'results'
 assert audit['gold_pages'] == 0
 print('SOURCE REFERENCES ARE UNREVIEWED. These scores cannot select a production model.')
 '''
-    environments = '''import torch
+    environments = ENVIRONMENT_SETUP_SOURCE + '''
+import importlib.metadata
+import torch
 assert torch.cuda.is_available(), 'Colab: Runtime > Change runtime type > GPU.'
+assert tuple(int(part) for part in importlib.metadata.version('pip').split('.')[:2]) >= (22, 3), 'Host pip >= 22.3 is required for --python.'
 print('GPU:', torch.cuda.get_device_name(0), 'Torch:', torch.__version__)
 python_by_engine = {}
 for engine, model_spec in CONFIG['models'].items():
     environment = Path('/content/slayer-full-page-pilot-envs') / engine
-    python = environment / 'bin/python'
-    if not python.exists():
-        venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    python = prepare_pilot_environment(environment)
     # Install into isolated venvs, never replace Transformers in the notebook kernel.
-    subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir',
-                    *model_spec['packages']], check=True)
+    subprocess.run(pilot_pip_command(python, 'install', '--no-cache-dir',
+                                    *model_spec['packages']), check=True)
     required = {item.split('==')[0]: item.split('==')[1] for item in model_spec['packages']}
     check = ('import importlib.metadata,json; required=' + repr(required) +
              '; actual={k:importlib.metadata.version(k) for k in required}; '
@@ -168,7 +194,8 @@ files.download(str(evidence_zip))
             markdown("data-heading", "## 3. Automatic HF download and reference audit\n"),
             code_cell("inputs", inputs),
             markdown("environments-heading", "## 4. Separate model environments\n"
-                     "Each engine has its own Transformers installation and subprocess; the notebook kernel is not used for model loading.\n"),
+                     "Each engine has its own Transformers installation and subprocess; the notebook kernel is not used for model loading. "
+                     "Environment creation does not require ensurepip. Rerunning this cell repairs partial environment creation without deleting data.\n"),
             code_cell("environments", environments),
             markdown("inference-heading", "## 5. Inference with per-page checkpoints\n"
                      "Rerunning preserves recorded pages, including errors. To retry failed pages, use a new WORK directory. "

@@ -20,9 +20,18 @@ contamination audits are not complete.
 
 ## Run one notebook
 
-[Open the pinned notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/6cf6e87331466fc61401af13bc991ea1ecc0336d/training/colab_full_page_pilot_v1.ipynb), choose GPU and Run all.
+[Open the current notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_pilot_v1.ipynb), choose GPU and Run all.
 There are no data uploads, authentication requirements or model-selector fields.
 The default run processes two deterministically selected validation pages.
+
+2026-10-03 bootstrap fix: model venvs are created with `with_pip=False` and
+the existing host pip installs into the target interpreter using `--python`.
+This avoids Colab's failing `ensurepip` bootstrap. The target interpreter's
+prefix is checked before installation. Recreating a partial venv preserves its
+files; neither data nor the notebook's Transformers installation is removed.
+After an `ensurepip` error, open the current notebook and Run all, or replace
+the old environment cell with the current section 4 and rerun from there.
+Host pip >= 22.3 is required. See the [official pip guidance](https://pip.pypa.io/en/stable/topics/python-option/).
 
 ## Published inputs and audit
 
@@ -33,7 +42,10 @@ The publication is public. All 167 expected dataset paths were checked;
 the manifest and one downloaded image/XML pair passed SHA-256 verification,
 and the downloaded PNG decoded successfully. This is sample download validation,
 not a fresh download of every scan. All local source images/XML passed the staging audit.
-The 43 focused tests and notebook schema validation passed. GPU inference for
+The 46 focused tests and notebook schema validation passed, including real local
+installation into a pip-less venv and repeat installation after partial creation.
+The local tests simulate unavailable ensurepip; they are not a Colab GPU run.
+GPU inference for
 the new Ovis adapter remains pending; no measured quality gain is claimed.
 
 ## Model environments
