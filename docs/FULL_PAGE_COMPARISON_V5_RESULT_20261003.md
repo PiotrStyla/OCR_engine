@@ -96,3 +96,12 @@ historical recognizer and resume the DATA ENGINE v2 teacher/review/distillation 
 
 The audit implementation and existing safeguards passed 108 focused CPU tests.
 The original ZIP, configuration and protocol remain unchanged.
+
+## Published Snapshot
+
+- [Original evidence ZIP](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/resolve/5f30a4d0e32f3e4606c6a37690e3e21b59022d7b/experiments/2026-10-03/full-page-comparison-v5-result/full-page-comparison-v5-evidence.zip?download=true).
+- [Audit, recomputed metrics, per-page CSV and chart](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/5f30a4d0e32f3e4606c6a37690e3e21b59022d7b/experiments/2026-10-03/full-page-comparison-v5-result).
+
+Eight code-free files were published publicly. The original ZIP was downloaded
+back and its SHA-256 matched the user's supplied archive. No model weights or
+scans were uploaded with this result; the frozen input dataset remains separate.
