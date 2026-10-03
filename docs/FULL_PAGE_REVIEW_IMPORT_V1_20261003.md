@@ -93,6 +93,11 @@ requires the exact parent manifest hash and a unique matching context for each e
 v2 ZIP SHA-256:
 `a8f050a7136676fb5f86bcba4441bdd8e3a1f04bd0078913daaaeb6328d8820b`.
 
+- [Complete v2 ZIP with all scans and correction history](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/d7a0bed7eabb68ae1231ea68f2a4461dd4c190ef/data/full-page-validation-v4-confirmed-draft-v2-20261003/full-page-validation-v4-confirmed-draft-v2.zip?download=true)
+- [v2 confirmation evidence](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/10151ded539af7a4557ff8acab7d56e4c1b06ab0/experiments/2026-10-03/full-page-review-confirmation-v2)
+
+Both downloads were verified against local SHA-256. The v1 links above remain valid.
+
 Next: resolve the inclusion-policy notes, then compare
 another supported full-page backend using these explicitly provisional references.
 Keep a separate independent, reviewed test before selecting training targets or
