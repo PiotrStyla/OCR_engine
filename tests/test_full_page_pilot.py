@@ -453,3 +453,145 @@ def test_archive_audit_distinguishes_runtime_success_and_token_cap(tmp_path, tru
     assert engine['token_limit_pages']==int(truncated)
     assert engine['quality_comparison_available'] is not truncated
     assert report['head_to_head_quality_comparison_available'] is not truncated
+
+
+def test_stage_validation_scope_cannot_backfill_training_pages(tmp_path):
+    config, original, opener = fixture(tmp_path)
+    train = json.loads((original / 'manifest.jsonl').read_text(encoding='utf-8'))
+    train.update(id='training-page', split='train')
+    metadata = (json.dumps(train) + '\n').encode()
+    config['dataset']['splits']['train'] = {'pages':1, 'metadata_sha256':hashlib.sha256(metadata).hexdigest()}
+    config.update(available_non_test_pages=2, inference_splits=['validation'])
+    def with_train(url, **kwargs):
+        return io.BytesIO(metadata) if url.endswith('/train/metadata.jsonl') else opener(url, **kwargs)
+    report = stage(config, tmp_path/'validation-only', opener=with_train)
+    assert report['source_split_counts'] == {'validation':1}
+    with pytest.raises(ValueError, match='Page count'):
+        stage(config, tmp_path/'too-many', count=2, opener=with_train)
+
+
+def test_validation_v4_frozen_scope_and_notebook(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    path = root/'experiments/2026-10-03/full-page-validation-v4/config.json'
+    previous = json.loads((root/'experiments/2026-10-03/full-page-pilot-eos-v3/config.json').read_text())
+    config = json.loads(path.read_text())
+    assert config['dataset'] == previous['dataset']
+    assert config['inference_splits'] == ['validation']
+    assert config['default_inference_pages'] == 15
+    assert config['policy'] == previous['policy']
+    assert config['selection_salt'] == previous['selection_salt']
+    for key, value in previous['models']['ovis-ocr2'].items():
+        if key != 'adapter_status':
+            assert config['models']['ovis-ocr2'][key] == value
+    target = tmp_path/'v4.ipynb'
+    build(target,path)
+    notebook = json.loads(target.read_text(encoding='utf-8'))
+    source = '\n'.join(''.join(cell['source']) for cell in notebook['cells'])
+    assert 'Default: 15 historical development pages' in source
+    assert 'Training pages must not enter validation' in source
+    assert 'full-page-validation-v4-evidence.zip' in source
+    for cell in notebook['cells']:
+        if cell['cell_type'] == 'code' and not ''.join(cell['source']).startswith('%'):
+            compile(''.join(cell['source']), '<notebook>', 'exec')
+
+
+@pytest.mark.parametrize('tokens,reason,capped', [([12,248046],'eos',False),
+    ([12,248044],'eos',False),([12,13],'length',True),([12],'unknown',False)])
+def test_termination_audit_uses_raw_tokens_including_eos_at_cap(tokens, reason, capped):
+    from tools.audit_full_page_pilot import verify_ovis_termination
+    spec = {'max_new_tokens':2,'stop_token_ids':{'<|im_end|>':248046,'<|endoftext|>':248044}}
+    trace = {'generated_token_ids':tokens, 'tokenizer_eos_token_id':248046,
+             'stop_override_applied':True,
+             'applied_generation_settings':{'eos_token_id':[248044,248046],
+                 'max_new_tokens':2,'do_sample':False,'pad_token_id':248044},
+             'eos_positions':[index for index,token in enumerate(tokens) if token in [248044,248046]]}
+    record = {'generated_tokens':len(tokens),'generation_trace':trace,
+              'finish_reason':reason,'token_limit_reached':capped}
+    verify_ovis_termination(record,spec)
+    record['finish_reason'] = 'invented'
+    with pytest.raises(ValueError,match='termination reason'):
+        verify_ovis_termination(record,spec)
+
+
+@pytest.mark.parametrize('change', ['count','settings','positions','early-eos','missing'])
+def test_termination_audit_rejects_inconsistent_traces(change):
+    from tools.audit_full_page_pilot import verify_ovis_termination
+    spec = {'max_new_tokens':4096,'stop_token_ids':{'<|im_end|>':248046,'<|endoftext|>':248044}}
+    trace = {'generated_token_ids':[12,248046], 'tokenizer_eos_token_id':248046,
+             'stop_override_applied':True,'eos_positions':[1],
+             'applied_generation_settings':{'eos_token_id':[248044,248046],
+                 'max_new_tokens':4096,'do_sample':False,'pad_token_id':248044}}
+    record = {'generated_tokens':2,'generation_trace':trace,
+              'finish_reason':'eos','token_limit_reached':False}
+    if change == 'count':
+        record['generated_tokens'] = 3
+    elif change == 'settings':
+        trace['applied_generation_settings']['eos_token_id'] = [248044]
+    elif change == 'positions':
+        trace['eos_positions'] = []
+    elif change == 'early-eos':
+        trace['generated_token_ids'] = [248046,12]
+        trace['eos_positions'] = [0]
+        record['finish_reason'] = 'unknown'
+    else:
+        del record['generation_trace']
+    with pytest.raises(ValueError,match='termination'):
+        verify_ovis_termination(record,spec)
+
+
+@pytest.mark.parametrize('tokens,reason,capped', [([12,248046],'eos',False),
+    ([12,13],'length',True),([12],'unknown',False)])
+def test_explicit_eos_audit_blocks_incomplete_termination(tmp_path, tokens, reason, capped):
+    from tools.audit_full_page_pilot import audit
+    config, dataset, _ = fixture(tmp_path)
+    spec = {'repo':'fixture','revision':'a'*40,'max_new_tokens':2,
+            'max_pixels':1024,'max_visual_tokens':4,
+            'stop_token_ids':{'<|im_end|>':248046,'<|endoftext|>':248044}}
+    config['models'] = {'ovis-ocr2':spec}
+    config_path = tmp_path/'config.json'
+    write_json(config_path,config)
+    write_json(tmp_path/'code-provenance.json',{'embedded_runner_sha256':'b'*64})
+    destination = tmp_path/'predictions/ovis-ocr2'
+    destination.mkdir(parents=True)
+    write_json(destination/'identity.json',{'spec':spec,'runner_sha256':'b'*64,
+        'input_sha256':digest(dataset/'inference-inputs.jsonl')})
+    trace = {'generated_token_ids':tokens, 'tokenizer_eos_token_id':248046,
+             'stop_override_applied':True,
+             'applied_generation_settings':{'eos_token_id':[248044,248046],
+                 'max_new_tokens':2,'do_sample':False,'pad_token_id':248044},
+             'eos_positions':[index for index,token in enumerate(tokens) if token in [248044,248046]]}
+    write_rows(destination/'ovis-ocr2-full-page.jsonl',[{
+        'id':'p','status':'ok','text':json.loads((dataset/'manifest.jsonl').read_text(encoding='utf-8'))['text'],
+        'generated_tokens':len(tokens),'generation_trace':trace,
+        'finish_reason':reason,'token_limit_reached':capped,
+        'input_geometry':{'requested_max_pixels':1024,'processed_pixels':1024,'visual_tokens':1}}])
+    score(dataset/'manifest.jsonl',destination.parent,tmp_path/'scores')
+    result = audit(package(tmp_path),tmp_path/'verified',config_path)
+    report = result['reports']['ovis-ocr2-full-page']
+    assert report['cer_micro'] == 0
+    assert report['execution_complete'] is True
+    assert report['termination_trace_verified'] is True
+    assert report['complete_generation_pages'] == int(reason == 'eos')
+    assert report['quality_comparison_available'] is (reason == 'eos')
+
+
+@pytest.mark.parametrize('corruption', ['source','reference','scope'])
+def test_archive_audit_checks_pinned_reference_and_complete_scope(tmp_path, corruption):
+    from tools.audit_full_page_pilot import audit
+    config, dataset, _ = fixture(tmp_path)
+    if corruption == 'source':
+        path = dataset/'sources/validation.jsonl'
+        path.write_bytes(path.read_bytes() + b'\n')
+        message = 'source metadata checksum'
+    elif corruption == 'reference':
+        rows = [json.loads((dataset/'manifest.jsonl').read_text(encoding='utf-8'))]
+        rows[0]['text'] = 'silently replaced reference'
+        write_rows(dataset/'manifest.jsonl',rows)
+        message = 'reference differs'
+    else:
+        config['default_inference_pages'] = 2
+        message = 'Page count'
+    path = tmp_path/'config.json'
+    write_json(path,config)
+    with pytest.raises(ValueError,match=message):
+        audit(package(tmp_path),tmp_path/'verified',path)

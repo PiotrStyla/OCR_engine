@@ -188,7 +188,12 @@ def stage(config, output, count=None, opener=urlopen):
         if (row["collection"] in config["dataset"]["excluded_collections"]
                 or row["license"] != config["dataset"]["license"]):
             raise ValueError("Forbidden collection or license mismatch")
-    selected = select_pages(rows, len(rows) if count is None else count, config["selection_salt"])
+    inference_splits = config.get("inference_splits", ["train", "validation"])
+    if (not inference_splits or len(set(inference_splits)) != len(inference_splits)
+            or set(inference_splits) - {"train", "validation"}):
+        raise ValueError("Invalid inference split restriction")
+    eligible = [row for row in rows if row["split"] in inference_splits]
+    selected = select_pages(eligible, len(eligible) if count is None else count, config["selection_salt"])
     selection_hash = hashlib.sha256(json.dumps([row["id"] for row in selected]).encode()).hexdigest()
     if (output / "selection.json").exists():
         old = json.loads((output / "selection.json").read_text(encoding="utf-8"))

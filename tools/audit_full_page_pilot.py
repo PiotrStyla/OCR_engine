@@ -9,7 +9,7 @@ import shutil
 import zipfile
 
 from training.benchmark_pages import normalize
-from training.full_page_pilot import digest, markdown_text, safe_relative, write_json
+from training.full_page_pilot import digest, markdown_text, safe_relative, select_pages, write_json
 
 
 def verify_archive(archive):
@@ -33,6 +33,35 @@ def verify_archive(archive):
     return payloads
 
 
+def verify_ovis_termination(record, spec):
+    if "stop_token_ids" not in spec:
+        return
+    trace = record.get('generation_trace', {})
+    settings = trace.get('applied_generation_settings', {})
+    stops = sorted(set(spec['stop_token_ids'].values()))
+    tokens = trace.get('generated_token_ids')
+    if (not isinstance(tokens, list) or not tokens
+            or any(type(token) is not int or token < 0 for token in tokens)
+            or len(tokens) != record['generated_tokens']
+            or len(tokens) > spec['max_new_tokens']
+            or settings.get('eos_token_id') != stops
+            or settings.get('max_new_tokens') != spec['max_new_tokens']
+            or settings.get('do_sample') is not False
+            or settings.get('pad_token_id') not in stops
+            or trace.get('tokenizer_eos_token_id') not in stops
+            or trace.get('stop_override_applied') is not True):
+        raise ValueError('Ovis termination trace/settings mismatch')
+    positions = [index for index, token in enumerate(tokens) if token in stops]
+    ended = tokens[-1] in stops
+    capped = len(tokens) >= spec['max_new_tokens'] and not ended
+    reason = 'eos' if ended else ('length' if capped else 'unknown')
+    if (trace.get('eos_positions') != positions
+            or (positions and positions != [len(tokens) - 1])
+            or record.get('finish_reason') != reason
+            or record.get('token_limit_reached') is not capped):
+        raise ValueError('Ovis termination reason/token sequence mismatch')
+
+
 def audit(archive, output, expected_config):
     from jiwer import cer, wer
     archive, output = Path(archive), Path(output)
@@ -44,6 +73,24 @@ def audit(archive, output, expected_config):
     ids = {row['id'] for row in rows}
     if len(ids) != len(rows) or not rows:
         raise ValueError('Expected unique nonempty page IDs')
+    source_rows = []
+    for split, spec in config['dataset']['splits'].items():
+        source = payloads[f'dataset/sources/{split}.jsonl']
+        if hashlib.sha256(source).hexdigest() != spec['metadata_sha256']:
+            raise ValueError('Pinned source metadata checksum mismatch')
+        current = [json.loads(line) for line in source.decode().splitlines() if line.strip()]
+        if len(current) != spec['pages'] or any(row['split'] != split for row in current):
+            raise ValueError('Source metadata split/count mismatch')
+        source_rows.extend(current)
+    eligible = [row for row in source_rows if row['split'] in config.get('inference_splits', ['train', 'validation'])]
+    selected = select_pages(eligible, config.get('default_inference_pages', len(rows)), config['selection_salt'])
+    if [row['id'] for row in selected] != [row['id'] for row in rows]:
+        raise ValueError('Archived page selection differs from the frozen scope')
+    for row, source in zip(rows, selected):
+        if any(row.get(key) != value for key, value in source.items()):
+            raise ValueError('Archived reference differs from pinned source metadata')
+    if any(row['split'] not in config.get('inference_splits', ['train', 'validation']) for row in rows):
+        raise ValueError('Archived pages violate the inference split restriction')
     reports = json.loads(payloads['scores/metrics.json'])['reports']
     summary = {}
     for variant, report in reports.items():
@@ -81,11 +128,18 @@ def audit(archive, output, expected_config):
                         or geometry['visual_tokens'] > spec.get('max_visual_tokens', geometry['visual_tokens'])
                         or record['generated_tokens'] > spec['max_new_tokens']):
                     raise ValueError('Ovis input/output budget metadata mismatch')
+                verify_ovis_termination(record, spec)
+        eos_pages = sum(row.get('finish_reason') == 'eos' for row in records if row['status']=='ok')
+        explicit_eos = engine == 'ovis-ocr2' and 'stop_token_ids' in config['models'][engine]
+        termination_complete = not explicit_eos or eos_pages == len(records) - len(errors)
         summary[variant] = {**recalculated, 'pages':len(rows), 'successful_pages':len(rows)-len(errors),
                             'failed_pages':len(errors), 'errors':[row.get('error') for row in errors],
                             'token_limit_pages':truncated, 'execution_complete':not errors,
-                            'complete_generation_pages':sum(row['status']=='ok' and not row.get('token_limit_reached') for row in records),
-                            'quality_comparison_available':not errors and not truncated,
+                            'eos_terminated_pages':eos_pages,
+                            'termination_trace_verified':explicit_eos,
+                            'complete_generation_pages':sum(row['status']=='ok' and not row.get('token_limit_reached')
+                                and (not explicit_eos or row.get('finish_reason')=='eos') for row in records),
+                            'quality_comparison_available':not errors and not truncated and termination_complete,
                             'annotation_assisted':variant.endswith('source-regions')}
     if output.exists():
         raise FileExistsError('Use a new audit directory; never overwrite evidence')

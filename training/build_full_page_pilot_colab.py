@@ -43,7 +43,11 @@ def markdown(identifier, text):
 
 def build(target, config_path=CONFIG_PATH):
     config = json.loads(Path(config_path).read_text(encoding="utf-8"))
-    model_scope = ('Only OvisOCR2 runs: EOS termination diagnostic; mixed-v3 is not rerun. '
+    validation_only = config.get('inference_splits') == ['validation']
+    validation_note = ("Only the frozen validation split is eligible; training pages are excluded. "
+                       "Two pages have already been inspected in v3, so this is not a new independent test.\n\n"
+                       if validation_only else "")
+    model_scope = ('Only OvisOCR2 runs; mixed-v3 is not rerun. '
                    if set(config['models']) == {'ovis-ocr2'} else
                    'Our mixed-v3 pipeline is compared with OvisOCR2; source PAGE regions with automatic line segmentation are a separate diagnostic. ')
     runner = (ROOT / "training/full_page_pilot.py").read_text(encoding="utf-8")
@@ -61,7 +65,7 @@ CONFIG = {config!r}
 BASE_CODE_REVISION = {BASE_CODE_REVISION!r}
 RUNNER_SOURCE = {runner!r}
 RUNNER_SHA256 = {runner_hash!r}
-PAGES = CONFIG['default_inference_pages']  # 2-page smoke; increase only after reviewing its evidence.
+PAGES = CONFIG['default_inference_pages']
 WORK = Path('/content') / CONFIG.get('work_name', 'slayer-full-page-pilot-v1')
 WORK.mkdir(parents=True, exist_ok=True)
 config_path = WORK / 'config.json'
@@ -86,7 +90,8 @@ pilot = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pilot)
 pilot.write_json(WORK / 'code-provenance.json', {{
     'base_code_revision': BASE_CODE_REVISION, 'embedded_runner_sha256': RUNNER_SHA256,
-    'gpu_inference_previously_verified': False,
+    'gpu_inference_previously_verified': bool(CONFIG.get('prior_gpu_evidence_archive_sha256')),
+    'prior_gpu_evidence_archive_sha256': CONFIG.get('prior_gpu_evidence_archive_sha256'),
     'environment_bootstrap': 'venv-without-pip-host-pip-python-v2',
 }})
 print('WORK:', WORK)
@@ -96,6 +101,8 @@ print('PAGES:', PAGES)
 audit = pilot.stage(CONFIG, dataset, PAGES)
 print(json.dumps({key: value for key, value in audit.items() if key != 'results'}, indent=2))
 assert audit['gold_pages'] == 0
+if CONFIG.get('inference_splits') == ['validation']:
+    assert audit['source_split_counts'] == {'validation': PAGES}, 'Training pages must not enter validation.'
 print('SOURCE REFERENCES ARE UNREVIEWED. These scores cannot select a production model.')
 '''
     environments = ENVIRONMENT_SETUP_SOURCE + '''
@@ -184,17 +191,17 @@ files.download(str(evidence_zip))
                      "accelerator": "GPU"},
         "cells": [
             markdown("scope", "# SLAYER-OCR: full-page pilot\n\n"
-                     "Select a GPU runtime, then **Run all**. No uploads or HF token. Default: two historical development pages. "
-                     f"{model_scope}\n\n"
+                     f"Select a GPU runtime, then **Run all**. No uploads or HF token. Default: {config['default_inference_pages']} historical development pages. "
+                     f"{model_scope}\n\n{validation_note}"
                      "Source transcriptions are **not verified gold**. No model promotion or SOTA claim is possible from this pilot. "
                      "The 36-page historical test is excluded. Historical spelling is preserved. "
                      f"Ovis image budget: {config['models']['ovis-ocr2']['max_pixels']:,} pixels; processor resizing is recorded. "
-                     "Explicit EOS correction and complete output still require GPU validation. "
+                     "This experiment requires its own GPU execution; EOS termination does not prove complete transcription. "
                      "Runtime success does not imply complete transcription; token limits remain scored and flagged.\n"),
             markdown("dependencies-heading", "## 1. Lightweight scoring dependencies\n"),
             {"cell_type": "code", "id": "dependencies", "metadata": {}, "execution_count": None,
              "outputs": [], "source": ["%pip install jiwer==4.0.0 markdown-it-py==4.0.0 pillow==11.3.0\n"]},
-            markdown("setup-heading", "## 2. Frozen code and two-page scope\n"
+            markdown("setup-heading", "## 2. Frozen code and bounded page scope\n"
                      "The runner is embedded with a SHA-256; existing OCR modules come from a pinned public Git commit.\n"),
             code_cell("setup", setup),
             markdown("data-heading", "## 3. Automatic HF download and reference audit\n"),
@@ -221,5 +228,5 @@ files.download(str(evidence_zip))
 
 
 if __name__ == "__main__":
-    build(ROOT / 'training/colab_full_page_pilot_eos_v3.ipynb',
-          ROOT / 'experiments/2026-10-03/full-page-pilot-eos-v3/config.json')
+    build(ROOT / 'training/colab_full_page_validation_v4.ipynb',
+          ROOT / 'experiments/2026-10-03/full-page-validation-v4/config.json')

@@ -8,7 +8,8 @@ Micro CER/WER were recomputed from raw archived outputs and match the supplied m
 [Public HF archive, audit and prospective v3 configuration](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/bc3360fb73702de8b4aa0c057054a3ec8458af40/experiments/2026-10-03/full-page-pilot-t4-v2-result).
 The published source ZIP was downloaded and SHA-256 verified. No code files were uploaded.
 The new EOS implementation passed 64 focused CPU tests and notebook schema/syntax checks;
-EOS v3 has not yet been executed on GPU.
+At the time of this v2 report, EOS v3 had not been executed on GPU.
+Follow-up: [EOS v3 stopped correctly on both pages; CER 24.5936%](FULL_PAGE_PILOT_EOS_V3_RESULT_20261003.md).
 
 ## Observed Runtime
 
