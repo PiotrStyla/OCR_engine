@@ -46,7 +46,7 @@ function currentText(id) { return latest(id)?.after ?? byId.get(id).text; }
 function visiblePages() {
   const query = $('search').value.toLowerCase(), filter = $('filter').value;
   return source.pages.filter(page => page.id.toLowerCase().includes(query) &&
-    (filter === 'all' || (filter === 'flagged' && page.issues.length) ||
+    (filter === 'all' || (filter === 'flagged' && (page.issues.length || page.diagnostics?.items.length)) ||
      (filter === 'pending' && !latest(page.id)) || (filter === 'reviewed' && latest(page.id))));
 }
 function queue() {
@@ -57,7 +57,8 @@ function queue() {
     button.setAttribute('aria-current', String(page.id === active));
     const title = document.createElement('strong'); title.textContent = page.id;
     const detail = document.createElement('small');
-    detail.textContent = `${page.issues.length} znaków · ${latest(page.id) ? labels[latest(page.id).decision] : 'Bez decyzji'}`;
+    const count = page.diagnostics ? `${page.diagnostics.items.length} różnic OCR` : `${page.issues.length} znaków`;
+    detail.textContent = `${count} · ${latest(page.id) ? labels[latest(page.id).decision] : 'Bez decyzji'}`;
     button.append(title, detail); button.onclick = () => navigate(page.id); $('queue').append(button);
   }
   if (!visible.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'Brak stron dla wybranych filtrów.'; $('queue').append(empty); }
@@ -114,8 +115,37 @@ function render() {
   $('scan').src = page.image; $('scan').alt = `Skan ${page.id}`;
   $('scan').style.width = '100%'; $('zoom').value = '100';
   $('original-text').textContent = page.text; $('text').value = currentText(active);
+  renderDiagnostics(page);
   $('decision').value = last?.decision ?? 'needs-review'; $('note').value = last?.note ?? '';
   dirty = false; $('dirty').textContent = ''; queue(); renderIssues(); history();
+}
+function renderDiagnostics(page) {
+  const diagnostic = page.diagnostics;
+  $('ocr-diagnostics').hidden = !diagnostic;
+  $('diagnostic-items').replaceChildren();
+  if (!diagnostic) return;
+  $('diagnostic-count').textContent = `(${diagnostic.items.length})`;
+  for (const item of diagnostic.items) {
+    const button = document.createElement('button'); button.className = 'diagnostic-item';
+    const change = document.createElement('strong');
+    change.textContent = `${item.reference || '∅'} → ${item.candidate || '∅'}`;
+    const context = document.createElement('span'); context.textContent = item.reference_context;
+    button.append(change, context);
+    button.title = 'Fragment draftu i surowy odczyt OCR';
+    button.onclick = () => {
+      if ($('text').value !== page.text) {
+        notify('Po zmianie tekstu pozycja źródłowa może być nieaktualna. Sprawdź kontekst.', true);
+        return;
+      }
+      $('text').focus(); $('text').setSelectionRange(item.offset, item.offset + item.length);
+      $('text').scrollTop = $('text').scrollHeight * item.offset / Math.max(1, page.text.length) - $('text').clientHeight / 2;
+    };
+    $('diagnostic-items').append(button);
+  }
+  $('candidate-label').textContent = diagnostic.candidate_label;
+  $('candidate-text').textContent = diagnostic.candidate_text;
+  $('baseline-label').textContent = diagnostic.baseline_label;
+  $('baseline-text').textContent = diagnostic.baseline_text;
 }
 function navigate(id) {
   if (id === active) return;

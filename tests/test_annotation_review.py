@@ -46,3 +46,14 @@ def test_modified_image_rejected_before_output(tmp_path):
     with pytest.raises(ValueError, match='checksum'):
         build(manifest, tmp_path / 'review')
     assert not (tmp_path / 'review').exists()
+
+
+def test_optional_diagnostics_require_exact_ids_and_escape_script(tmp_path):
+    manifest = fixture(tmp_path)
+    with pytest.raises(ValueError, match='Diagnostic page IDs'):
+        build(manifest, tmp_path/'bad', diagnostics={'unknown': {}})
+    build(manifest, tmp_path/'good', diagnostics={'PAGE__1': {
+        'items': [], 'candidate_text': '</script><script>alert(1)</script>'}})
+    html = (tmp_path/'good/index.html').read_text(encoding='utf-8')
+    assert '</script><script>alert(1)</script>' not in html
+    assert 'diagnostics' in html

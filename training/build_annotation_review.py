@@ -23,12 +23,14 @@ def issues(text):
     return result
 
 
-def build(manifest, output):
+def build(manifest, output, *, diagnostics=None):
     from PIL import Image
     manifest, output = Path(manifest), Path(output)
     rows = read_rows(manifest)
     if not rows or len({row['id'] for row in rows}) != len(rows):
         raise ValueError('Expected unique nonempty page IDs')
+    if diagnostics is not None and set(diagnostics) != {row['id'] for row in rows}:
+        raise ValueError('Diagnostic page IDs must match the review manifest')
     if output.exists():
         raise FileExistsError('Use a new review directory')
     for row in rows:
@@ -49,6 +51,8 @@ def build(manifest, output):
                       'text': row['text'],
                       'text_sha256': hashlib.sha256(row['text'].encode('utf-8')).hexdigest(),
                       'issues': issues(row['text'])})
+        if diagnostics is not None:
+            pages[-1]['diagnostics'] = diagnostics[row['id']]
     payload = {'schema': 'polocrbench-review-source-v1', 'manifest_sha256': digest(manifest),
                'pages': pages}
     assets = Path(__file__).resolve().parents[1] / 'tools' / 'annotation-review'
@@ -69,8 +73,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--manifest', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--diagnostics', help='Optional diagnostic comparison JSON keyed by page ID')
     args = parser.parse_args()
-    print(json.dumps(build(args.manifest, args.output), indent=2))
+    diagnostics = json.loads(Path(args.diagnostics).read_text(encoding='utf-8')) if args.diagnostics else None
+    print(json.dumps(build(args.manifest, args.output, diagnostics=diagnostics), indent=2))
 
 
 if __name__ == '__main__':

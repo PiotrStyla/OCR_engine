@@ -18,6 +18,9 @@
 <div class="image-scroll"><img id="scan" alt="Skan strony do weryfikacji"></div></section>
 <section class="annotation" aria-label="Transkrypcja"><div class="section-bar"><h3>Transkrypcja</h3><button id="restore">Przywróć źródło</button></div>
 <details id="original"><summary>Tekst źródłowy</summary><pre id="original-text"></pre></details>
+<section id="ocr-diagnostics" hidden aria-label="Porównanie OCR"><h3>Różnice historycznych znaków <span id="diagnostic-count"></span></h3>
+<div id="diagnostic-items"></div><details><summary id="candidate-label"></summary><pre id="candidate-text"></pre></details>
+<details><summary id="baseline-label"></summary><pre id="baseline-text"></pre></details></section>
 <label class="sr-only" for="text">Proponowana transkrypcja</label><textarea id="text" spellcheck="false"></textarea>
 <div class="issue-heading"><h3>Podejrzane znaki <span id="issue-count"></span></h3><span id="dirty"></span></div>
 <div id="issues" aria-label="Podejrzane znaki"></div>

@@ -68,6 +68,11 @@ Następny etap DATA ENGINE: hard-example mining dla `ſ`, `á`, `ɇ`, review
 wycinków i transkrypcji dyplomatycznych, następnie trening specjalizowanego
 recognizera na rozłącznych dokumentach. Nie zamieniamy draftów ani predykcji
 Qwen automatycznie w etykiety treningowe.
+**Mining v1 gotowe:** 479 propozycji różnic `ſ`, `á`, `ɇ` na 14 z 15 stron,
+ze skanami, surowymi odczytami v5/v7 i kolejką review. To diagnostyka walidacji,
+nie 479 pewnych błędów ani dane treningowe. **156 testów CPU przeszło**;
+sprawdzono też desktop/mobile i eksport historii.
+[Kolejka, decyzje i następna bramka treningowa](docs/HISTORICAL_GLYPH_MINING_V1_20261003.md).
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
