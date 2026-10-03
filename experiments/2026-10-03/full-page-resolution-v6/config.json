@@ -1,0 +1,91 @@
+{
+  "schema": "slayer-full-page-resolution-v6",
+  "status": "frozen-before-GPU-inference",
+  "work_name": "slayer-full-page-resolution-v6",
+  "evidence_archive_name": "full-page-resolution-v6-evidence.zip",
+  "dataset": {
+    "repo": "PiotrSty/slayer-ocr-datasets",
+    "revision": "d7a0bed7eabb68ae1231ea68f2a4461dd4c190ef",
+    "path": "data/full-page-validation-v4-confirmed-draft-v2-20261003/full-page-validation-v4-confirmed-draft-v2.zip",
+    "archive_sha256": "a8f050a7136676fb5f86bcba4441bdd8e3a1f04bd0078913daaaeb6328d8820b",
+    "manifest_sha256": "c278194894d2ebf9993384ff9e225e855f8e2ff737e2c7f5b31f05d9ec194b19",
+    "baseline_sha256": "b86afe2b427fab2cb15e9542c537b22a30508978fb5d02f293fc937dab9d3c19",
+    "pages": 15,
+    "split": "validation",
+    "reference_status": "single-review-draft-not-gold",
+    "license": "CC-BY-3.0 source scans; original reviewer attribution retained",
+    "final_test_used": false,
+    "train_used": false
+  },
+  "models": {
+    "qwen3-vl-4b": {
+      "repo": "Qwen/Qwen3-VL-4B-Instruct",
+      "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
+      "license": "Apache-2.0",
+      "min_pixels": 262144,
+      "max_pixels": 1048576,
+      "max_new_tokens": 4096,
+      "quantization": "4-bit NF4, double quantization, FP16 compute",
+      "attention": "sdpa",
+      "prompt": "Transcribe the visible printed text on this entire historical Polish page. Preserve the source spelling, accents, capitalization, long s (ſ), punctuation and line breaks. Do not modernize, translate, summarize, correct the author's spelling or invent missing text. Read the main text in column/stanza order. Include headings and visible marginalia, running headers, footers, page numbers, signatures and catchwords; put peripheral text after the main text in top-to-bottom order. Return only the transcription as plain text, without commentary or Markdown formatting.",
+      "packages": [
+        "transformers==4.57.6",
+        "tokenizers==0.22.2",
+        "huggingface_hub==0.36.2",
+        "pillow==11.3.0",
+        "bitsandbytes==0.48.1",
+        "accelerate==1.13.0",
+        "sentencepiece==0.2.1"
+      ]
+    }
+  },
+  "baseline": {
+    "engine": "ovis-ocr2",
+    "source": "retained-projected-predictions.jsonl",
+    "rerun": false,
+    "original_evidence_sha256": "475510b3436d93d3dd65401a1630254a319d436b871d060b07faf131529f258f",
+    "source_evidence_revision": "308da61cbc389c23f9cc9876d461dfc2d5f15f75",
+    "source_evidence_prefix": "experiments/2026-10-03/full-page-validation-v4-result",
+    "role_in_v6": "Bundle integrity check only; not a scored resolution arm"
+  },
+  "scope_policy": {
+    "candidate_target": "All visible printed text; peripheral text after main text",
+    "reference_content_scope": "Not adjudicated; notes are not concatenated into transcription",
+    "metrics": "Post-hoc diagnostic against exact v2 references, NFC and whitespace only",
+    "comparison_kind": "Same-session paired resolution arms; only max_pixels changes in model spec",
+    "layout_or_omission_accuracy_claim": false,
+    "training_eligibility": false,
+    "automatic_teacher_promotion": false,
+    "sota_claim": false,
+    "actual_input_grid_verification_required": true,
+    "character_counts_are_recall": false,
+    "runtime_comparison": "Sequential same-session diagnostics, not controlled performance measurement"
+  },
+  "arms": {
+    "one-mp": 1048576,
+    "four-mp": 4194304
+  },
+  "seed": 42,
+  "post_hoc_selection": true,
+  "selection": [
+    {
+      "id": "Slawna_wiktoria_FT__437089",
+      "reason": "v5 numeric loop on title page"
+    },
+    {
+      "id": "Wiesc_FT__436884",
+      "reason": "dense historical body and glyph errors"
+    },
+    {
+      "id": "Choragiew_FT__436799",
+      "reason": "two user-confirmed Poſłał instances"
+    }
+  ],
+  "previous_evidence": {
+    "repo": "PiotrSty/slayer-ocr-experiment-evidence",
+    "revision": "5f30a4d0e32f3e4606c6a37690e3e21b59022d7b",
+    "path": "experiments/2026-10-03/full-page-comparison-v5-result/full-page-comparison-v5-evidence.zip",
+    "sha256": "bf6ddc8cb25c6041f034b2fff05a933d5f9197ba1025a9f2c71c6c63e25e62e7",
+    "used_as_rerun_baseline": false
+  }
+}

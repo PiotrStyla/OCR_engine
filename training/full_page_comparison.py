@@ -163,14 +163,17 @@ def compare(config, dataset, candidate, output):
     return summary
 
 
-def package_comparison(work):
+def package_comparison(work, archive_name='full-page-comparison-v5-evidence.zip'):
+    if (not isinstance(archive_name, str) or '/' in archive_name or '\\' in archive_name
+            or not archive_name.endswith('.zip') or archive_name.startswith('.')):
+        raise ValueError('Evidence archive name must be a plain ZIP basename')
     work = Path(work)
     files = [path for path in work.rglob('*') if path.is_file()
              and not any(part.startswith('.') for part in path.relative_to(work).parts)
              and (path.suffix in ('.json', '.jsonl', '.log', '.csv')
                   or path == work/'cer-comparison.png')
              and 'model' not in path.relative_to(work).parts]
-    archive = work/'full-page-comparison-v5-evidence.zip'
+    archive = work/archive_name
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as stream:
         for path in files:
             stream.write(path, path.relative_to(work).as_posix())

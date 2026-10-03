@@ -13,10 +13,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT/'experiments/2026-10-03/full-page-comparison-v5/config.json'
 
 
-def build(target, code_revision):
+def build(target, code_revision, config_path=CONFIG_PATH):
     if len(code_revision) != 40 or any(char not in '0123456789abcdef' for char in code_revision):
         raise ValueError('Use a full, already-published Git commit')
-    config = json.loads(CONFIG_PATH.read_text(encoding='utf-8'))
+    config_path = Path(config_path)
+    config = json.loads(config_path.read_text(encoding='utf-8'))
+    relative_config = config_path.relative_to(ROOT).as_posix()
     setup = f'''import json
 import os
 from pathlib import Path
@@ -25,7 +27,7 @@ import sys
 
 CODE_REVISION = {code_revision!r}
 CONFIG = {config!r}
-repo = Path('/content/OCR_engine-full-page-comparison-v5')
+repo = Path('/content')/('OCR_engine-' + CONFIG['work_name'])
 if not repo.exists():
     subprocess.run(['git', 'clone', 'https://github.com/PiotrStyla/OCR_engine.git', str(repo)], check=True)
 subprocess.run(['git', '-C', str(repo), 'fetch', 'origin', 'main'], check=True)
@@ -34,7 +36,7 @@ assert subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], te
 sys.path.insert(0, str(repo))
 from training import full_page_comparison as comparison
 from training.full_page_pilot import digest, write_json
-assert json.loads((repo/'experiments/2026-10-03/full-page-comparison-v5/config.json').read_text()) == CONFIG
+assert json.loads((repo/{relative_config!r}).read_text()) == CONFIG
 WORK = Path('/content')/CONFIG['work_name']
 WORK.mkdir(parents=True, exist_ok=True)
 config_path = WORK/'config.json'
@@ -62,7 +64,7 @@ import torch
 assert torch.cuda.is_available(), 'Colab: Runtime > Change runtime type > GPU.'
 assert tuple(int(p) for p in importlib.metadata.version('pip').split('.')[:2]) >= (22, 3)
 spec = CONFIG['models']['qwen3-vl-4b']
-python = prepare_pilot_environment('/content/slayer-full-page-comparison-v5-env')
+python = prepare_pilot_environment('/content/' + CONFIG['work_name'] + '-env')
 command = pilot_pip_command(python, 'install', '--no-cache-dir', *spec['packages'])
 installation = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 (WORK/'installation.log').write_text(installation.stdout, encoding='utf-8')
