@@ -46,18 +46,19 @@ zachowując m.in. `ſt`, `ſi`, `ſł` i `á`. Powstał osobny draft z oryginał
 historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
 4 zapętlenia. [Import korekt i pozostałe kwestie](docs/FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
 
-**Zakończona diagnostyka: notebook rozdzielczości v6.**
-[Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_resolution_v6.ipynb)
-pobiera komplet danych z HF i wybiera trzy trudne strony. Qwen3-VL-4B odczytuje
-je ponownie przy limitach 1 MP i 4 MP, w tej samej sesji i z niezmienionym
-promptem oraz dekodowaniem. Bez uploadów. Wybierz GPU, uruchom wszystkie
-komórki i odeślij `full-page-resolution-v6-evidence.zip`.
-Pierwszy test GPU v6 zakończył się poprawnie, również przy 4 MP na T4.
-Wybór stron jest diagnostyczny, po analizie v5,
-nie niezależnym benchmarkiem. Referencje nadal nie są gold.
-[Zakres, konfiguracja i ograniczenia](docs/FULL_PAGE_RESOLUTION_V6_PROTOCOL_20261003.md).
-Nie trzeba powtarzać v6; następny etap to niezmieniony profil 4 MP na pełnym
-splicie validation, a potem ukierunkowane poprawianie odczytu historycznych znaków.
+**Następny run: jeden notebook pełnej walidacji 4 MP v7.**
+[Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_validation_4mp_v7.ipynb)
+pobiera 15 stron i zweryfikowane predykcje Qwen 1 MP z v5 z HF, bez uploadów.
+Uruchamia tylko niezmieniony profil Qwen 4 MP z v6, na wszystkich stronach.
+Wybierz GPU, uruchom wszystkie komórki i odeślij
+`full-page-validation-4mp-v7-evidence.zip`. V5 nie jest uruchamiany ponownie.
+To porównanie różnych sesji, nie kontrolowany test szybkości; wszystkie błędy
+i limity pozostają w metrykach. Referencje nadal nie są gold.
+134 testy CPU przeszły; sprawdzono rzeczywiste pobranie i audyt ZIP-u v5,
+wszystkie 15 skanów oraz format notebooka. Pełny run GPU v7 jest jeszcze przed nami.
+[Zakres, konfiguracja i ograniczenia v7](docs/FULL_PAGE_VALIDATION_4MP_V7_PROTOCOL_20261003.md).
+V6 jest zakończone i nie wymaga powtarzania. Po pełnej walidacji technicznej
+pozostaje ukierunkowane poprawianie odczytu historycznych znaków.
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
