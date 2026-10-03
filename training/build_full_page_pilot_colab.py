@@ -43,6 +43,9 @@ def markdown(identifier, text):
 
 def build(target, config_path=CONFIG_PATH):
     config = json.loads(Path(config_path).read_text(encoding="utf-8"))
+    model_scope = ('Only OvisOCR2 runs: EOS termination diagnostic; mixed-v3 is not rerun. '
+                   if set(config['models']) == {'ovis-ocr2'} else
+                   'Our mixed-v3 pipeline is compared with OvisOCR2; source PAGE regions with automatic line segmentation are a separate diagnostic. ')
     runner = (ROOT / "training/full_page_pilot.py").read_text(encoding="utf-8")
     runner_hash = hashlib.sha256(runner.encode()).hexdigest()
     setup = f'''import hashlib
@@ -182,11 +185,12 @@ files.download(str(evidence_zip))
         "cells": [
             markdown("scope", "# SLAYER-OCR: full-page pilot\n\n"
                      "Select a GPU runtime, then **Run all**. No uploads or HF token. Default: two historical development pages. "
-                     "Our mixed-v3 pipeline is compared with OvisOCR2; source PAGE regions with automatic line segmentation are a separate diagnostic.\n\n"
+                     f"{model_scope}\n\n"
                      "Source transcriptions are **not verified gold**. No model promotion or SOTA claim is possible from this pilot. "
                      "The 36-page historical test is excluded. Historical spelling is preserved. "
                      f"Ovis image budget: {config['models']['ovis-ocr2']['max_pixels']:,} pixels; processor resizing is recorded. "
-                     "This memory profile still requires GPU validation. Failed pages are not quality scores.\n"),
+                     "Explicit EOS correction and complete output still require GPU validation. "
+                     "Runtime success does not imply complete transcription; token limits remain scored and flagged.\n"),
             markdown("dependencies-heading", "## 1. Lightweight scoring dependencies\n"),
             {"cell_type": "code", "id": "dependencies", "metadata": {}, "execution_count": None,
              "outputs": [], "source": ["%pip install jiwer==4.0.0 markdown-it-py==4.0.0 pillow==11.3.0\n"]},
@@ -217,5 +221,5 @@ files.download(str(evidence_zip))
 
 
 if __name__ == "__main__":
-    build(ROOT / 'training/colab_full_page_pilot_t4_v2.ipynb',
-          ROOT / 'experiments/2026-10-03/full-page-pilot-t4-v2/config.json')
+    build(ROOT / 'training/colab_full_page_pilot_eos_v3.ipynb',
+          ROOT / 'experiments/2026-10-03/full-page-pilot-eos-v3/config.json')

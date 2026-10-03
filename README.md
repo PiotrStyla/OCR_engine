@@ -10,13 +10,15 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Następny etap: OCR całych stron
 
-Przygotowano [notebook Colab T4 v2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_pilot_t4_v2.ipynb)
-porównujący nasz mixed-v3 z OvisOCR2 na dwóch przypiętych stronach development.
+Następny test: [notebook Colab EOS v3](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_pilot_eos_v3.ipynb),
+uruchamiający tylko OvisOCR2 na tych samych dwóch stronach development.
 Dane i modele pobierają się automatycznie z HF; modele działają w osobnych
 środowiskach, a ZIP zawiera surowe predykcje, błędy i metryki. W pierwszym przebiegu
 mixed-v3 odczytał 2/2 strony, a Ovis załadował się, lecz zwrócił 2/2 błędy OOM.
-Nowy profil T4 ogranicza rozmiar wejścia i wymaga ponownego testu GPU.
-[Raport i granice interpretacji](docs/FULL_PAGE_PILOT_RESULT_20261003.md).
+Profil T4 v2 usunął OOM: Ovis wygenerował 2/2 odpowiedzi, ale obie zapętliły się
+i osiągnęły limit 4096 tokenów. EOS v3 sprawdza rozbieżność tokenów zakończenia,
+zachowując surowe ID i tekst; ta poprawka wymaga testu GPU.
+[Raport T4 v2 i kolejny test](docs/FULL_PAGE_PILOT_T4_V2_RESULT_20261003.md).
 Referencje źródłowe są niezweryfikowane, więc
 wynik pozostaje diagnostyczny i nie promuje modelu.
 

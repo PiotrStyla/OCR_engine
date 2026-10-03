@@ -1,0 +1,45 @@
+{
+  "schema": "slayer-full-page-pilot-config-v1",
+  "scope": "Ovis T4 EOS termination diagnostic after v2 repeated capped outputs; not a benchmark",
+  "work_name": "slayer-full-page-pilot-eos-v3",
+  "evidence_archive_name": "full-page-pilot-eos-v3-evidence.zip",
+  "target_review_pages": 100,
+  "available_non_test_pages": 80,
+  "default_inference_pages": 2,
+  "selection_salt": "slayer-full-page-pilot-v1",
+  "dataset": {
+    "repo": "PiotrSty/impact-psnc-polish-ocr",
+    "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+    "license": "CC-BY-3.0",
+    "splits": {
+      "validation": {"pages": 15, "metadata_sha256": "536fc014963c2c55626e89f9bd07500826cb930f05ca3f8848352ca80c8856b1"},
+      "train": {"pages": 65, "metadata_sha256": "991ef94a2e2fb3ac519ec3582fa588b1a75a92a87b1b002468cf7c31d3c10427"}
+    },
+    "excluded_collections": ["NA2_FT", "Nowiny_z_Rakuz_FT", "Powodzenia_FT"]
+  },
+  "models": {
+    "ovis-ocr2": {
+      "repo": "ATH-MaaS/OvisOCR2",
+      "revision": "1fc9221b7823a371d6e97f92d527cc847e24e107",
+      "packages": ["transformers==5.18.0", "pillow==11.3.0"],
+      "max_new_tokens": 4096,
+      "min_pixels": 200704,
+      "max_pixels": 1048576,
+      "max_visual_tokens": 1024,
+      "stop_token_ids": {"<|im_end|>": 248046, "<|endoftext|>": 248044},
+      "adapter_status": "T4 memory profile executed in v2; explicit EOS correction requires GPU validation",
+      "upstream_inference": "https://huggingface.co/ATH-MaaS/OvisOCR2"
+    }
+  },
+  "policy": {
+    "reference_status": "source-unreviewed",
+    "normalization": "Unicode NFC + whitespace only",
+    "modernize_spelling": false,
+    "send_reference_text_to_model": false,
+    "final_test_used": false,
+    "automatic_model_promotion": false,
+    "automatic_publication": false,
+    "missing_and_error_predictions": "score as empty text; retain error and raw output",
+    "oracle_geometry": "diagnostic only; never mix oracle and automatic full-page results"
+  }
+}

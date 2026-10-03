@@ -69,9 +69,23 @@ def audit(archive, output, expected_config):
         if any(abs(recalculated[key] - report[key]) > 1e-12 for key in recalculated):
             raise ValueError('Recomputed metrics do not match the archive')
         errors = [row for row in records if row['status'] == 'error']
+        truncated = sum(bool(row.get('token_limit_reached')) for row in records)
+        if report['errors_or_missing'] != len(errors) or report['token_limit_pages'] != truncated:
+            raise ValueError('Execution/truncation counts differ from archived metrics')
+        for record in records:
+            if engine == 'ovis-ocr2' and record['status'] == 'ok':
+                geometry = record.get('input_geometry')
+                spec = config['models'][engine]
+                if (not geometry or geometry['processed_pixels'] > spec['max_pixels']
+                        or geometry['requested_max_pixels'] != spec['max_pixels']
+                        or geometry['visual_tokens'] > spec.get('max_visual_tokens', geometry['visual_tokens'])
+                        or record['generated_tokens'] > spec['max_new_tokens']):
+                    raise ValueError('Ovis input/output budget metadata mismatch')
         summary[variant] = {**recalculated, 'pages':len(rows), 'successful_pages':len(rows)-len(errors),
                             'failed_pages':len(errors), 'errors':[row.get('error') for row in errors],
-                            'quality_comparison_available':not errors,
+                            'token_limit_pages':truncated, 'execution_complete':not errors,
+                            'complete_generation_pages':sum(row['status']=='ok' and not row.get('token_limit_reached') for row in records),
+                            'quality_comparison_available':not errors and not truncated,
                             'annotation_assisted':variant.endswith('source-regions')}
     if output.exists():
         raise FileExistsError('Use a new audit directory; never overwrite evidence')
@@ -85,7 +99,7 @@ def audit(archive, output, expected_config):
               'source_archive_sha256':digest(archive), 'members_verified':len(payloads),
               'metrics_recomputed':True, 'page_ids':[row['id'] for row in rows],
               'reports':summary, 'reference_status':'source-unreviewed',
-              'head_to_head_quality_comparison_available':all(not row['failed_pages'] for row in summary.values()),
+              'head_to_head_quality_comparison_available':all(row['quality_comparison_available'] for row in summary.values()),
               'sota_claim':False, 'model_promotion':False}
     write_json(output/'audit.json', result)
     write_json(output/'checksums.json', {path.relative_to(output).as_posix():digest(path)

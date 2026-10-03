@@ -2,6 +2,8 @@
 
 Date: 2026-10-03. This is a two-page development diagnostic, not a benchmark result.
 
+Follow-up: [T4 v2 now generates without OOM but hits the token cap; run EOS v3 next](FULL_PAGE_PILOT_T4_V2_RESULT_20261003.md).
+
 Source archive SHA-256:
 `7f35013373b28bbee726e07ec6e20c7d24ee37d6b2b6f11d5bbbf2772b477655`.
 All 26 ZIP members and checksum coverage passed validation. Model/input identities

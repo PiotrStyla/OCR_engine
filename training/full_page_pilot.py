@@ -331,6 +331,28 @@ def ovis_geometry(inputs, processor, spec, original_size):
             'requested_max_pixels': spec['max_pixels']}
 
 
+def ovis_generation_settings(model, processor, spec):
+    settings = {'max_new_tokens':spec['max_new_tokens'], 'do_sample':False}
+    tokenizer = processor.tokenizer
+    default_eos = getattr(model.generation_config, 'eos_token_id', None)
+    trace = {'model_default_eos_token_id':default_eos,
+             'tokenizer_eos_token_id':tokenizer.eos_token_id,
+             'stop_override_applied':False}
+    if expected := spec.get('stop_token_ids'):
+        ids = []
+        for token, expected_id in expected.items():
+            actual = tokenizer.convert_tokens_to_ids(token)
+            if actual != expected_id or tokenizer.convert_ids_to_tokens(actual) != token:
+                raise ValueError(f'Unexpected stop-token identity: {token} -> {actual}')
+            ids.append(actual)
+        if tokenizer.eos_token_id not in ids or tokenizer.pad_token_id is None:
+            raise ValueError('Tokenizer EOS and padding must be explicitly supported')
+        settings.update(eos_token_id=sorted(set(ids)), pad_token_id=tokenizer.pad_token_id)
+        trace['stop_override_applied'] = True
+    trace['applied_generation_settings'] = settings
+    return settings, trace
+
+
 def load_ovis(spec):
     import torch
     from PIL import Image
@@ -340,6 +362,8 @@ def load_ovis(spec):
         spec["repo"], revision=spec["revision"], dtype=dtype,
         attn_implementation="sdpa").to("cuda").eval()
     processor = AutoProcessor.from_pretrained(spec["repo"], revision=spec["revision"])
+    generation_settings, generation_trace = ovis_generation_settings(model, processor, spec)
+    print(json.dumps({'ovis_generation_settings':generation_trace}), flush=True)
 
     def infer(path, page):
         with Image.open(path) as source:
@@ -355,14 +379,25 @@ def load_ovis(spec):
         print(json.dumps({'page': page['id'], 'ovis_input_geometry': geometry}), flush=True)
         inputs = inputs.to(model.device)
         with torch.inference_mode():
-            outputs = model.generate(**inputs, max_new_tokens=spec["max_new_tokens"], do_sample=False)
+            outputs = model.generate(**inputs, **generation_settings)
         generated = outputs[0][inputs["input_ids"].shape[1]:]
+        token_ids = generated.tolist() if hasattr(generated, 'tolist') else list(generated)
+        eos = generation_settings.get('eos_token_id', generation_trace['model_default_eos_token_id'])
+        eos = eos if isinstance(eos, list) else ([] if eos is None else [eos])
+        ended_with_eos = bool(token_ids and token_ids[-1] in eos)
+        hit_limit = len(token_ids) >= spec['max_new_tokens'] and not ended_with_eos
         raw = processor.decode(generated, skip_special_tokens=True,
                                clean_up_tokenization_spaces=False)
+        trace = {**generation_trace, 'generated_token_ids':token_ids,
+                 'eos_positions':[index for index,token in enumerate(token_ids) if token in eos],
+                 'decoded_with_special_tokens':processor.decode(generated, skip_special_tokens=False,
+                                                                clean_up_tokenization_spaces=False)}
         return {"ovis-ocr2-full-page": {"text": raw, "format": "markdown",
                 "generated_tokens": len(generated),
                 "input_geometry": geometry,
-                "token_limit_reached": len(generated) >= spec["max_new_tokens"]}}
+                'generation_trace':trace,
+                'finish_reason':'eos' if ended_with_eos else ('length' if hit_limit else 'unknown'),
+                "token_limit_reached": hit_limit}}
 
     return infer
 

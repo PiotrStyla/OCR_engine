@@ -15,6 +15,7 @@ from PIL import Image
 from training.full_page_pilot import (
     digest, inspect_reference, markdown_text, package, safe_relative, score,
     run_worker, select_pages, stage, validate_inputs, write_json, write_rows, ovis_geometry, load_ovis,
+    ovis_generation_settings,
 )
 from training.build_full_page_pilot_colab import ENVIRONMENT_SETUP_SOURCE, build
 
@@ -283,8 +284,8 @@ def test_ovis_processed_budget_guard(grid, limit, valid):
             ovis_geometry(inputs, processor, spec, (2409,3042))
 
 
-@pytest.mark.parametrize('over_budget', [False, True])
-def test_ovis_processor_kwargs_and_budget_before_gpu(tmp_path, monkeypatch, over_budget):
+@pytest.mark.parametrize('over_budget,explicit_eos', [(False,False),(True,False),(False,True)])
+def test_ovis_processor_kwargs_and_budget_before_gpu(tmp_path, monkeypatch, over_budget, explicit_eos):
     calls = {}
     class Inputs(dict):
         def to(self, device):
@@ -292,15 +293,19 @@ def test_ovis_processor_kwargs_and_budget_before_gpu(tmp_path, monkeypatch, over
             return self
     class Model:
         device = 'cuda'
+        generation_config = SimpleNamespace(eos_token_id=248044)
         def to(self, device):
             return self
         def eval(self):
             return self
         def generate(self, **kwargs):
             calls['generation'] = kwargs
-            return [[1, 2, 3, 4]]
+            return [[1, 2, 3, 248046 if explicit_eos else 4]]
     class Processor:
         image_processor = SimpleNamespace(patch_size=16, merge_size=2)
+        tokenizer = SimpleNamespace(eos_token_id=248046, pad_token_id=248044,
+            convert_tokens_to_ids=lambda token: {'<|im_end|>':248046,'<|endoftext|>':248044}[token],
+            convert_ids_to_tokens=lambda token_id: {248046:'<|im_end|>',248044:'<|endoftext|>'}[token_id])
         def apply_chat_template(self, messages, **kwargs):
             calls['processor'] = kwargs
             return Inputs(image_grid_thw=SimpleNamespace(tolist=lambda: [[1, 65 if over_budget else 64, 64]]),
@@ -319,6 +324,8 @@ def test_ovis_processor_kwargs_and_budget_before_gpu(tmp_path, monkeypatch, over
     monkeypatch.setitem(sys.modules, 'torch', fake_torch)
     spec = {'repo':'fixture','revision':'a'*40,'min_pixels':200704,
             'max_pixels':1048576,'max_visual_tokens':1024,'max_new_tokens':4096}
+    if explicit_eos:
+        spec.update(stop_token_ids={'<|im_end|>':248046,'<|endoftext|>':248044}, max_new_tokens=2)
     image = tmp_path/'page.png'
     Image.new('RGB',(40,50)).save(image)
     infer = load_ovis(spec)
@@ -331,6 +338,11 @@ def test_ovis_processor_kwargs_and_budget_before_gpu(tmp_path, monkeypatch, over
         assert result['text'] == 'błáwaty ſtara'
         assert result['input_geometry']['visual_tokens'] == 1024
         assert calls['generation']['do_sample'] is False
+        if explicit_eos:
+            assert calls['generation']['eos_token_id'] == [248044,248046]
+            assert result['finish_reason'] == 'eos' and result['token_limit_reached'] is False
+            assert result['generation_trace']['generated_token_ids'] == [3,248046]
+            assert result['generation_trace']['eos_positions'] == [1]
     assert calls['loader']['dtype'] == 'fp16'
     assert calls['processor']['processor_kwargs']['images_kwargs']['size']['longest_edge'] == 1048576
     assert 'images_kwargs' not in calls['processor']
@@ -385,3 +397,59 @@ def test_v2_package_name_and_path_guard(tmp_path):
     write_json(work/'config.json', {'evidence_archive_name':'../escape.zip'})
     with pytest.raises(ValueError):
         package(work)
+
+
+@pytest.mark.parametrize('actual,roundtrip', [(0,'<|im_end|>'),(248046,'wrong-token')])
+def test_eos_identity_failures_are_not_silently_accepted(actual, roundtrip):
+    model = SimpleNamespace(generation_config=SimpleNamespace(eos_token_id=248044))
+    processor = SimpleNamespace(tokenizer=SimpleNamespace(eos_token_id=248046,pad_token_id=248044,
+        convert_tokens_to_ids=lambda token:actual, convert_ids_to_tokens=lambda token:roundtrip))
+    spec = {'max_new_tokens':4096,'stop_token_ids':{'<|im_end|>':248046}}
+    with pytest.raises(ValueError,match='stop-token'):
+        ovis_generation_settings(model,processor,spec)
+
+
+def test_eos_v3_preserves_v2_prompt_scope_and_memory_profile(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    path = root/'experiments/2026-10-03/full-page-pilot-eos-v3/config.json'
+    v2 = json.loads((root/'experiments/2026-10-03/full-page-pilot-t4-v2/config.json').read_text())
+    v3 = json.loads(path.read_text())
+    assert v2['dataset']==v3['dataset'] and v2['selection_salt']==v3['selection_salt']
+    for key in ('repo','revision','packages','max_new_tokens','min_pixels','max_pixels','max_visual_tokens'):
+        assert v2['models']['ovis-ocr2'][key] == v3['models']['ovis-ocr2'][key]
+    assert set(v3['models']) == {'ovis-ocr2'}
+    target = tmp_path/'colab_full_page_pilot_eos_v3.ipynb'
+    build(target,path)
+    notebook = json.loads(target.read_text(encoding='utf-8'))
+    source = '\n'.join(''.join(cell['source']) for cell in notebook['cells'])
+    assert 'Only OvisOCR2 runs' in source
+    assert 'slayer-full-page-pilot-eos-v3' in source
+    assert 'no_repeat_ngram_size' not in source and 'repetition_penalty' not in source
+
+
+@pytest.mark.parametrize('truncated', [False,True])
+def test_archive_audit_distinguishes_runtime_success_and_token_cap(tmp_path, truncated):
+    from tools.audit_full_page_pilot import audit
+    config, dataset, _ = fixture(tmp_path)
+    spec = {'repo':'fixture','revision':'a'*40,'max_new_tokens':2,
+            'max_pixels':1024,'max_visual_tokens':4}
+    config['models'] = {'ovis-ocr2':spec}
+    config_path = tmp_path/'config.json'
+    write_json(config_path,config)
+    write_json(tmp_path/'code-provenance.json',{'embedded_runner_sha256':'b'*64})
+    predictions = tmp_path/'predictions'/'ovis-ocr2'
+    predictions.mkdir(parents=True)
+    write_json(predictions/'identity.json',{'spec':spec,'runner_sha256':'b'*64,
+        'input_sha256':digest(dataset/'inference-inputs.jsonl')})
+    write_rows(predictions/'ovis-ocr2-full-page.jsonl',[{
+        'id':'p','status':'ok','text':json.loads((dataset/'manifest.jsonl').read_text())['text'],
+        'generated_tokens':2,'token_limit_reached':truncated,
+        'input_geometry':{'requested_max_pixels':1024,'processed_pixels':1024,'visual_tokens':1}}])
+    score(dataset/'manifest.jsonl',predictions.parent,tmp_path/'scores')
+    archive = package(tmp_path)
+    report = audit(archive,tmp_path/'verified',config_path)
+    engine = report['reports']['ovis-ocr2-full-page']
+    assert engine['cer_micro']==0 and engine['execution_complete'] is True
+    assert engine['token_limit_pages']==int(truncated)
+    assert engine['quality_comparison_available'] is not truncated
+    assert report['head_to_head_quality_comparison_available'] is not truncated
