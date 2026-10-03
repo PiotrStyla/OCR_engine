@@ -9,6 +9,15 @@ match the frozen v1 configuration. CER/WER were independently recomputed from
 the archived raw predictions and source references and match the supplied metrics.
 This check does not independently verify reference completeness or source pixels.
 
+[Public evidence and verified source ZIP on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/ad9d9b11a21394095903aec84e27eea46499137b/experiments/2026-10-03/full-page-pilot-v1-t4-result).
+The published source ZIP was downloaded and its SHA-256 matched the supplied archive.
+
+A local-pool cross-check confirms identical reference text, source JPEG hash and
+PAGE XML hash for both IDs. However, Colab's converted PNG hashes differ from
+Windows' local PNG hashes. No scan is included in the ZIP, so encoding-only
+differences versus decoder/pixel differences cannot be distinguished from this
+evidence. Byte-identical cross-platform converted inputs are not established.
+
 Pages: `Slawna_wiktoria_FT__437103`, `SLAWNA_VICTORIA_FT__437145`.
 Runtime: Colab Python 3.13.15, Tesla T4 (14.56 GiB), Torch 2.11.0+cu130.
 The ensurepip-free bootstrap worked and both model weights loaded.
