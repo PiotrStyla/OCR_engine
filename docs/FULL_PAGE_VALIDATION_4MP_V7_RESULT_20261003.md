@@ -95,3 +95,13 @@ diplomatic transcriptions with provenance, then train/evaluate a specialized
 recognizer on document-disjoint splits. Unreviewed draft text or Qwen output
 must not silently become clean training labels. No new training run is launched
 as part of this evidence audit.
+
+## Published Evidence
+
+The [public HF result directory](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/23f96f88553e710b567e0bb699060ab3c748213c/experiments/2026-10-03/full-page-validation-4mp-v7-result)
+contains the unchanged original ZIP, independent audit, recomputed metrics,
+per-page CSV, input/glyph diagnostics, plot, frozen configuration, report and
+publication/checksum manifests. All ten published files were downloaded at
+this immutable revision and verified by SHA-256. No scans, weights or code
+are included. Audit code revision: `7419e3eb98548d8de513e86393a48b57f34d330f`.
+The HF report is the pre-publication snapshot; this link is a later receipt.
