@@ -41,8 +41,8 @@ def markdown(identifier, text):
     return {"cell_type": "markdown", "id": identifier, "metadata": {}, "source": [text]}
 
 
-def build(target):
-    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+def build(target, config_path=CONFIG_PATH):
+    config = json.loads(Path(config_path).read_text(encoding="utf-8"))
     runner = (ROOT / "training/full_page_pilot.py").read_text(encoding="utf-8")
     runner_hash = hashlib.sha256(runner.encode()).hexdigest()
     setup = f'''import hashlib
@@ -59,7 +59,7 @@ BASE_CODE_REVISION = {BASE_CODE_REVISION!r}
 RUNNER_SOURCE = {runner!r}
 RUNNER_SHA256 = {runner_hash!r}
 PAGES = CONFIG['default_inference_pages']  # 2-page smoke; increase only after reviewing its evidence.
-WORK = Path('/content/slayer-full-page-pilot-v1')
+WORK = Path('/content') / CONFIG.get('work_name', 'slayer-full-page-pilot-v1')
 WORK.mkdir(parents=True, exist_ok=True)
 config_path = WORK / 'config.json'
 if config_path.exists():
@@ -177,14 +177,16 @@ files.download(str(evidence_zip))
     notebook = {
         "nbformat": 4, "nbformat_minor": 5,
         "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                     "colab": {"name": "colab_full_page_pilot_v1.ipynb", "provenance": []},
+                     "colab": {"name": Path(target).name, "provenance": []},
                      "accelerator": "GPU"},
         "cells": [
-            markdown("scope", "# SLAYER-OCR: full-page pilot v1\n\n"
+            markdown("scope", "# SLAYER-OCR: full-page pilot\n\n"
                      "Select a GPU runtime, then **Run all**. No uploads or HF token. Default: two historical development pages. "
                      "Our mixed-v3 pipeline is compared with OvisOCR2; source PAGE regions with automatic line segmentation are a separate diagnostic.\n\n"
                      "Source transcriptions are **not verified gold**. No model promotion or SOTA claim is possible from this pilot. "
-                     "The 36-page historical test is excluded. Historical spelling is preserved. GPU execution of the new adapter is not yet verified.\n"),
+                     "The 36-page historical test is excluded. Historical spelling is preserved. "
+                     f"Ovis image budget: {config['models']['ovis-ocr2']['max_pixels']:,} pixels; processor resizing is recorded. "
+                     "This memory profile still requires GPU validation. Failed pages are not quality scores.\n"),
             markdown("dependencies-heading", "## 1. Lightweight scoring dependencies\n"),
             {"cell_type": "code", "id": "dependencies", "metadata": {}, "execution_count": None,
              "outputs": [], "source": ["%pip install jiwer==4.0.0 markdown-it-py==4.0.0 pillow==11.3.0\n"]},
@@ -215,4 +217,5 @@ files.download(str(evidence_zip))
 
 
 if __name__ == "__main__":
-    build(ROOT / "training/colab_full_page_pilot_v1.ipynb")
+    build(ROOT / 'training/colab_full_page_pilot_t4_v2.ipynb',
+          ROOT / 'experiments/2026-10-03/full-page-pilot-t4-v2/config.json')

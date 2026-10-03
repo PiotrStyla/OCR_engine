@@ -6,15 +6,18 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 2 października 2026
+## Aktualny stan: 3 października 2026
 
 ### Następny etap: OCR całych stron
 
-Przygotowano [jeden notebook Colab](training/colab_full_page_pilot_v1.ipynb)
+Przygotowano [notebook Colab T4 v2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_pilot_t4_v2.ipynb)
 porównujący nasz mixed-v3 z OvisOCR2 na dwóch przypiętych stronach development.
 Dane i modele pobierają się automatycznie z HF; modele działają w osobnych
-środowiskach, a ZIP zawiera surowe predykcje, błędy i metryki. Nowy adapter
-wymaga jeszcze smoke testu GPU. Referencje źródłowe są niezweryfikowane, więc
+środowiskach, a ZIP zawiera surowe predykcje, błędy i metryki. W pierwszym przebiegu
+mixed-v3 odczytał 2/2 strony, a Ovis załadował się, lecz zwrócił 2/2 błędy OOM.
+Nowy profil T4 ogranicza rozmiar wejścia i wymaga ponownego testu GPU.
+[Raport i granice interpretacji](docs/FULL_PAGE_PILOT_RESULT_20261003.md).
+Referencje źródłowe są niezweryfikowane, więc
 wynik pozostaje diagnostyczny i nie promuje modelu.
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu

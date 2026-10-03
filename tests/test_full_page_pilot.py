@@ -1,5 +1,6 @@
 import hashlib
 import importlib.util
+from contextlib import nullcontext
 import io
 import json
 from pathlib import Path
@@ -13,7 +14,7 @@ from PIL import Image
 
 from training.full_page_pilot import (
     digest, inspect_reference, markdown_text, package, safe_relative, score,
-    run_worker, select_pages, stage, validate_inputs, write_json, write_rows,
+    run_worker, select_pages, stage, validate_inputs, write_json, write_rows, ovis_geometry, load_ovis,
 )
 from training.build_full_page_pilot_colab import ENVIRONMENT_SETUP_SOURCE, build
 
@@ -264,3 +265,123 @@ def test_publication_rejects_short_sha_and_incomplete_pool(tmp_path):
         prepare(dataset, tmp_path / "publication", "abcdef")
     with pytest.raises(ValueError, match="80-page"):
         prepare(dataset, tmp_path / "publication", "a" * 40)
+
+
+@pytest.mark.parametrize('grid,limit,valid', [([1,64,64],1024,True),
+    ([1,65,64],1024,False), ([1,64,64],1000,False), ([0,64,64],1024,False)])
+def test_ovis_processed_budget_guard(grid, limit, valid):
+    inputs = {'image_grid_thw': SimpleNamespace(tolist=lambda: [grid]),
+              'input_ids': SimpleNamespace(shape=(1, 1100))}
+    processor = SimpleNamespace(image_processor=SimpleNamespace(patch_size=16, merge_size=2))
+    spec = {'max_pixels':1048576, 'max_visual_tokens':limit}
+    if valid:
+        geometry = ovis_geometry(inputs, processor, spec, (2409,3042))
+        assert geometry['visual_tokens'] == 1024
+        assert geometry['processed_size_wh'] == [1024,1024]
+    else:
+        with pytest.raises(ValueError):
+            ovis_geometry(inputs, processor, spec, (2409,3042))
+
+
+@pytest.mark.parametrize('over_budget', [False, True])
+def test_ovis_processor_kwargs_and_budget_before_gpu(tmp_path, monkeypatch, over_budget):
+    calls = {}
+    class Inputs(dict):
+        def to(self, device):
+            calls['transferred'] = device
+            return self
+    class Model:
+        device = 'cuda'
+        def to(self, device):
+            return self
+        def eval(self):
+            return self
+        def generate(self, **kwargs):
+            calls['generation'] = kwargs
+            return [[1, 2, 3, 4]]
+    class Processor:
+        image_processor = SimpleNamespace(patch_size=16, merge_size=2)
+        def apply_chat_template(self, messages, **kwargs):
+            calls['processor'] = kwargs
+            return Inputs(image_grid_thw=SimpleNamespace(tolist=lambda: [[1, 65 if over_budget else 64, 64]]),
+                          input_ids=SimpleNamespace(shape=(1,2)))
+        def decode(self, output, **kwargs):
+            return 'błáwaty ſtara'
+    def model_factory(*args, **kwargs):
+        calls['loader'] = kwargs
+        return Model()
+    fake_transformers = SimpleNamespace(
+        AutoModelForImageTextToText=SimpleNamespace(from_pretrained=model_factory),
+        AutoProcessor=SimpleNamespace(from_pretrained=lambda *args, **kwargs: Processor()))
+    fake_torch = SimpleNamespace(bfloat16='bf16', float16='fp16',
+        cuda=SimpleNamespace(is_bf16_supported=lambda:False), inference_mode=nullcontext)
+    monkeypatch.setitem(sys.modules, 'transformers', fake_transformers)
+    monkeypatch.setitem(sys.modules, 'torch', fake_torch)
+    spec = {'repo':'fixture','revision':'a'*40,'min_pixels':200704,
+            'max_pixels':1048576,'max_visual_tokens':1024,'max_new_tokens':4096}
+    image = tmp_path/'page.png'
+    Image.new('RGB',(40,50)).save(image)
+    infer = load_ovis(spec)
+    if over_budget:
+        with pytest.raises(ValueError, match='Visual budget'):
+            infer(image, {'id':'p'})
+        assert 'transferred' not in calls and 'generation' not in calls
+    else:
+        result = infer(image, {'id':'p'})['ovis-ocr2-full-page']
+        assert result['text'] == 'błáwaty ſtara'
+        assert result['input_geometry']['visual_tokens'] == 1024
+        assert calls['generation']['do_sample'] is False
+    assert calls['loader']['dtype'] == 'fp16'
+    assert calls['processor']['processor_kwargs']['images_kwargs']['size']['longest_edge'] == 1048576
+    assert 'images_kwargs' not in calls['processor']
+
+
+def test_t4_notebook_has_independent_output_and_config(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    config = root/'experiments/2026-10-03/full-page-pilot-t4-v2/config.json'
+    target = tmp_path/'colab_full_page_pilot_t4_v2.ipynb'
+    build(target, config)
+    notebook = json.loads(target.read_text(encoding='utf-8'))
+    sources = '\n'.join(''.join(cell['source']) for cell in notebook['cells'])
+    assert 'slayer-full-page-pilot-t4-v2' in sources
+    assert 'full-page-pilot-t4-v2-evidence.zip' in sources
+    assert notebook['metadata']['colab']['name'] == target.name
+    v1 = json.loads((root/'experiments/2026-10-02/full-page-pilot-v1/config.json').read_text())
+    v2 = json.loads(config.read_text())
+    assert v1['models']['ovis-ocr2']['max_pixels'] == 8294400
+    assert v2['models']['ovis-ocr2']['max_pixels'] == 1048576
+    assert v1['dataset'] == v2['dataset'] and v1['selection_salt'] == v2['selection_salt']
+
+
+@pytest.mark.parametrize('unsafe', ['../escape.json', 'script.py', 'C:/escape.json'])
+def test_evidence_import_rejects_unsafe_members(tmp_path, unsafe):
+    from tools.audit_full_page_pilot import verify_archive
+    archive = tmp_path/'bad.zip'
+    with zipfile.ZipFile(archive, 'w') as stream:
+        stream.writestr(unsafe, '{}')
+    with pytest.raises(ValueError):
+        verify_archive(archive)
+
+
+def test_evidence_import_verifies_all_checksums(tmp_path):
+    from tools.audit_full_page_pilot import verify_archive
+    _, output, _ = fixture(tmp_path)
+    archive = package(output)
+    verified = verify_archive(archive)
+    assert 'manifest.jsonl' in verified
+    corrupted = tmp_path/'corrupted.zip'
+    with zipfile.ZipFile(corrupted, 'w') as stream:
+        for name, data in verified.items():
+            stream.writestr(name, b'{}' if name == 'manifest.jsonl' else data)
+    with pytest.raises(ValueError, match='checksum mismatch'):
+        verify_archive(corrupted)
+
+
+def test_v2_package_name_and_path_guard(tmp_path):
+    work = tmp_path/'work'
+    work.mkdir()
+    write_json(work/'config.json', {'evidence_archive_name':'full-page-pilot-t4-v2-evidence.zip'})
+    assert package(work).name == 'full-page-pilot-t4-v2-evidence.zip'
+    write_json(work/'config.json', {'evidence_archive_name':'../escape.zip'})
+    with pytest.raises(ValueError):
+        package(work)

@@ -311,13 +311,33 @@ OVIS_PROMPT = ("Extract all readable content from the image in natural human rea
                "Preserve historical characters including \u00e1 and \u017f.")
 
 
+def ovis_geometry(inputs, processor, spec, original_size):
+    grids = inputs['image_grid_thw'].tolist()
+    if len(grids) != 1 or len(grids[0]) != 3:
+        raise ValueError('Expected one full-page image grid')
+    temporal, height, width = (int(value) for value in grids[0])
+    patch = int(processor.image_processor.patch_size)
+    merge = int(processor.image_processor.merge_size)
+    if min(temporal, height, width, patch, merge) <= 0:
+        raise ValueError('Invalid visual geometry')
+    pixels = height * width * patch * patch
+    tokens = temporal * height * width // (merge * merge)
+    if pixels > spec['max_pixels'] or tokens > spec.get('max_visual_tokens', tokens):
+        raise ValueError(f'Visual budget exceeded before GPU transfer: {pixels} pixels, {tokens} tokens')
+    return {'original_size_wh': list(original_size),
+            'processed_size_wh': [width * patch, height * patch],
+            'image_grid_thw': [temporal, height, width], 'processed_pixels': pixels,
+            'visual_tokens': tokens, 'input_tokens': int(inputs['input_ids'].shape[1]),
+            'requested_max_pixels': spec['max_pixels']}
+
+
 def load_ovis(spec):
     import torch
     from PIL import Image
     from transformers import AutoModelForImageTextToText, AutoProcessor
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     model = AutoModelForImageTextToText.from_pretrained(
-        spec["repo"], revision=spec["revision"], torch_dtype=dtype,
+        spec["repo"], revision=spec["revision"], dtype=dtype,
         attn_implementation="sdpa").to("cuda").eval()
     processor = AutoProcessor.from_pretrained(spec["repo"], revision=spec["revision"])
 
@@ -329,7 +349,10 @@ def load_ovis(spec):
         inputs = processor.apply_chat_template(
             messages, tokenize=True, add_generation_prompt=True, return_dict=True,
             return_tensors="pt", enable_thinking=False,
-            images_kwargs={"min_pixels": spec["min_pixels"], "max_pixels": spec["max_pixels"]})
+            processor_kwargs={'images_kwargs': {'size': {
+                'shortest_edge': spec['min_pixels'], 'longest_edge': spec['max_pixels']}}})
+        geometry = ovis_geometry(inputs, processor, spec, image.size)
+        print(json.dumps({'page': page['id'], 'ovis_input_geometry': geometry}), flush=True)
         inputs = inputs.to(model.device)
         with torch.inference_mode():
             outputs = model.generate(**inputs, max_new_tokens=spec["max_new_tokens"], do_sample=False)
@@ -338,6 +361,7 @@ def load_ovis(spec):
                                clean_up_tokenization_spaces=False)
         return {"ovis-ocr2-full-page": {"text": raw, "format": "markdown",
                 "generated_tokens": len(generated),
+                "input_geometry": geometry,
                 "token_limit_reached": len(generated) >= spec["max_new_tokens"]}}
 
     return infer
@@ -406,6 +430,9 @@ def run_worker(engine, config, inputs, output):
     for package in ("torch", "transformers", "huggingface_hub", "tokenizers", "Pillow"):
         environment["packages"][package] = importlib.metadata.version(package)
     write_json(output / "environment.json", environment)
+    failed = {row['id'] for variant in variants for row in read_rows(output / f'{variant}.jsonl')
+              if row.get('status') != 'ok'}
+    return {'pages': len(rows), 'failed_pages': len(failed), 'successful_pages': len(rows) - len(failed)}
 
 
 class TextHTMLParser(HTMLParser):
@@ -499,7 +526,12 @@ def package(work):
              and path.suffix in (".json", ".jsonl", ".log")
              and "model" not in path.relative_to(work).parts]
     import zipfile
-    archive = work / "full-page-pilot-v1-evidence.zip"
+    config_path = work / 'config.json'
+    config = json.loads(config_path.read_text(encoding='utf-8')) if config_path.exists() else {}
+    archive_name = safe_relative(config.get('evidence_archive_name', 'full-page-pilot-v1-evidence.zip'))
+    if '/' in archive_name or not archive_name.endswith('.zip'):
+        raise ValueError('Expected an evidence ZIP basename')
+    archive = work / archive_name
     checksums = {path.relative_to(work).as_posix(): digest(path) for path in files}
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as stream:
         for path in files:
@@ -524,7 +556,10 @@ def main():
     else:
         if not args.engine or not args.inputs:
             parser.error("worker requires --engine and --inputs")
-        run_worker(args.engine, config, args.inputs, args.output)
+        result = run_worker(args.engine, config, args.inputs, args.output)
+        print(json.dumps({'worker_result': result}), flush=True)
+        if result['failed_pages']:
+            raise SystemExit(2)
 
 
 if __name__ == "__main__":

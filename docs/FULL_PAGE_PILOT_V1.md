@@ -2,6 +2,10 @@
 
 Date: 2026-10-02. This is a development experiment, not a released gold benchmark.
 
+2026-10-03 update: the first GPU run completed for mixed-v3 but Ovis had two
+CUDA OOM failures. Use the separate [T4 v2 notebook and result report](FULL_PAGE_PILOT_RESULT_20261003.md)
+for the next run. The original v1 configuration and published notebook are retained.
+
 ## Current scope
 
 The existing pinned IMPACT HF corpus provides 65 train and 15 validation pages
@@ -45,8 +49,8 @@ not a fresh download of every scan. All local source images/XML passed the stagi
 The 46 focused tests and notebook schema validation passed, including real local
 installation into a pip-less venv and repeat installation after partial creation.
 The local tests simulate unavailable ensurepip; they are not a Colab GPU run.
-GPU inference for
-the new Ovis adapter remains pending; no measured quality gain is claimed.
+The later GPU evidence confirms loading but not successful Ovis generation;
+see the dated result report. No measured Ovis quality gain is claimed.
 
 ## Model environments
 
