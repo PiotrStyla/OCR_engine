@@ -2,6 +2,10 @@
 
 Status: ready for a first GPU execution, not a completed model evaluation.
 
+Follow-up: the returned v5 GPU evidence has now been audited.
+[Result, remaining failures and next gate](FULL_PAGE_COMPARISON_V5_RESULT_20261003.md).
+The original frozen protocol snapshot remains unchanged.
+
 [Public frozen protocol on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/4437258e02228c61d4018555ea857dea0b859d01/experiments/2026-10-03/full-page-comparison-v5-protocol).
 The downloaded configuration was SHA-256 verified; no GPU results are published yet.
 

@@ -208,3 +208,69 @@ def test_qwen_worker_load_failure_is_saved_and_not_retried_on_resume(tmp_path, m
     before = (output/'qwen3-vl-4b-full-page.jsonl').read_bytes()
     run_worker('qwen3-vl-4b', config, dataset/'inference-inputs.jsonl', output)
     assert len(calls) == 1 and (output/'qwen3-vl-4b-full-page.jsonl').read_bytes() == before
+
+
+def returned_evidence_fixture(tmp_path, monkeypatch):
+    from training import audit_full_page_comparison as auditor
+    config, opener = bundle_fixture(tmp_path)
+    config['models'] = {'qwen3-vl-4b':{'packages':[], 'max_new_tokens':4}}
+    work = tmp_path/'work'
+    dataset = work/'dataset'
+    stage_bundle(config, dataset, opener)
+    config_path = tmp_path/'frozen-config.json'
+    write_json(config_path, config)
+    write_json(work/'config.json', config)
+    source_hash = hashlib.sha256(b'fixture-code').hexdigest()
+    monkeypatch.setattr(auditor.subprocess, 'check_output', lambda *args,**kwargs:b'fixture-code')
+    write_json(work/'code-provenance.json', {'code_revision':'a'*40,
+        'runner_sha256':source_hash, 'comparison_sha256':source_hash})
+    root = work/'predictions/qwen3-vl-4b'
+    root.mkdir(parents=True)
+    write_json(root/'identity.json', {'engine':'qwen3-vl-4b', 'spec':config['models']['qwen3-vl-4b'],
+        'input_sha256':digest(dataset/'inference-inputs.jsonl'), 'runner_sha256':source_hash})
+    write_json(root/'environment.json', {'packages':{}, 'reference_text_sent_to_model':False})
+    write_json(work/'process-result.json', {'exit_status':0})
+    prediction = root/'qwen3-vl-4b-full-page.jsonl'
+    write_rows(prediction, [{'id':'p', 'status':'ok', 'text':'błáwaty ſłowo', 'format':'plain',
+        'generated_tokens':1, 'token_limit_reached':False, 'finish_reason':'eos',
+        'generation_trace':{'generated_token_ids':[9], 'eos_token_ids':[9]},
+        'elapsed_seconds':1.0, 'peak_allocated_bytes':123}])
+    compare(config, dataset, prediction, work/'scores')
+    return work, dataset, config_path
+
+
+def test_returned_evidence_audit_recomputes_and_preserves_original(tmp_path, monkeypatch):
+    from training.audit_full_page_comparison import audit
+    work, dataset, config = returned_evidence_fixture(tmp_path, monkeypatch)
+    archive = package_comparison(work)
+    original = archive.read_bytes()
+    report = audit(archive, dataset, config, tmp_path/'audit', 'a'*40)
+    assert report['metrics_recomputed'] is True and report['pages'] == 1
+    assert report['reports']['qwen3-vl-4b']['cer_micro'] == 0
+    assert report['glyph_counts']['ſ'] == {'reference':1,'candidate':1}
+    assert report['glyph_count_is_recall'] is report['sota_claim'] is False
+    assert archive.read_bytes() == original
+    assert (tmp_path/'audit/source-evidence.zip').read_bytes() == original
+
+
+@pytest.mark.parametrize('mutation', ['metrics', 'reference-leak', 'code'])
+def test_returned_evidence_audit_rejects_inconsistent_claims(tmp_path, monkeypatch, mutation):
+    from training.audit_full_page_comparison import audit
+    work, dataset, config = returned_evidence_fixture(tmp_path, monkeypatch)
+    if mutation == 'metrics':
+        path = work/'scores/metrics.json'
+        packet = json.loads(path.read_text(encoding='utf-8'))
+        packet['reports']['qwen3-vl-4b']['cer_micro'] = 0.5
+        write_json(path, packet)
+    elif mutation == 'reference-leak':
+        path = dataset/'inference-inputs.jsonl'
+        rows = read_rows(path)
+        rows[0]['text'] = 'secret reference'
+        write_rows(path, rows)
+    else:
+        path = work/'code-provenance.json'
+        packet = json.loads(path.read_text())
+        packet['runner_sha256'] = 'wrong'
+        write_json(path, packet)
+    with pytest.raises(ValueError):
+        audit(package_comparison(work), dataset, config, tmp_path/'audit', 'a'*40)

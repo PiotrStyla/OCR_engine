@@ -10,6 +10,14 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Następny etap: OCR całych stron
 
+**Wynik porównania v5:** Qwen3-VL-4B wykonał 15/15 stron na raportowanym T4,
+zakończył 14 odpowiedzi EOS i jedną zapętlił na `44.`. Na prowizorycznych
+referencjach v2 ma CER **63,35%**, WER **132,72%**, wobec **237,23% / 514,01%**
+zapisanego Ovis. Audyt odtworzył metryki i zweryfikował 30 plików ZIP-u.
+Historyczne `ſ` nadal są często błędnie odczytywane: profil nie jest gotowym
+teacherem ani silnikiem SOTA. Następny krok to kontrolowany test rozdzielczości.
+[Wynik i ograniczenia v5](docs/FULL_PAGE_COMPARISON_V5_RESULT_20261003.md).
+
 Walidacja v4 objęła wszystkie 15 stron splitu validation: 15/15 wykonań bez OOM,
 ale tylko 11 zakończeń EOS i 4 zapętlone odpowiedzi na limicie 4096 tokenów.
 Surowy wynik całego testu: **CER 243,74%, WER 515,86%**. EOS v3 działał na dwóch
@@ -33,7 +41,7 @@ historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
 pobiera komplet 15 stron v2 z HF, uruchamia Qwen3-VL-4B i porównuje go z zapisanym
 Ovis, bez ponownej inferencji Ovis i bez uploadów. Wybierz GPU, uruchom wszystkie
 komórki i odeślij `full-page-comparison-v5-evidence.zip`.
-Profil Qwen wymaga pierwszego testu GPU; referencje pozostają prowizoryczne.
+Profil Qwen wykonał pierwszy test GPU opisany wyżej; referencje pozostają prowizoryczne.
 [Zakres, konfiguracja i ograniczenia](docs/FULL_PAGE_COMPARISON_V5_PROTOCOL_20261003.md).
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
