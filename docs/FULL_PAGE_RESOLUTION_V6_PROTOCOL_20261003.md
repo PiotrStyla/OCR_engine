@@ -2,6 +2,11 @@
 
 Status: frozen protocol, GPU execution pending. No v6 model result exists yet.
 
+[Public frozen protocol and CPU validation on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/6d92cebae68172c4acb7b21b1ecbd04a14444aa6/experiments/2026-10-03/full-page-resolution-v6-protocol).
+All four published files were independently downloaded and SHA-256 verified.
+The original protocol snapshot remains unchanged; this link is a later receipt.
+The notebook pins published code commit `6a9896b1c5ebdb941b29dfd3d48c4cb2690658dd`.
+
 ## One Notebook
 
 Open [the resolution notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_resolution_v6.ipynb), select GPU, then Run all.

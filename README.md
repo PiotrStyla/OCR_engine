@@ -15,7 +15,7 @@ zakończył 14 odpowiedzi EOS i jedną zapętlił na `44.`. Na prowizorycznych
 referencjach v2 ma CER **63,35%**, WER **132,72%**, wobec **237,23% / 514,01%**
 zapisanego Ovis. Audyt odtworzył metryki i zweryfikował 30 plików ZIP-u.
 Historyczne `ſ` nadal są często błędnie odczytywane: profil nie jest gotowym
-teacherem ani silnikiem SOTA. Następny krok to kontrolowany test rozdzielczości.
+teacherem ani silnikiem SOTA. Przygotowano kontrolowany test rozdzielczości v6.
 [Wynik i ograniczenia v5](docs/FULL_PAGE_COMPARISON_V5_RESULT_20261003.md).
 
 Walidacja v4 objęła wszystkie 15 stron splitu validation: 15/15 wykonań bez OOM,
@@ -36,13 +36,16 @@ zachowując m.in. `ſt`, `ſi`, `ſł` i `á`. Powstał osobny draft z oryginał
 historią; nie jest to gold ani zbiór treningowy. Te same predykcje nadal mają
 4 zapętlenia. [Import korekt i pozostałe kwestie](docs/FULL_PAGE_REVIEW_IMPORT_V1_20261003.md).
 
-**Następny run: jeden notebook porównawczy v5.**
-[Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_comparison_v5.ipynb)
-pobiera komplet 15 stron v2 z HF, uruchamia Qwen3-VL-4B i porównuje go z zapisanym
-Ovis, bez ponownej inferencji Ovis i bez uploadów. Wybierz GPU, uruchom wszystkie
-komórki i odeślij `full-page-comparison-v5-evidence.zip`.
-Profil Qwen wykonał pierwszy test GPU opisany wyżej; referencje pozostają prowizoryczne.
-[Zakres, konfiguracja i ograniczenia](docs/FULL_PAGE_COMPARISON_V5_PROTOCOL_20261003.md).
+**Następny run: jeden notebook rozdzielczości v6.**
+[Uruchom w Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_full_page_resolution_v6.ipynb)
+pobiera komplet danych z HF i wybiera trzy trudne strony. Qwen3-VL-4B odczytuje
+je ponownie przy limitach 1 MP i 4 MP, w tej samej sesji i z niezmienionym
+promptem oraz dekodowaniem. Bez uploadów. Wybierz GPU, uruchom wszystkie
+komórki i odeślij `full-page-resolution-v6-evidence.zip`.
+119 testów CPU przeszło; pierwszy test GPU v6 i dopasowanie 4 MP do T4 są
+jeszcze do wykonania. Wybór stron jest diagnostyczny, po analizie v5,
+nie niezależnym benchmarkiem. Referencje nadal nie są gold.
+[Zakres, konfiguracja i ograniczenia](docs/FULL_PAGE_RESOLUTION_V6_PROTOCOL_20261003.md).
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
