@@ -122,7 +122,12 @@ def compare(config, dataset, candidate, output):
     candidate_score = output/'qwen3-vl-4b-projected.jsonl'
     write_rows(candidate_score, projected)
     reports, page_table = {}, []
-    for label,path in [('ovis-retained', baseline), ('qwen3-vl-4b', candidate_score)]:
+    profile = config.get('comparison_profile', {})
+    labels = profile.get('labels', ['ovis-retained', 'qwen3-vl-4b'])
+    if (not isinstance(labels, (list, tuple)) or len(labels) != 2
+            or not all(isinstance(label, str) and label for label in labels) or len(set(labels)) != 2):
+        raise ValueError('Comparison needs two distinct nonempty labels')
+    for label,path in [(labels[0], baseline), (labels[1], candidate_score)]:
         predictions = read_rows(path)
         report = evaluate(manifest, path)
         supplied = {row['id']: row for row in predictions}
@@ -144,16 +149,17 @@ def compare(config, dataset, candidate, output):
                 'raw_long_s_count': raw_text.count('\u017f'), 'raw_a_acute_count': raw_text.count('\u00e1'),
                 **repetition_flags(raw_text)})
         reports[label] = report
-    summary = {'schema': 'slayer-full-page-comparison-v5-result', 'pages': len(references),
+    summary = {'schema': profile.get('schema', 'slayer-full-page-comparison-v5-result'), 'pages': len(references),
         'reports': reports, 'scope_policy': config['scope_policy'],
         'reference_status': 'single-review-draft-not-gold', 'gold_pages': 0,
         'baseline_rerun': False, 'all_pages_included': True,
         'model_promotion': False, 'sota_claim': False,
         'spatial_reading_order_metrics_available': False,
         'omission_hallucination_accuracy_available': False,
-        'comparison_kind': 'Complete inference profiles; prompts, quantization and runtimes differ',
-        'claim_boundary': 'Provisional v2 references with unadjudicated peripheral text and ordering. '
-                          'No controlled model-only causal claim. No failures or capped outputs removed.'}
+        'comparison_kind': profile.get('kind', 'Complete inference profiles; prompts, quantization and runtimes differ'),
+        'claim_boundary': profile.get('claim_boundary',
+                          'Provisional v2 references with unadjudicated peripheral text and ordering. '
+                          'No controlled model-only causal claim. No failures or capped outputs removed.')}
     write_json(output/'metrics.json', summary)
     write_rows(output/'per-page.jsonl', page_table)
     with (output/'per-page.csv').open('w', encoding='utf-8', newline='') as stream:
