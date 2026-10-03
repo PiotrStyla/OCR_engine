@@ -14,6 +14,11 @@ The audit and validation-scope changes passed 81 focused CPU tests. The new
 15-cell notebook passed nbformat validation and Python-cell syntax checks.
 GPU execution of the expanded scope remains pending.
 
+[Public HF evidence, audit and next frozen configuration](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/764cf402c80c9c0d64dd107302399421a58994fd/experiments/2026-10-03/full-page-pilot-eos-v3-result).
+All 24 publication files exclude code, scans and weights. The published source
+ZIP was downloaded again and its SHA-256 matches the user's original archive.
+Publication provenance identifies code commit `c80e7628dfe48f72fa96137a4f8db742395147f2`.
+
 ## Observed Result
 
 OvisOCR2 completed 2/2 pages on a Tesla T4 with no OOM or token-limit hits.
