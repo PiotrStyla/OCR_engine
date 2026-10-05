@@ -30,6 +30,8 @@ The NEW candidate manifest SHA-256 is
 
 ## One Colab, No Uploads
 
+[Run the new expansion notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_data_v3_expansion_v1.ipynb).
+
 Use the new expansion notebook, select a GPU and run all cells. It automatically
 downloads the complete frozen crop bundle from public HF, checks its checksums
 and checks out a published full Git commit. The previous 64-line notebook is an
@@ -86,3 +88,18 @@ Use a fresh output directory. The validation input is the pinned complete
 15-page source-validation metadata, not a subset or a transcription-review
 status filter. The report records its digest, all forbidden collections and
 the prior-pool exclusion binding. The original 64 reviewed pairs remain unchanged.
+
+## Published Inputs And CPU Verification
+
+- [Complete new input ZIP](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/18943ce0560a8312ebda38e9e27f7dc883470a18/data/recognizer-data-v3-expansion-v1-20261005/recognizer-data-v3-expansion-v1-input.zip).
+- [Pinned manifest, preparation report and publication metadata](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/18943ce0560a8312ebda38e9e27f7dc883470a18/data/recognizer-data-v3-expansion-v1-20261005).
+- [Frozen config and CPU verification on the experiment registry](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/7a4f6b8cf8b8ed1b0a4538f0df5e200909723d4d/experiments/2026-10-05/recognizer-data-v3-expansion-v1).
+
+231 focused CPU tests passed, including 16 expansion tests. The notebook passes
+nbformat validation and all its code cells compile. Staging the downloaded
+public bundle verified all 64 image hashes/dimensions and reference-free inputs;
+every uploaded file and every ZIP member was checked. Archive SHA-256:
+`3d94910c0fe80545d6b1b798538efea5611aaa089666eb91de89940aa1a500dd`.
+The notebook runs published code
+`0057272a158dfa9941be49678007c0632e02bb40`, not an unpublished commit.
+CPU checks do not establish GPU completion, OCR accuracy or model improvement.

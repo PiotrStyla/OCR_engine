@@ -10,11 +10,23 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
+**Nowa partia do uruchomienia: 64 NOWE linie, bez powtórek.**
+[Colab: rozszerzenie danych v3](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_data_v3_expansion_v1.ipynb).
+Wybierz GPU i uruchom wszystkie komórki. Niczego nie wgrywaj: notebook pobiera
+dane z HF. Zwróć `recognizer-data-v3-expansion-v1-evidence.zip`.
+Wykluczono wszystkie wcześniej przejrzane root ID i wycinki. Nowa partia
+obejmuje 22 strony i 9 kolekcji treningowych; jej odczyty dopiero wymagają GPU
+i późniejszego review. Poprzednie 64 pary nie są ponownie przetwarzane.
+231 testów CPU przeszło, notebook zwalidowano, a opublikowany ZIP pobrano
+i sprawdzono. To generowanie propozycji, nie trening ani pomiar SOTA.
+[Protokół nowej partii](docs/RECOGNIZER_DATA_V3_EXPANSION_20261005.md).
+[Pełny ZIP wejściowy na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/18943ce0560a8312ebda38e9e27f7dc883470a18/data/recognizer-data-v3-expansion-v1-20261005/recognizer-data-v3-expansion-v1-input.zip).
+
 **Pilot review zamknięty: 64 aktywne pary.** Wszystkie sześć decyzji follow-up
 potwierdza tekst i pełną linię: 58 poprzednich par + 3 potwierdzone teksty
 + 3 nowe wycinki. Zachowano oba eksporty, starą pisownię i nieaktywne stare
 wycinki. Pula obejmuje 25 stron i 10 kolekcji treningowych; 215 testów CPU
-przeszło. Nie trzeba powtarzać review ani Colaba. Następne bramki to
+przeszło. Nie powtarzaj poprzedniego review ani poprzedniego Colaba. Następne bramki to
 identyfikacja dzieł/wydań, większy czysty train i niezależny zamrożony dev.
 To dane z pojedynczym review, nie gold ani SOTA; trening jeszcze nie ruszył.
 [Wynik, pełna historia i zasady scalania](docs/RECOGNIZER_REVIEWED_POOL_20261005.md).
