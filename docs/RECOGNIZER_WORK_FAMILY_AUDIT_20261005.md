@@ -90,3 +90,12 @@ The editor and its manifest have not been changed by this audit.
 Next project gate: resolve the seven remaining train-source collections and frozen
 development works, expand work-disjoint training data, then train and compare the
 recognizer on independently adjudicated development pages. Final test stays frozen.
+
+## Public Artifacts
+
+- [Audit, manifests, risk overlay and source-access receipts](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/ee918a0c9b7c4e2511eb114fa93f2711a7b8815f/experiments/2026-10-05/recognizer-work-family-audit-v1).
+- [Complete visual-evidence ZIP: eight original scans and bound policy](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/eb55ef61378ead1b5614f83540b121a667c6b5d3/data/recognizer-work-family-visual-evidence-v1-20261005/recognizer-work-family-visual-evidence-v1.zip).
+
+Every published file was downloaded at its immutable HF revision and verified
+by SHA-256, including every visual ZIP member. The data ZIP contains no code,
+weights, simulated review decisions or third-party article/catalog copies.

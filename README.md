@@ -16,6 +16,8 @@ z przyszłego treningu 9 stron: dotyczy to 19 zaakceptowanych linii i 20 nowych
 propozycji. Twoje teksty i historia review są zachowane; pozostałe kolekcje
 nie są jeszcze bibliograficznie zatwierdzone. 256 testów CPU przeszło.
 [Raport, źródła i następne bramki](docs/RECOGNIZER_WORK_FAMILY_AUDIT_20261005.md).
+[Audyt na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/ee918a0c9b7c4e2511eb114fa93f2711a7b8815f/experiments/2026-10-05/recognizer-work-family-audit-v1).
+[ZIP ośmiu skanów dowodowych](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/eb55ef61378ead1b5614f83540b121a667c6b5d3/data/recognizer-work-family-visual-evidence-v1-20261005/recognizer-work-family-visual-evidence-v1.zip).
 **Nie uruchamiaj ponownie Colaba.** Kontynuuj istniejące review i zwróć
 `slayer-recognizer-line-review-31debfc142b5.json`.
 
