@@ -38,3 +38,12 @@ silently verified. The output keeps the original JSON, confirmation, immutable
 manifest snapshot, status report and SHA-256 manifest. The snapshot's image
 paths refer to the original mining bundle, not images duplicated in this receipt.
 The focused importer/review suite passes 32 CPU tests.
+
+## Public Receipt
+
+[Original export, scoped confirmation, status report and receipt ZIP on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/6d97f1694553071f7139dbb220a4211b1558a463/experiments/2026-10-05/historical-glyph-review-v1).
+All nine published files were downloaded at this immutable revision and verified
+by SHA-256. This receipt contains no program files, scans or weights. Its source
+manifest snapshot resolves images in the earlier mining bundle. The original
+export still records its historical statuses; the separate confirmation/report
+provides the effective 12 verified / 3 unreviewed status without rewriting history.
