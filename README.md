@@ -10,6 +10,14 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
+**Review 64 linii zaimportowane:** 58 par do pilota treningowego
+(57 pierwotnych wycinkow + 1 nowa para z pelnego kontekstu potwierdzonego przez
+uzytkownika). Trzy propozycje tekstu pozostaja niezatwierdzone, trzy wycinki
+odrzucone, a stary wycinek-fragment pozostaje poza treningiem. Zachowano
+oryginalny JSON, historie decyzji, surowe odczyty i stara pisownie.
+To dane z pojedynczym review, nie niezalezny gold ani wynik SOTA.
+[Import, zasady i nastepny etap](docs/RECOGNIZER_LINE_REVIEW_RESULT_20261005.md).
+
 **Pilot wykonany i sprawdzony:** oba modele zwróciły 64 odczyty na T4;
 Qwen zakończył 63 EOS i jeden zapętlił na limicie, TrOCR zakończył wszystkie EOS.
 Mamy 62 rozbieżności, 1 abstencję i tylko 1 zgodność, która nie zgadza się
