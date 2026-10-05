@@ -18,6 +18,10 @@ przeszło. Nie trzeba powtarzać review ani Colaba. Następne bramki to
 identyfikacja dzieł/wydań, większy czysty train i niezależny zamrożony dev.
 To dane z pojedynczym review, nie gold ani SOTA; trening jeszcze nie ruszył.
 [Wynik, pełna historia i zasady scalania](docs/RECOGNIZER_REVIEWED_POOL_20261005.md).
+[Pobierz kompletny ZIP 64 par ze skanami i historią](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/619e675e4abb4bfbbb4613d308cbb1509f7ae734/data/recognizer-reviewed-pool-v1-20261005/recognizer-reviewed-pool-v1-20261005.zip).
+[Decyzje i raporty na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/2b33416719ddd60aecb8ed8fbc27e3b2364eeaa9/experiments/2026-10-05/recognizer-reviewed-pool-v1).
+Świeże scalenie odtworzyło identyczne pliki; pobraną publikację sprawdzono
+plik po pliku i wewnątrz ZIP-u.
 
 **Poprzedni etap:** audyt 89 skanów źródłowych zweryfikował hashe
 i wykonał 2739 porównań między splitami. Przy zamrożonych progach nie znalazł
@@ -29,7 +33,7 @@ osobnego sprawdzenia. Powstał edytor tylko 6 nierozstrzygniętych przypadków:
 [Komplet danych sześciu przypadków na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/981802f3b8a50937452be12c09e4fb85395e18b6/data/recognizer-line-remediation-v1-20261005/recognizer-line-remediation-final-20261005.zip).
 199 testów CPU przeszło; edytor sprawdzono na desktopie i telefonie.
 
-**Review 64 linii zaimportowane:** 58 par do pilota treningowego
+**Archiwum pierwszego importu review:** 58 par do pilota treningowego
 (57 pierwotnych wycinków + 1 nowa para z pełnego kontekstu potwierdzonego przez
 użytkownika). Trzy propozycje tekstu pozostają niezatwierdzone, trzy wycinki
 odrzucone, a stary wycinek-fragment pozostaje poza treningiem. Zachowano

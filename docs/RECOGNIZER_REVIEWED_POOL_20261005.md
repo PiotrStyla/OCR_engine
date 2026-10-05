@@ -102,3 +102,13 @@ The publication receipt records immutable dataset/evidence revisions and
 download verification. Code is on GitHub; the complete scan/evidence package
 is on Hugging Face under `data/recognizer-reviewed-pool-v1-20261005` and
 `experiments/2026-10-05/recognizer-reviewed-pool-v1`.
+
+- [Complete 64-pair data ZIP, including scans and both review histories](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/619e675e4abb4bfbbb4613d308cbb1509f7ae734/data/recognizer-reviewed-pool-v1-20261005/recognizer-reviewed-pool-v1-20261005.zip).
+- [Pinned dataset, manifest and publication metadata](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/619e675e4abb4bfbbb4613d308cbb1509f7ae734/data/recognizer-reviewed-pool-v1-20261005).
+- [Pinned raw decisions, import reports and source-audit summary](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/2b33416719ddd60aecb8ed8fbc27e3b2364eeaa9/experiments/2026-10-05/recognizer-reviewed-pool-v1).
+- [Tested merge implementation](https://github.com/PiotrStyla/OCR_engine/blob/cd69bff/training/merge_recognizer_reviewed_pool.py).
+
+Every published file and every member of the downloaded ZIP was verified.
+The fresh merge reproduced the complete package checksum map, including both
+raw histories, not merely the active manifest. Earlier 58-pair and six-proposal
+publications remain immutable historical stages; use this merged pool now.
