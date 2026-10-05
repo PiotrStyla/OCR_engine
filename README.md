@@ -10,7 +10,16 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Następny etap przygotowany:** audyt 89 skanów źródłowych zweryfikował hashe
+**Pilot review zamknięty: 64 aktywne pary.** Wszystkie sześć decyzji follow-up
+potwierdza tekst i pełną linię: 58 poprzednich par + 3 potwierdzone teksty
++ 3 nowe wycinki. Zachowano oba eksporty, starą pisownię i nieaktywne stare
+wycinki. Pula obejmuje 25 stron i 10 kolekcji treningowych; 215 testów CPU
+przeszło. Nie trzeba powtarzać review ani Colaba. Następne bramki to
+identyfikacja dzieł/wydań, większy czysty train i niezależny zamrożony dev.
+To dane z pojedynczym review, nie gold ani SOTA; trening jeszcze nie ruszył.
+[Wynik, pełna historia i zasady scalania](docs/RECOGNIZER_REVIEWED_POOL_20261005.md).
+
+**Poprzedni etap:** audyt 89 skanów źródłowych zweryfikował hashe
 i wykonał 2739 porównań między splitami. Przy zamrożonych progach nie znalazł
 kandydatów na duplikaty; identyfikacja wspólnych dzieł/wydań nadal wymaga
 osobnego sprawdzenia. Powstał edytor tylko 6 nierozstrzygniętych przypadków:
