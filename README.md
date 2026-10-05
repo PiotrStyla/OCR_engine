@@ -10,6 +10,14 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
+**Następny etap przygotowany:** audyt 89 skanów źródłowych zweryfikował hashe
+i wykonał 2739 porównań między splitami. Przy zamrożonych progach nie znalazł
+kandydatów na duplikaty; identyfikacja wspólnych dzieł/wydań nadal wymaga
+osobnego sprawdzenia. Powstał edytor tylko 6 nierozstrzygniętych przypadków:
+3 propozycji tekstu i 3 nowych propozycji wycinków. Nie powtarzamy zaakceptowanych
+58 par i nie uruchamiamy jeszcze kolejnego treningu.
+[Audyt, follow-up i dokładna instrukcja](docs/RECOGNIZER_SOURCE_AUDIT_AND_FOLLOWUP_20261005.md).
+
 **Review 64 linii zaimportowane:** 58 par do pilota treningowego
 (57 pierwotnych wycinków + 1 nowa para z pełnego kontekstu potwierdzonego przez
 użytkownika). Trzy propozycje tekstu pozostają niezatwierdzone, trzy wycinki
