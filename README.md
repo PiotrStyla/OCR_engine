@@ -11,12 +11,14 @@ ani potwierdzonym silnikiem SOTA.**
 ### Teraz: DATA ENGINE dla recognizera v3
 
 **Review 64 linii zaimportowane:** 58 par do pilota treningowego
-(57 pierwotnych wycinkow + 1 nowa para z pelnego kontekstu potwierdzonego przez
-uzytkownika). Trzy propozycje tekstu pozostaja niezatwierdzone, trzy wycinki
+(57 pierwotnych wycinków + 1 nowa para z pełnego kontekstu potwierdzonego przez
+użytkownika). Trzy propozycje tekstu pozostają niezatwierdzone, trzy wycinki
 odrzucone, a stary wycinek-fragment pozostaje poza treningiem. Zachowano
-oryginalny JSON, historie decyzji, surowe odczyty i stara pisownie.
-To dane z pojedynczym review, nie niezalezny gold ani wynik SOTA.
-[Import, zasady i nastepny etap](docs/RECOGNIZER_LINE_REVIEW_RESULT_20261005.md).
+oryginalny JSON, historię decyzji, surowe odczyty i starą pisownię.
+To dane z pojedynczym review, nie niezależny gold ani wynik SOTA. 174 testy CPU
+przeszły; powtórzony import odtworzył wyniki, a publikację pobrano i sprawdzono.
+[Kompletny ZIP danych po review](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/76dad0d2f727f6b927030e8ec62c5861ef00fe9c/data/recognizer-line-reviewed-candidates-v1-20261005/recognizer-line-reviewed-candidates-v1-20261005.zip).
+[Import, zasady i następny etap](docs/RECOGNIZER_LINE_REVIEW_RESULT_20261005.md).
 
 **Pilot wykonany i sprawdzony:** oba modele zwróciły 64 odczyty na T4;
 Qwen zakończył 63 EOS i jeden zapętlił na limicie, TrOCR zakończył wszystkie EOS.

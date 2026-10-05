@@ -53,6 +53,17 @@ with UTF-8 enabled on Windows (`PYTHONUTF8=1`); older full-page test fixtures us
 locale-default reads and otherwise corrupt historical characters. A fresh import
 with the final importer reproduces the candidate manifest and report exactly.
 
+## Public Artifacts
+
+- [Complete code-free dataset ZIP](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/76dad0d2f727f6b927030e8ec62c5861ef00fe9c/data/recognizer-line-reviewed-candidates-v1-20261005/recognizer-line-reviewed-candidates-v1-20261005.zip).
+- [Dataset report and publication provenance](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/76dad0d2f727f6b927030e8ec62c5861ef00fe9c/data/recognizer-line-reviewed-candidates-v1-20261005).
+- [Original human decisions, scope confirmation and import evidence](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/1ec254d972b0d510420daff00ce2f6e34e43ca8f/experiments/2026-10-05/recognizer-line-review-result-v1).
+- [Tested importer code](https://github.com/PiotrStyla/OCR_engine/blob/682d01e/training/import_recognizer_line_review.py).
+
+All published files were downloaded at these immutable revisions and checked
+against local SHA-256 digests. Every member of the downloaded dataset ZIP was
+also checked. The evidence repository contains no scans or weights.
+
 ## Next Gate
 
 This is a small clean-data pilot, not a sufficient corpus for a SOTA recognizer.
