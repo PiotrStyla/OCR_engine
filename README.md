@@ -8,7 +8,24 @@ ani potwierdzonym silnikiem SOTA.**
 
 ## Aktualny stan: 5 października 2026
 
-### Następny etap: OCR całych stron
+### Teraz: DATA ENGINE dla recognizera v3
+
+**Uruchom teraz tylko ten notebook:**
+[Colab: recognizer v3 / pilot danych](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/b90ae82fb496d88320e8698cef8debd73785bece/training/colab_recognizer_data_v3_pilot.ipynb).
+Wybierz GPU i uruchom wszystkie komórki. Niczego nie wgrywaj: notebook sam
+pobierze 64 wycinki z 25 stron i 10 kolekcji treningowych z publicznego HF.
+Qwen3-VL i TrOCR wykonają odczyty kolejno, bez etykiet referencyjnych.
+Pobierz i przekaż `recognizer-data-v3-teacher-evidence.zip`.
+
+Pula jest oddzielona od kolekcji walidacji, testu i geometry holdout.
+Zachowujemy `ſ`, `á`, `ɇ`; zgodność modeli jest tylko propozycją do review,
+nie automatyczną etykietą. To przygotowanie czystych danych, **jeszcze nie
+trening v3 ani wynik SOTA**. Kontrola granic linii i tekstu oraz audyt
+dokumentów/wydań poprzedzą trening. 97 testów CPU przeszło, pakiet HF pobrano
+i sprawdzono ponownie; nowy profil wycinków nie był jeszcze uruchomiony na GPU.
+[Protokół i następne bramki](docs/RECOGNIZER_DATA_V3_PILOT_PROTOCOL_20261005.md).
+
+### Zakończone: OCR całych stron
 
 **Wynik v7 (pełne 4 MP):** 15/15 stron na T4, 15 EOS, bez OOM,
 limitów i błędów wykonania. CER wynosi **17,52%**, WER **61,63%**, wobec

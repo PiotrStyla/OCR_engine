@@ -33,6 +33,13 @@ It does not train v3, produce gold, promote a teacher, or establish SOTA.
 
 ## Two-family inference
 
+[Run this one Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/b90ae82fb496d88320e8698cef8debd73785bece/training/colab_recognizer_data_v3_pilot.ipynb).
+Select GPU, run all cells and return `recognizer-data-v3-teacher-evidence.zip`.
+No manual ZIP uploads are required. The notebook checks out published code
+`e24545b22b65d42937fd88714ff99c7b81e50f90`, fetches the branch rather than
+requesting an unpublished object, and embeds the exact frozen configuration.
+Its six code cells compile and the notebook passes nbformat validation.
+
 One Colab downloads a content-addressed public HF ZIP without manual uploads.
 Qwen3-VL-4B-Instruct and TrOCR mixed-v3 run sequentially on the same 64 crops.
 Only ID, image path/hash/dimensions and empty source regions reach workers.
