@@ -10,6 +10,15 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
+**Audyt dzieł: dwie rodziny przecinają splity.** Tomy „Nowych Aten” oraz obie
+„Wyprawy” wymagają wspólnego grupowania ochronnego. Nowa polityka wyłącza
+z przyszłego treningu 9 stron: dotyczy to 19 zaakceptowanych linii i 20 nowych
+propozycji. Twoje teksty i historia review są zachowane; pozostałe kolekcje
+nie są jeszcze bibliograficznie zatwierdzone. 256 testów CPU przeszło.
+[Raport, źródła i następne bramki](docs/RECOGNIZER_WORK_FAMILY_AUDIT_20261005.md).
+**Nie uruchamiaj ponownie Colaba.** Kontynuuj istniejące review i zwróć
+`slayer-recognizer-line-review-31debfc142b5.json`.
+
 **Nowa partia odczytana: 64/64 przez oba modele na T4.** Wszystkie odpowiedzi
 zakończyły się EOS, bez błędów i limitów tokenów. Modele różnią się na wszystkich
 64 liniach, więc żaden odczyt nie trafia automatycznie do treningu.
@@ -23,11 +32,11 @@ Zwróć `slayer-recognizer-line-review-31debfc142b5.json`.
 
 **Archiwum wykonanego notebooka: 64 NOWE linie, bez powtórek.**
 [Colab: rozszerzenie danych v3](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_data_v3_expansion_v1.ipynb).
-Wybierz GPU i uruchom wszystkie komórki. Niczego nie wgrywaj: notebook pobiera
-dane z HF. Zwróć `recognizer-data-v3-expansion-v1-evidence.zip`.
+Notebook służy do odtworzenia już wykonanego eksperymentu, nie jest aktualnym
+krokiem do uruchomienia. Dane pobiera z HF bez ręcznego uploadu.
 Wykluczono wszystkie wcześniej przejrzane root ID i wycinki. Nowa partia
-obejmuje 22 strony i 9 kolekcji treningowych; jej odczyty dopiero wymagają GPU
-i późniejszego review. Poprzednie 64 pary nie są ponownie przetwarzane.
+obejmuje 22 strony i 9 kolekcji treningowych; oba modele już wykonały odczyty,
+a teraz potrzebne jest review. Poprzednie 64 pary nie są ponownie przetwarzane.
 231 testów CPU przeszło, notebook zwalidowano, a opublikowany ZIP pobrano
 i sprawdzono. To generowanie propozycji, nie trening ani pomiar SOTA.
 [Protokół nowej partii](docs/RECOGNIZER_DATA_V3_EXPANSION_20261005.md).

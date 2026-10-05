@@ -1,0 +1,63 @@
+{
+  "schema": "slayer-recognizer-work-family-policy-v1",
+  "dataset": "PiotrSty/impact-psnc-polish-ocr",
+  "revision": "c7cb156fb95d2880699c33725bbaf1fbc1008fea",
+  "pages": 89,
+  "input_sha256": {
+    "page-signatures.jsonl": "bfecc5c268112dd6de63fadc886a268f20e3f3ec2ac03f7e2d05a5530ff88b67",
+    "source-audit-report.json": "62db9137422536b2f5f0f9359c47cf511ac8873e4d12470125742982dd4917fe",
+    "reviewed-manifest.jsonl": "3b4184f45be39756e5e5f2068dd363c9a3c7a535502e953525690b62e5c85b77",
+    "expansion-manifest.jsonl": "31debfc142b523bf7786b42ee9d53c8fcd3218cf09fe99fa97967e448fb4627c"
+  },
+  "sources": [
+    {
+      "id": "impact-corpus-paper",
+      "url": "https://journals.ispan.edu.pl/index.php/cs-ec/en/article/download/cs.2014.008/174/0",
+      "scope": "Corpus description: four-volume Nowe Ateny; not a per-page edition mapping"
+    },
+    {
+      "id": "esjp-starwyp",
+      "url": "https://sxvii.pl/index.php?id_zrodla=1399&strona=kw_cyt_zr",
+      "scope": "Bibliographic title corroboration and textual parallels; not exact scan identification"
+    },
+    {
+      "id": "kornik-wyprawa",
+      "url": "https://platforma.bk.pan.pl/pl/search_results/1276476?q%5Bsort_attributes%5D%5Bfield_name%5D=title.sort&q%5Bsort_attributes%5D%5Border%5D=desc",
+      "scope": "Catalog record for the title; does not prove either IMPACT scan came from this copy"
+    },
+    {
+      "id": "original-impact-page",
+      "url": "https://ribes-80.man.poznan.pl/dlibra/publication/edition/707883/content",
+      "scope": "Original digital page; digital edition ID is not a bibliographic work ID"
+    },
+    {
+      "id": "original-corpus-description",
+      "url": "https://bc.klf.uw.edu.pl/289/",
+      "scope": "Corpus metadata description cited in the paper; unresolved if unavailable"
+    }
+  ],
+  "groups": [
+    {
+      "id": "protective-family-nowe-ateny",
+      "collections": ["NA1_FT", "NA2_FT", "NA3_FT", "NA4_FT"],
+      "status": "protective-work-family-group",
+      "bibliographic_identity_verified": false,
+      "exact_scan_duplicate_claim": false,
+      "visual_evidence_page_ids": ["NA1_FT__433083", "NA2_FT__433927", "NA3_FT__434738", "NA4_FT__435478"],
+      "source_ids": ["impact-corpus-paper", "original-corpus-description"],
+      "basis": "Source title pages and volume references plus corpus author's four-volume description. Conservative family grouping, not an exact edition/copy assertion.",
+      "observation_author": "Codex; agent source inspection, not user annotation review"
+    },
+    {
+      "id": "protective-family-wyprawa-1634",
+      "collections": ["Wyprawa_1_FT", "Wyprawa_2_FT"],
+      "status": "protective-work-family-group",
+      "bibliographic_identity_verified": false,
+      "exact_scan_duplicate_claim": false,
+      "visual_evidence_page_ids": ["Wyprawa_1_FT__436964", "Wyprawa_2_FT__436932", "Wyprawa_1_FT__436980", "Wyprawa_2_FT__436948"],
+      "source_ids": ["esjp-starwyp", "kornik-wyprawa", "original-impact-page"],
+      "basis": "Corresponding numbered paragraphs 48-55 and title variants with 1634 and Sultan Amurat. Different JPEGs and collection names do not establish independent work content; exact editions/copies remain unresolved.",
+      "observation_author": "Codex; agent source inspection, not user annotation review"
+    }
+  ]
+}
