@@ -10,7 +10,16 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Nowa partia do uruchomienia: 64 NOWE linie, bez powtórek.**
+**Nowa partia odczytana: 64/64 przez oba modele na T4.** Wszystkie odpowiedzi
+zakończyły się EOS, bez błędów i limitów tokenów. Modele różnią się na wszystkich
+64 liniach, więc żaden odczyt nie trafia automatycznie do treningu.
+Przygotowano review 64 nowych wycinków i 34 pełnych regionów; poprzednie 64
+zaakceptowane pary pozostają bez zmian. Zweryfikowano ZIP, ślady generacji
+i odtworzono raporty; 231 testów CPU przeszło. **Nie powtarzaj Colaba.**
+[Wynik i dokładna instrukcja review](docs/RECOGNIZER_DATA_V3_EXPANSION_RESULT_20261005.md).
+Zwróć `slayer-recognizer-line-review-31debfc142b5.json`.
+
+**Archiwum wykonanego notebooka: 64 NOWE linie, bez powtórek.**
 [Colab: rozszerzenie danych v3](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_data_v3_expansion_v1.ipynb).
 Wybierz GPU i uruchom wszystkie komórki. Niczego nie wgrywaj: notebook pobiera
 dane z HF. Zwróć `recognizer-data-v3-expansion-v1-evidence.zip`.
