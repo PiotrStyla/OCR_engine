@@ -100,3 +100,16 @@ python -m training.build_annotation_review `
 This remains training-source data preparation. Bibliographic work/edition grouping,
 larger clean training data and independent frozen development labels are still
 required before selecting a recognizer and evaluating untouched final test.
+
+## Public Artifacts
+
+- [Complete code-free review ZIP with all 64 crops, 34 source regions and both teacher outputs](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/b0a44817cf7da627ac27bb82b873415067330b0c/data/recognizer-data-v3-expansion-review-v1-20261005/recognizer-data-v3-expansion-v1-review-data.zip).
+- [Pinned review data provenance](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/b0a44817cf7da627ac27bb82b873415067330b0c/data/recognizer-data-v3-expansion-review-v1-20261005).
+- [Pinned original run, reproduced audit, glyph diagnostics and scalar UI QA](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/848e4ddcfa8f6c13219687ae6bbd972ae94cc354/experiments/2026-10-05/recognizer-data-v3-expansion-result-v1).
+
+Every published file was downloaded at its immutable revision and checked by
+SHA-256. Every member of the downloaded review ZIP was checked as well.
+The original returned evidence ZIP is published byte-for-byte under a canonical
+filename, without the local download suffix `(1)`. The review ZIP includes the
+unchanged frozen pilot config and an empty agent-observation record; no simulated
+review events or automatic human labels were created or published.

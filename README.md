@@ -17,6 +17,8 @@ Przygotowano review 64 nowych wycinków i 34 pełnych regionów; poprzednie 64
 zaakceptowane pary pozostają bez zmian. Zweryfikowano ZIP, ślady generacji
 i odtworzono raporty; 231 testów CPU przeszło. **Nie powtarzaj Colaba.**
 [Wynik i dokładna instrukcja review](docs/RECOGNIZER_DATA_V3_EXPANSION_RESULT_20261005.md).
+[Kompletny ZIP nowych danych review ze skanami](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/b0a44817cf7da627ac27bb82b873415067330b0c/data/recognizer-data-v3-expansion-review-v1-20261005/recognizer-data-v3-expansion-v1-review-data.zip).
+[Surowy run, audyt i QA na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/848e4ddcfa8f6c13219687ae6bbd972ae94cc354/experiments/2026-10-05/recognizer-data-v3-expansion-result-v1).
 Zwróć `slayer-recognizer-line-review-31debfc142b5.json`.
 
 **Archiwum wykonanego notebooka: 64 NOWE linie, bez powtórek.**
