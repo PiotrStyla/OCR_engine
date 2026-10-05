@@ -1,5 +1,13 @@
 # Recognizer DATA ENGINE teacher pilot: result and crop review
 
+## Public Artifacts
+
+[Original evidence and independently reproduced audit](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/06bdf01598343c9a0c428f64a831a67b762d7ed2/experiments/2026-10-05/recognizer-data-v3-teacher-result-v1).
+[Complete code-free review data ZIP](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/11ee19644073a0fd31e48bdd3c4cf171d761c814/data/recognizer-data-v3-line-review-v1-20261005/recognizer-data-v3-line-review-data.zip).
+Every uploaded file was downloaded and hash-checked; all review bundle members
+were verified. The original teacher ZIP is retained byte-for-byte. These data
+are public, but remain unapproved training-source review material, not gold.
+
 ## Audited Remote Run
 
 The returned archive SHA256 is

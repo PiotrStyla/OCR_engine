@@ -17,6 +17,7 @@ z etykietą źródłową. Potwierdzono także błędną parę wycinka i tekstu:
 fragment słowa ma etykietę całego zdania. **Nie trenujemy na tych parach bez
 review tekstu i granic linii. Nie powtarzaj teraz Colaba.**
 Przygotowano edytor dla 64 linii z 35 pełnymi regionami źródłowymi.
+[Komplet danych do review na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/11ee19644073a0fd31e48bdd3c4cf171d761c814/data/recognizer-data-v3-line-review-v1-20261005/recognizer-data-v3-line-review-data.zip).
 [Wynik pilota i instrukcja review](docs/RECOGNIZER_DATA_V3_TEACHER_RESULT_20261005.md).
 
 **Notebook do odtworzenia pilota:**
