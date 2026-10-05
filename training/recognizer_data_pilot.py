@@ -177,7 +177,7 @@ def healthy(row):
             and bool(normalize(row['text'])))
 
 
-def combine(config, dataset, prediction_root, output):
+def combine(config, dataset, prediction_root, output, *, runner_hashes=None):
     dataset, prediction_root, output = map(Path, (dataset, prediction_root, output))
     rows = read_rows(dataset/'manifest.jsonl')
     if digest(dataset/'manifest.jsonl') != config['dataset']['manifest_sha256']:
@@ -190,7 +190,8 @@ def combine(config, dataset, prediction_root, output):
         if identity_path.exists():
             identity = json.loads(identity_path.read_text(encoding='utf-8'))
             runner = Path(__file__).with_name('full_page_pilot.py') if engine == 'qwen3-vl-4b' else Path(__file__)
-            if (identity.get('engine') != engine or identity.get('runner_sha256') != digest(runner)
+            expected_runner = runner_hashes[engine] if runner_hashes is not None else digest(runner)
+            if (identity.get('engine') != engine or identity.get('runner_sha256') != expected_runner
                     or identity.get('spec') != config['models'][engine]
                     or identity.get('input_sha256') != digest(dataset/'inference-inputs.jsonl')):
                 raise ValueError('Teacher provenance mismatch')

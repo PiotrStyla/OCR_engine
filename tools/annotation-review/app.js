@@ -1,5 +1,10 @@
 'use strict';
 const source = JSON.parse(document.getElementById('source-data').textContent);
+const geometryReview = source.geometry_review_required === true;
+const reviewSchema = geometryReview ? 'slayer-recognizer-line-review-v1' : 'polocrbench-review-patch-v1';
+const geometryLabels = {'unreviewed': 'Nie sprawdzono', 'complete-line': 'Cała jedna linia', 'reject-crop': 'Odrzuć wycinek'};
+const geometryStates = {'unreviewed': 'Granice do sprawdzenia', 'complete-line': 'Cała linia', 'reject-crop': 'Wycinek odrzucony'};
+document.body.classList.toggle('line-review', geometryReview);
 const byId = new Map(source.pages.map(page => [page.id, page]));
 const storageKey = `polocrbench-review-v1:${source.manifest_sha256}`;
 const $ = id => document.getElementById(id);
@@ -13,10 +18,10 @@ function notify(text, error = false) {
   if (!error) timer = setTimeout(() => $('message').className = '', 5500);
 }
 function envelope(history = events) {
-  return {schema: 'polocrbench-review-patch-v1', manifest_sha256: source.manifest_sha256, events: history};
+  return {schema: reviewSchema, manifest_sha256: source.manifest_sha256, events: history};
 }
 function validate(packet) {
-  if (packet?.schema !== 'polocrbench-review-patch-v1' || packet.manifest_sha256 !== source.manifest_sha256 || !Array.isArray(packet.events)) {
+  if (packet?.schema !== reviewSchema || packet.manifest_sha256 !== source.manifest_sha256 || !Array.isArray(packet.events)) {
     throw new Error('Plik nie odpowiada temu manifestowi lub formatowi historii.');
   }
   const texts = new Map(source.pages.map(page => [page.id, page.text]));
@@ -31,6 +36,12 @@ function validate(packet) {
         !Object.hasOwn(labels, event.decision) || typeof event.timestamp !== 'string' || !Number.isFinite(Date.parse(event.timestamp))) {
       throw new Error('Niespójna historia zmian lub nieprawidłowy rekord.');
     }
+    if (geometryReview && (!Object.hasOwn(geometryLabels, event.geometry_decision) ||
+        event.context_image_sha256 !== page.context.sha256 ||
+        (event.decision === 'verified' && event.geometry_decision === 'unreviewed') ||
+        (event.geometry_decision === 'reject-crop' && !event.note.trim()))) {
+      throw new Error('Sprawdź granice wycinka; odrzucenie wymaga uzasadnienia.');
+    }
     ids.add(event.id);
     texts.set(event.page_id, event.after);
   }
@@ -42,6 +53,7 @@ function persist() {
   catch { storageBlocked = true; notify('Brak miejsca na zapis lokalny. Wyeksportuj historię.', true); }
 }
 function latest(id) { return events.findLast(event => event.page_id === id); }
+function decisionLabel(event) { return labels[event.decision] + (geometryReview ? ` · ${geometryStates[event.geometry_decision]}` : ''); }
 function currentText(id) { return latest(id)?.after ?? byId.get(id).text; }
 function visiblePages() {
   const query = $('search').value.toLowerCase(), filter = $('filter').value;
@@ -57,8 +69,8 @@ function queue() {
     button.setAttribute('aria-current', String(page.id === active));
     const title = document.createElement('strong'); title.textContent = page.id;
     const detail = document.createElement('small');
-    const count = page.diagnostics ? `${page.diagnostics.items.length} różnic OCR` : `${page.issues.length} znaków`;
-    detail.textContent = `${count} · ${latest(page.id) ? labels[latest(page.id).decision] : 'Bez decyzji'}`;
+    const count = page.diagnostics?.review_status_label ?? (page.diagnostics ? `${page.diagnostics.items.length} różnic OCR` : `${page.issues.length} znaków`);
+    detail.textContent = `${count} · ${latest(page.id) ? decisionLabel(latest(page.id)) : 'Bez decyzji'}`;
     button.append(title, detail); button.onclick = () => navigate(page.id); $('queue').append(button);
   }
   if (!visible.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'Brak stron dla wybranych filtrów.'; $('queue').append(empty); }
@@ -96,7 +108,7 @@ function history() {
   $('history-count').textContent = `(${pageEvents.length})`; $('history-list').replaceChildren();
   for (const event of pageEvents.toReversed()) {
     const li = document.createElement('li');
-    const title = document.createElement('strong'); title.textContent = `${labels[event.decision]} · ${event.reviewer}`;
+    const title = document.createElement('strong'); title.textContent = `${decisionLabel(event)} · ${event.reviewer}`;
     const note = document.createElement('p'); note.textContent = `${new Date(event.timestamp).toLocaleString('pl-PL')} · ${event.note || 'Bez uwag'}`;
     const details = document.createElement('details'), summary = document.createElement('summary'); summary.textContent = 'Tekst przed i po';
     const before = document.createElement('pre'), after = document.createElement('pre'); before.textContent = event.before; after.textContent = event.after;
@@ -106,14 +118,25 @@ function history() {
 function updateDirty() {
   const last = latest(active);
   dirty = $('text').value !== currentText(active) || $('note').value !== (last?.note ?? '') || $('decision').value !== (last?.decision ?? 'needs-review');
+  if (geometryReview) dirty ||= $('geometry').value !== (last?.geometry_decision ?? 'unreviewed');
   $('dirty').textContent = dirty ? 'Niezapisane zmiany' : '';
 }
 function render() {
   const page = byId.get(active), last = latest(active);
   $('page-id').textContent = page.id;
-  $('page-state').textContent = last ? `${labels[last.decision]} · ${last.reviewer}` : `${page.issues.length} oznaczeń w źródle · Bez decyzji`;
+  $('page-state').textContent = last ? `${decisionLabel(last)} · ${last.reviewer}` :
+    (geometryReview ? 'Niezweryfikowana etykieta · Bez decyzji' : `${page.issues.length} oznaczeń w źródle · Bez decyzji`);
   $('scan').src = page.image; $('scan').alt = `Skan ${page.id}`;
   $('scan').style.width = '100%'; $('zoom').value = '100';
+  $('source-context').hidden = !page.context;
+  $('source-context').open = geometryReview;
+  if (page.context) {
+    $('context-scan').src = page.context.image;
+    $('context-scan').style.width = '100%';
+    $('context-text').textContent = page.context.text;
+  }
+  $('geometry-field').hidden = !geometryReview;
+  $('geometry').value = last?.geometry_decision ?? 'unreviewed';
   $('original-text').textContent = page.text; $('text').value = currentText(active);
   renderDiagnostics(page);
   $('decision').value = last?.decision ?? 'needs-review'; $('note').value = last?.note ?? '';
@@ -124,7 +147,7 @@ function renderDiagnostics(page) {
   $('ocr-diagnostics').hidden = !diagnostic;
   $('diagnostic-items').replaceChildren();
   if (!diagnostic) return;
-  $('diagnostic-count').textContent = `(${diagnostic.items.length})`;
+  $('diagnostic-count').textContent = geometryReview ? '' : `(${diagnostic.items.length})`;
   for (const item of diagnostic.items) {
     const button = document.createElement('button'); button.className = 'diagnostic-item';
     const change = document.createElement('strong');
@@ -146,6 +169,10 @@ function renderDiagnostics(page) {
   $('candidate-text').textContent = diagnostic.candidate_text;
   $('baseline-label').textContent = diagnostic.baseline_label;
   $('baseline-text').textContent = diagnostic.baseline_text;
+  if (geometryReview) {
+    $('candidate-label').parentElement.open = true;
+    $('baseline-label').parentElement.open = true;
+  }
 }
 function navigate(id) {
   if (id === active) return;
@@ -157,10 +184,11 @@ for (const [id, delta] of [['previous', -1], ['next', 1]]) $(id).onclick = () =>
   const list = visiblePages(), index = list.findIndex(page => page.id === active), page = list[index + delta];
   if (page) navigate(page.id);
 };
-$('zoom').onchange = () => $('scan').style.width = `${$('zoom').value}%`;
+$('zoom').onchange = () => { $('scan').style.width = `${$('zoom').value}%`; $('context-scan').style.width = `${$('zoom').value}%`; };
+$('context-scan').onerror = () => notify('Nie udało się wczytać regionu źródłowego.', true);
 $('scan').onerror = () => notify('Nie udało się wczytać skanu. Sprawdź katalog images.', true);
 $('text').oninput = () => { updateDirty(); renderIssues(); };
-$('note').oninput = updateDirty; $('decision').onchange = updateDirty;
+$('note').oninput = updateDirty; $('decision').onchange = updateDirty; $('geometry').onchange = updateDirty;
 $('restore').onclick = () => {
   if ($('text').value !== byId.get(active).text && confirm('Przywrócić tekst źródłowy w edytorze? Historia pozostanie zachowana.')) {
     $('text').value = byId.get(active).text; updateDirty(); renderIssues();
@@ -174,6 +202,10 @@ $('decision-form').onsubmit = event => {
     reviewer: $('reviewer').value.trim(), decision: $('decision').value, note: $('note').value,
     original_text_sha256: page.text_sha256, image_sha256: page.image_sha256,
     before: currentText(active), after: $('text').value};
+  if (geometryReview) {
+    entry.geometry_decision = $('geometry').value;
+    entry.context_image_sha256 = page.context.sha256;
+  }
   try { validate(envelope([...events, entry])); }
   catch (error) { notify(error.message, true); return; }
   events.push(entry); persist(); render();
@@ -182,7 +214,7 @@ $('decision-form').onsubmit = event => {
 $('export').onclick = () => {
   const blob = new Blob([JSON.stringify(envelope(), null, 2)], {type: 'application/json'});
   const url = URL.createObjectURL(blob), link = document.createElement('a');
-  link.href = url; link.download = `polocrbench-review-${source.manifest_sha256.slice(0, 12)}.json`;
+  link.href = url; link.download = `${geometryReview ? 'slayer-recognizer-line-review' : 'polocrbench-review'}-${source.manifest_sha256.slice(0, 12)}.json`;
   link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   notify(dirty ? 'Wyeksportowano zapisane decyzje. Edytor zawiera niezapisane zmiany.' : `Wyeksportowano ${events.length} decyzji.`);
 };

@@ -23,7 +23,7 @@ def issues(text):
     return result
 
 
-def build(manifest, output, *, diagnostics=None):
+def build(manifest, output, *, diagnostics=None, contexts=None, geometry_review=False):
     from PIL import Image
     manifest, output = Path(manifest), Path(output)
     rows = read_rows(manifest)
@@ -31,6 +31,8 @@ def build(manifest, output, *, diagnostics=None):
         raise ValueError('Expected unique nonempty page IDs')
     if diagnostics is not None and set(diagnostics) != {row['id'] for row in rows}:
         raise ValueError('Diagnostic page IDs must match the review manifest')
+    if (contexts is not None and set(contexts) != {row['id'] for row in rows}) or (geometry_review and contexts is None):
+        raise ValueError('Geometry review requires source context for every line')
     if output.exists():
         raise FileExistsError('Use a new review directory')
     for row in rows:
@@ -40,6 +42,14 @@ def build(manifest, output, *, diagnostics=None):
         with Image.open(source) as image:
             if image.format != 'PNG':
                 raise ValueError('Review requires PNG inputs; run training.prepare_ocr_images first')
+        if contexts is not None:
+            context = contexts[row['id']]
+            context_path = manifest.parent / context['image']
+            if digest(context_path) != context['sha256']:
+                raise ValueError('Context image checksum mismatch')
+            with Image.open(context_path) as region:
+                if region.format not in ('PNG', 'JPEG') or region.size != (context['width'], context['height']):
+                    raise ValueError('Unexpected context image format/dimensions')
     output.mkdir(parents=True)
     (output / 'images').mkdir()
     pages = []
@@ -53,8 +63,17 @@ def build(manifest, output, *, diagnostics=None):
                       'issues': issues(row['text'])})
         if diagnostics is not None:
             pages[-1]['diagnostics'] = diagnostics[row['id']]
+        if contexts is not None:
+            context = contexts[row['id']]
+            suffix = Path(context['image']).suffix.lower()
+            relative_context = 'images/context-'+context['sha256']+suffix
+            if not (output/relative_context).exists():
+                shutil.copyfile(manifest.parent/context['image'], output/relative_context)
+            pages[-1]['context'] = {**context, 'image': relative_context}
     payload = {'schema': 'polocrbench-review-source-v1', 'manifest_sha256': digest(manifest),
                'pages': pages}
+    if geometry_review:
+        payload['geometry_review_required'] = True
     assets = Path(__file__).resolve().parents[1] / 'tools' / 'annotation-review'
     template = (assets / 'index.html').read_text(encoding='utf-8')
     encoded = json.dumps(payload, ensure_ascii=True).replace('<', '\\u003c')
@@ -74,9 +93,13 @@ def main():
     parser.add_argument('--manifest', required=True)
     parser.add_argument('--output', required=True)
     parser.add_argument('--diagnostics', help='Optional diagnostic comparison JSON keyed by page ID')
+    parser.add_argument('--contexts', help='Optional source-region images/text keyed by line ID')
+    parser.add_argument('--geometry-review', action='store_true', help='Require a separate line-crop geometry decision')
     args = parser.parse_args()
     diagnostics = json.loads(Path(args.diagnostics).read_text(encoding='utf-8')) if args.diagnostics else None
-    print(json.dumps(build(args.manifest, args.output, diagnostics=diagnostics), indent=2))
+    contexts = json.loads(Path(args.contexts).read_text(encoding='utf-8')) if args.contexts else None
+    print(json.dumps(build(args.manifest, args.output, diagnostics=diagnostics,
+                           contexts=contexts, geometry_review=args.geometry_review), indent=2))
 
 
 if __name__ == '__main__':

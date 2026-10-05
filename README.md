@@ -10,7 +10,16 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Uruchom teraz tylko ten notebook:**
+**Pilot wykonany i sprawdzony:** oba modele zwróciły 64 odczyty na T4;
+Qwen zakończył 63 EOS i jeden zapętlił na limicie, TrOCR zakończył wszystkie EOS.
+Mamy 62 rozbieżności, 1 abstencję i tylko 1 zgodność, która nie zgadza się
+z etykietą źródłową. Potwierdzono także błędną parę wycinka i tekstu:
+fragment słowa ma etykietę całego zdania. **Nie trenujemy na tych parach bez
+review tekstu i granic linii. Nie powtarzaj teraz Colaba.**
+Przygotowano edytor dla 64 linii z 35 pełnymi regionami źródłowymi.
+[Wynik pilota i instrukcja review](docs/RECOGNIZER_DATA_V3_TEACHER_RESULT_20261005.md).
+
+**Notebook do odtworzenia pilota:**
 [Colab: recognizer v3 / pilot danych](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/b90ae82fb496d88320e8698cef8debd73785bece/training/colab_recognizer_data_v3_pilot.ipynb).
 Wybierz GPU i uruchom wszystkie komórki. Niczego nie wgrywaj: notebook sam
 pobierze 64 wycinki z 25 stron i 10 kolekcji treningowych z publicznego HF.
@@ -21,8 +30,9 @@ Pula jest oddzielona od kolekcji walidacji, testu i geometry holdout.
 Zachowujemy `ſ`, `á`, `ɇ`; zgodność modeli jest tylko propozycją do review,
 nie automatyczną etykietą. To przygotowanie czystych danych, **jeszcze nie
 trening v3 ani wynik SOTA**. Kontrola granic linii i tekstu oraz audyt
-dokumentów/wydań poprzedzą trening. 97 testów CPU przeszło, pakiet HF pobrano
-i sprawdzono ponownie; nowy profil wycinków nie był jeszcze uruchomiony na GPU.
+dokumentów/wydań poprzedzą trening. Pakiet HF pobrano i sprawdzono ponownie;
+wynik zdalnego runu opisano powyżej. Po audycie i rozszerzeniu edytora
+142 testy CPU przeszły; modele nie były uruchamiane lokalnie.
 [Protokół i następne bramki](docs/RECOGNIZER_DATA_V3_PILOT_PROTOCOL_20261005.md).
 
 ### Zakończone: OCR całych stron

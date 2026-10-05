@@ -15,10 +15,11 @@
 <main><div class="page-bar"><div><h2 id="page-id"></h2><span id="page-state"></span></div>
 <div class="actions"><button id="previous" title="Poprzednia strona" aria-label="Poprzednia strona">←</button><button id="next" title="Następna strona" aria-label="Następna strona">→</button></div></div>
 <div class="review-grid"><section class="scan" aria-label="Skan źródłowy"><div class="section-bar"><h3>Skan źródłowy</h3><label>Powiększenie <select id="zoom"><option value="100">Dopasuj</option><option value="150">150%</option><option value="200">200%</option><option value="300">300%</option></select></label></div>
-<div class="image-scroll"><img id="scan" alt="Skan strony do weryfikacji"></div></section>
+<div class="image-scroll"><img id="scan" alt="Skan strony do weryfikacji">
+<details id="source-context" hidden><summary>Pełny region źródłowy</summary><img id="context-scan" alt="Region źródłowy linii"><pre id="context-text"></pre></details></div></section>
 <section class="annotation" aria-label="Transkrypcja"><div class="section-bar"><h3>Transkrypcja</h3><button id="restore">Przywróć źródło</button></div>
 <details id="original"><summary>Tekst źródłowy</summary><pre id="original-text"></pre></details>
-<section id="ocr-diagnostics" hidden aria-label="Porównanie OCR"><h3>Różnice historycznych znaków <span id="diagnostic-count"></span></h3>
+<section id="ocr-diagnostics" hidden aria-label="Porównanie OCR"><h3>Porównanie odczytów <span id="diagnostic-count"></span></h3>
 <div id="diagnostic-items"></div><details><summary id="candidate-label"></summary><pre id="candidate-text"></pre></details>
 <details><summary id="baseline-label"></summary><pre id="baseline-text"></pre></details></section>
 <label class="sr-only" for="text">Proponowana transkrypcja</label><textarea id="text" spellcheck="false"></textarea>
@@ -26,6 +27,7 @@
 <div id="issues" aria-label="Podejrzane znaki"></div>
 <form id="decision-form"><div class="decision-fields"><label>Recenzent<input id="reviewer" required maxlength="100" autocomplete="name"></label>
 <label>Decyzja<select id="decision"><option value="needs-review">Do wyjaśnienia</option><option value="proposed">Propozycja korekty</option><option value="verified">Zweryfikowano wzrokowo</option></select></label></div>
+<label id="geometry-field" class="geometry-review" hidden>Granice wycinka<select id="geometry"><option value="unreviewed">Nie sprawdzono</option><option value="complete-line">Cała jedna linia</option><option value="reject-crop">Odrzuć wycinek</option></select></label>
 <label>Uwagi<textarea id="note" rows="2" maxlength="2000"></textarea></label>
 <button id="save" class="primary" type="submit">Zapisz decyzję</button></form>
 <details id="history"><summary>Historia strony <span id="history-count"></span></summary><ol id="history-list"></ol></details>
