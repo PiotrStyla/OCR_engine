@@ -12,6 +12,7 @@ def build(target, config_path, code_revision):
     if not re.fullmatch('[0-9a-f]{40}', code_revision):
         raise ValueError('A published full code SHA is required')
     config = json.loads(Path(config_path).read_text(encoding='utf-8'))
+    archive_name = config.get('evidence_archive_name', 'recognizer-data-v3-teacher-evidence.zip')
     setup = f'''import datetime
 import json
 import os
@@ -32,6 +33,7 @@ assert subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], te
 sys.path.insert(0, str(repo))
 from training.recognizer_data_pilot import stage, combine, package, ENGINES
 from training.full_page_pilot import digest, fetch, write_json, read_rows
+EVIDENCE_ARCHIVE_NAME = {archive_name!r}
 write_json(WORK / 'config.json', CONFIG)
 write_json(WORK / 'code-provenance.json', {{'code_revision': CODE_REVISION,
     'runner_sha256': digest(repo / 'training/recognizer_data_pilot.py'),
@@ -112,16 +114,22 @@ print('EVIDENCE:', result_archive)
 result_archive = package(WORK)
 files.download(str(result_archive))
 '''
+    if 'evidence_archive_name' in config:
+        consensus = consensus.replace('package(WORK)', 'package(WORK, EVIDENCE_ARCHIVE_NAME)')
+        download = download.replace('package(WORK)', 'package(WORK, EVIDENCE_ARCHIVE_NAME)')
+    selection_note = ('To kolejna partia nowych linii: wszystkie wczesniej przejrzane ID i wycinki sa wykluczone. '
+        if config.get('selection') else '')
     cells = [markdown('scope', '# DATA ENGINE: recognizer v3 / teacher pilot\n\n'
         'Wybierz GPU i uruchom wszystkie komorki. Dane pobiora sie automatycznie z HF; nie wgrywaj zadnych ZIP-ow. '
-        '64 wycinki pochodza ze zbioru treningowego, nie z 15 stron walidacji ani testu. '
+        f"{config['dataset']['lines']} wycinki pochodza ze zbioru treningowego, nie z 15 stron walidacji ani testu. "
+        + selection_note +
         'Qwen i TrOCR pracuja kolejno w osobnych procesach, bez etykiet referencyjnych. '
         'Notebook nie trenuje modelu: przygotowuje propozycje do kontroli obrazu, granic linii i pisowni. '
         'Zgodnosc modeli nie stanowi prawdy ani zgody na trening. Zachowujemy historyczne znaki, bez modernizacji. '
         'Profil wycinkow nie zostal jeszcze sprawdzony na GPU. W razie bledow ostatnia komorka pobiera logi i czesciowe wyniki.'),
         code_cell('setup', setup), code_cell('inputs', inputs), code_cell('environment', environment),
         code_cell('inference', inference), code_cell('consensus', consensus),
-        markdown('return', '## Pobierz wynik\n\nPrzekaz plik `recognizer-data-v3-teacher-evidence.zip`. '
+        markdown('return', f'## Pobierz wynik\n\nPrzekaz plik `{archive_name}`. '
                  'Nie zawiera wag ani skanow; obrazy mozna odtworzyc z przypietego pakietu HF. '
                  'Bledy, brakujace odpowiedzi i limity pozostaja w raporcie.'), code_cell('download', download)]
     notebook = {'cells': cells, 'nbformat': 4, 'nbformat_minor': 5,

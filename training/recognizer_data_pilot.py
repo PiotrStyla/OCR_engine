@@ -44,8 +44,13 @@ def stage(config, archive, output):
         if len(rows) != config['dataset']['lines'] or len({row['id'] for row in rows}) != len(rows):
             raise ValueError('Unexpected line coverage')
         for row in rows:
+            previous = config.get('selection', {})
+            if (row['id'] in previous.get('reviewed_root_ids', [])
+                    or row['sha256'] in previous.get('reviewed_crop_hashes', [])):
+                raise ValueError('Input repeats a previously reviewed line or crop')
             if (row['source_split'] != 'train' or row['split'] != 'training-review'
                     or row['eligible_for_training'] is not False or row['final_test'] is not False
+                    or row.get('eligible_for_evaluation', False) is not False
                     or row['collection'] in config['dataset']['forbidden_collections']
                     or row['dataset'] != config['dataset']['source_repo']
                     or row['revision'] != config['dataset']['source_revision']):
@@ -233,9 +238,11 @@ def combine(config, dataset, prediction_root, output, *, runner_hashes=None):
     return report
 
 
-def package(work):
+def package(work, archive_name='recognizer-data-v3-teacher-evidence.zip'):
     work = Path(work)
-    archive = work/'recognizer-data-v3-teacher-evidence.zip'
+    if safe_relative(archive_name) != archive_name or Path(archive_name).name != archive_name or not archive_name.endswith('.zip'):
+        raise ValueError('Evidence archive must be a plain ZIP filename')
+    archive = work/archive_name
     files = [path for path in work.rglob('*') if path.is_file() and path.suffix in ('.json', '.jsonl', '.log', '.csv')
              and path.name != 'checksums.json']
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as stream:

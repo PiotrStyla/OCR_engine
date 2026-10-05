@@ -12,6 +12,7 @@ from PIL import Image
 
 from training.full_page_pilot import digest, read_rows, safe_relative, write_json, write_rows
 from training.prepare_historical_line_corpus import DATASET, REVISION, METADATA_SHA256
+from training.merge_recognizer_reviewed_pool import verified_package
 
 TARGETS = '\u017f\u00e1\u0247'
 SALT = 'slayer-recognizer-data-v3-pilot-v1'
@@ -50,7 +51,38 @@ def choose(rows, count=64, max_per_collection=8, max_per_page=4):
     return selected
 
 
-def prepare(corpus, train_regions, test_regions, validation, holdout, output, *, count=64):
+def reviewed_exclusions(pool, source_rows):
+    pool = Path(pool)
+    sums = verified_package(pool)
+    report = json.loads((pool/'pool-report.json').read_text(encoding='utf-8'))
+    active = read_rows(pool/'manifest.jsonl')
+    history = read_rows(pool/'review-history.jsonl')
+    sources = {r['id']: r for r in source_rows}
+    if (report.get('schema') != 'slayer-recognizer-reviewed-pool-v1'
+            or report['manifest_sha256'] != digest(pool/'manifest.jsonl')
+            or report['training_candidates'] != len(active)
+            or len({r['root_line_id'] for r in active}) != len(active)):
+        raise ValueError('Reviewed pool manifest/report mismatch')
+    for r in active + history:
+        source = sources.get(r.get('root_line_id'))
+        if (source is None or source['split'] != 'train' or r['source_split'] != 'train'
+                or r['dataset'] != DATASET or r['revision'] != REVISION
+                or r['source_region_id'] != source['source_region_id']
+                or r['page_id'] != source['page_id'] or r['collection'] != source['collection']
+                or r['source_image_sha256'] != source['source_image_sha256']
+                or r['final_test'] is not False or r['eligible_for_evaluation'] is not False
+                or r['gold'] is not False or sums.get(r['image']) != r['sha256']):
+            raise ValueError('Reviewed root/source binding mismatch')
+    if any(r['eligible_for_training'] is not True for r in active):
+        raise ValueError('Active reviewed pool contains unapproved pairs')
+    roots = sorted({r['root_line_id'] for r in active + history})
+    return roots, {'pool_report_sha256': digest(pool/'pool-report.json'),
+        'pool_manifest_sha256': digest(pool/'manifest.jsonl'), 'active_candidates': len(active),
+        'reviewed_root_ids': roots, 'reviewed_crop_hashes': sorted({r['sha256'] for r in active + history}),
+        'exclusion_policy': 'Exclude original root IDs from all prior review history, including changed crops and unresolved history; no repeat inference.'}
+
+
+def prepare(corpus, train_regions, test_regions, validation, holdout, output, *, count=64, reviewed_pool=None):
     corpus, train_regions, test_regions, validation, holdout, output = map(
         Path, (corpus, train_regions, test_regions, validation, holdout, output))
     if output.exists():
@@ -65,6 +97,8 @@ def prepare(corpus, train_regions, test_regions, validation, holdout, output, *,
     if frozen.get('dataset') != DATASET or frozen.get('revision') != REVISION:
         raise ValueError('Geometry holdout provenance mismatch')
     rows = read_rows(manifest)
+    reviewed_ids, pool_binding = reviewed_exclusions(reviewed_pool, rows) if reviewed_pool else ([], None)
+    reviewed_ids = set(reviewed_ids)
     validation_rows = read_rows(validation)
     tests = read_rows(test_regions)
     sources = {row['id']: row for row in read_rows(train_regions)}
@@ -98,6 +132,9 @@ def prepare(corpus, train_regions, test_regions, validation, holdout, output, *,
         if row['image_sha256'] in seen_hashes:
             raise ValueError('Duplicate training crop hash')
         seen_hashes.add(row['image_sha256'])
+        if row['id'] in reviewed_ids:
+            excluded.append({'id': row['id'], 'reason': 'previously-reviewed-root'})
+            continue
         text = label.read_text(encoding='utf-8').rstrip('\n')
         if not any(char in text for char in TARGETS):
             excluded.append({'id': row['id'], 'reason': 'no targeted historical glyph'})
@@ -111,6 +148,8 @@ def prepare(corpus, train_regions, test_regions, validation, holdout, output, *,
         candidates.append({**row, 'text': text, 'width': width, 'height': height,
             'source_region_bbox': source['bbox'], 'source_region_text': source['text']})
     selected = choose(candidates, count)
+    if pool_binding is not None and {r['image_sha256'] for r in selected} & set(pool_binding['reviewed_crop_hashes']):
+        raise ValueError('New batch repeats a previously reviewed image')
     output.mkdir(parents=True)
     (output/'images').mkdir()
     records, inputs = [], []
@@ -145,6 +184,11 @@ def prepare(corpus, train_regions, test_regions, validation, holdout, output, *,
         'training_examples_created': 0, 'gold_labels_created': 0,
         'normalization': 'none; retain source label text, drop final file newline only',
         'limitations': 'Automatic crop/reference alignment needs visual review. Collection/page/hash firewall only; work/edition and near-duplicate audits are not complete. Training-source teacher proposals, not a benchmark or clean training labels.'}
+    if pool_binding is not None:
+        report['previous_review'] = pool_binding
+        report['previously_reviewed_roots_excluded'] = len(reviewed_ids)
+        report['remaining_source_train_lines'] = report['source_train_lines'] - len(reviewed_ids)
+        report['previous_reviewed_root_overlap'] = sorted({r['id'] for r in records} & reviewed_ids)
     write_json(output/'report.json', report)
     files = [path for path in output.rglob('*') if path.is_file()]
     write_json(output/'checksums.json', {path.relative_to(output).as_posix(): digest(path) for path in files})
@@ -161,6 +205,8 @@ if __name__ == '__main__':
     for name in ('corpus', 'train-regions', 'test-regions', 'validation', 'holdout', 'output'):
         parser.add_argument('--'+name, required=True)
     parser.add_argument('--count', type=int, default=64)
+    parser.add_argument('--reviewed-pool')
     args = parser.parse_args()
     print(json.dumps(prepare(args.corpus, args.train_regions, args.test_regions,
-        args.validation, args.holdout, args.output, count=args.count), ensure_ascii=False, indent=2))
+        args.validation, args.holdout, args.output, count=args.count,
+        reviewed_pool=args.reviewed_pool), ensure_ascii=False, indent=2))
