@@ -1,0 +1,15 @@
+{
+  "stage": {
+    "lines": 64,
+    "labels_sent_to_models": false,
+    "training_examples_created": 0,
+    "input_sha256": "40d0714be2f75572d4c8fc470d0461f652af6478666c60e888821a6d0b3121ff"
+  },
+  "focused_tests_passed": 97,
+  "notebook_failure_path_download_tested": true,
+  "mock_worker_resume_and_error_coverage_tested": true,
+  "public_bundle_download_verified": true,
+  "GPU_models_run_locally": false,
+  "dataset_revision": "4735f045cc791df1926940a1fa0cd78c2c82b48c",
+  "archive_sha256": "aa691ba4496709666842b6a44a29d8af08e816a83fbcf346fddf268fe777acbf"
+}

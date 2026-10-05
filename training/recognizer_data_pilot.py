@@ -78,6 +78,8 @@ def load_trocr(spec):
     from huggingface_hub import snapshot_download
     from PIL import Image
     from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+    if spec['dtype'] != 'float32':
+        raise ValueError('This pilot requires FP32 TrOCR inference')
     folder = Path(snapshot_download(spec['repo'], revision=spec['revision']))
     if digest(folder/'model.safetensors') != spec['weights_sha256']:
         raise ValueError('TrOCR checkpoint hash mismatch')
@@ -93,7 +95,7 @@ def load_trocr(spec):
             image = scan.convert('RGB')
         pixels = processor(images=image, return_tensors='pt').pixel_values.to('cuda')
         with torch.inference_mode():
-            output = model.generate(pixels, max_new_tokens=spec['max_new_tokens'], num_beams=4,
+            output = model.generate(pixels, max_new_tokens=spec['max_new_tokens'], num_beams=spec['num_beams'],
                 do_sample=False, early_stopping=True, eos_token_id=eos, pad_token_id=pad,
                 decoder_start_token_id=start)
         sequence = output[0].tolist()

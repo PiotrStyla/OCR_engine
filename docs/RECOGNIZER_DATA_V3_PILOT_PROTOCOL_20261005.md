@@ -73,3 +73,14 @@ Code belongs on GitHub; input scans/manifests and run evidence belong on public
 HF registries. The evidence ZIP contains predictions, failures, provenance and
 checksums, but no weights, scans or code. Input scans are retrievable from the
 frozen dataset revision. No GPU execution has been performed locally.
+
+## Published Input And CPU Checks
+
+[Frozen public HF input bundle](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/4735f045cc791df1926940a1fa0cd78c2c82b48c/data/recognizer-data-v3-pilot-v1-20261005).
+Archive SHA256:
+`aa691ba4496709666842b6a44a29d8af08e816a83fbcf346fddf268fe777acbf`.
+All uploaded files and ZIP members were downloaded and checked independently.
+Actual staging verified all 64 crop dimensions and reference-free worker inputs.
+97 focused CPU tests passed, including split-firewall rejection, unsafe archives,
+raw historic spelling, abstentions, resume/error coverage and notebook failure
+packaging. These tests do not verify GPU model loading, quality or T4 fit.

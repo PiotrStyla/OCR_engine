@@ -228,3 +228,59 @@ def test_notebook_builder_compiles_and_pins_code(bundle, tmp_path):
     assert 'package(WORK)' in code and 'worker-exits.json' in code
     with pytest.raises(ValueError):
         build(notebook, path, 'short-sha')
+
+
+def test_notebook_failure_path_still_downloads_evidence(bundle, tmp_path, monkeypatch):
+    import sys
+    from types import ModuleType, SimpleNamespace
+    from training.build_recognizer_data_pilot_colab import build
+    source, _, config = bundle
+    config['packages'] = ['transformers==4.57.6']
+    path, notebook = tmp_path/'config.json', tmp_path/'pilot.ipynb'
+    write_json(path, config)
+    build(notebook, path, 'a'*40)
+    monkeypatch.setitem(sys.modules, 'torch', SimpleNamespace(cuda=SimpleNamespace(is_available=lambda: False)))
+    downloads = []
+    google, colab = ModuleType('google'), ModuleType('google.colab')
+    colab.files = SimpleNamespace(download=lambda path: downloads.append(path))
+    monkeypatch.setitem(sys.modules, 'google', google)
+    monkeypatch.setitem(sys.modules, 'google.colab', colab)
+    scope = {'WORK': tmp_path, 'CONFIG': config, 'dataset': source, 'ENGINES': pilot.ENGINES,
+             'write_json': write_json, 'combine': pilot.combine, 'package': pilot.package, 'json': json}
+    for cell in json.loads(notebook.read_text(encoding='utf-8'))['cells']:
+        if cell['id'] in ('environment', 'inference', 'consensus', 'download'):
+            exec(''.join(cell['source']), scope)
+    assert len(downloads) == 1 and Path(downloads[0]).exists()
+    report = json.loads((tmp_path/'combined/report.json').read_text())
+    assert report['statuses'] == {'teacher-abstention': 1}
+    assert json.loads((tmp_path/'bootstrap.json').read_text())['status'] == 'error'
+    assert all(row['status'] == 'not-started' for row in json.loads((tmp_path/'worker-exits.json').read_text()).values())
+
+
+@pytest.mark.parametrize('failed', [False, True])
+def test_trocr_worker_reference_free_resume_and_error_coverage(bundle, tmp_path, monkeypatch, failed):
+    import sys
+    from types import SimpleNamespace
+    source, _, config = bundle
+    cuda = SimpleNamespace(is_available=lambda: True, reset_peak_memory_stats=lambda: None,
+        synchronize=lambda: None, max_memory_allocated=lambda: 0, get_device_name=lambda _: 'mock-GPU')
+    monkeypatch.setitem(sys.modules, 'torch', SimpleNamespace(cuda=cuda, manual_seed=lambda _: None))
+    monkeypatch.setattr(pilot.importlib.metadata, 'version', lambda _: 'mock')
+    seen = []
+    def loader(_spec):
+        if failed:
+            raise RuntimeError('mock model failed')
+        def infer(_path, row):
+            seen.append(row)
+            return {'text': '\u017f\u00e1\u0247', 'finish_reason': 'eos', 'token_limit_reached': False}
+        return infer
+    monkeypatch.setattr(pilot, 'load_trocr', loader)
+    out = tmp_path/'worker'
+    result = pilot.worker('trocr-mixed-v3', config, source/'inference-inputs.jsonl', out)
+    assert result == {'lines': 1, 'errors': int(failed)}
+    assert not seen or 'text' not in seen[0]
+    assert pilot.worker('trocr-mixed-v3', config, source/'inference-inputs.jsonl', out) == result
+    rows = read_rows(out/'trocr-lines.jsonl')
+    assert len(rows) == 1 and rows[0]['status'] == ('error' if failed else 'ok')
+    if failed:
+        assert rows[0]['text'] == '' and 'mock model failed' in rows[0]['error']
