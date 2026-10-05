@@ -85,3 +85,22 @@ the already-reviewed IDs, and separately adjudicate frozen development labels.
 Select a recognizer only on document-disjoint development data, then evaluate
 the complete page pipeline without tuning on final test. This follow-up does not
 replace the need for a much larger clean corpus.
+
+## Public Artifacts
+
+- [Complete six-case data ZIP](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/981802f3b8a50937452be12c09e4fb85395e18b6/data/recognizer-line-remediation-v1-20261005/recognizer-line-remediation-final-20261005.zip).
+- [Review data provenance](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/981802f3b8a50937452be12c09e4fb85395e18b6/data/recognizer-line-remediation-v1-20261005).
+- [Source audit, signatures, work catalog and geometry evidence](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/c53942cabb6c775147cce557989110b6237a3e3c/experiments/2026-10-05/recognizer-source-audit-followup-v1).
+
+Every published file was downloaded at its immutable revision and checked by
+SHA-256. Every member of the downloaded six-case ZIP was checked as well.
+The ZIP intentionally contains data, not HTML/JS/Python. The existing GH
+review builder can reconstruct its offline editor after extraction:
+
+```powershell
+python -m training.build_annotation_review --manifest INPUT/input/manifest.jsonl --contexts INPUT/contexts.json --diagnostics INPUT/diagnostics.json --geometry-review --output OUTPUT/review
+```
+
+The 89 original page scans are already public at the pinned upstream source;
+the audit evidence contains source paths and image hashes rather than duplicate
+copies of all scans. No simulated review events are published.

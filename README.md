@@ -17,6 +17,8 @@ osobnego sprawdzenia. Powstał edytor tylko 6 nierozstrzygniętych przypadków:
 3 propozycji tekstu i 3 nowych propozycji wycinków. Nie powtarzamy zaakceptowanych
 58 par i nie uruchamiamy jeszcze kolejnego treningu.
 [Audyt, follow-up i dokładna instrukcja](docs/RECOGNIZER_SOURCE_AUDIT_AND_FOLLOWUP_20261005.md).
+[Komplet danych sześciu przypadków na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/981802f3b8a50937452be12c09e4fb85395e18b6/data/recognizer-line-remediation-v1-20261005/recognizer-line-remediation-final-20261005.zip).
+199 testów CPU przeszło; edytor sprawdzono na desktopie i telefonie.
 
 **Review 64 linii zaimportowane:** 58 par do pilota treningowego
 (57 pierwotnych wycinków + 1 nowa para z pełnego kontekstu potwierdzonego przez
