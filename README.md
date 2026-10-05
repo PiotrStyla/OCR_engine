@@ -6,7 +6,7 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 3 października 2026
+## Aktualny stan: 5 października 2026
 
 ### Następny etap: OCR całych stron
 
@@ -73,6 +73,11 @@ ze skanami, surowymi odczytami v5/v7 i kolejką review. To diagnostyka walidacji
 nie 479 pewnych błędów ani dane treningowe. **156 testów CPU przeszło**;
 sprawdzono też desktop/mobile i eksport historii.
 [Kolejka, decyzje i następna bramka treningowa](docs/HISTORICAL_GLYPH_MINING_V1_20261003.md).
+**Review zaimportowane:** 12 stron zweryfikowanych wzrokowo przez użytkownika,
+3 bez decyzji. Trzy statusy „Do wyjaśnienia” potwierdzono osobną, jawnie
+autoryzowaną decyzją. Nie zmieniono tekstów, odczytów ani metryk; strony nadal
+nie są treningiem ani niezależnym gold.
+[Wynik importu i pozostałe strony](docs/HISTORICAL_GLYPH_REVIEW_V1_20261005.md).
 
 Audyt referencji obejmuje pulę 80 stron poza historycznym testem; do celu
 100 stron potrzeba nowych źródeł i kompletnej kontroli transkrypcji.
