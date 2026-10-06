@@ -1,5 +1,10 @@
 # Reviewed recognizer: one Colab training run
 
+**Update: completed return audited.** Training succeeded and produced full
+weights, but the candidate regresses on ordinary print and combined development
+CER. [Result and decision](RECOGNIZER_REVIEWED_COLAB_RESULT_20261006.md).
+Do not repeat this unchanged recipe as the next experiment.
+
 ## Scope
 
 The user requested model training on Colab after confirming the 31 corrected
@@ -110,5 +115,6 @@ preparing or opening the notebook is not evidence that training has run.
 Focused validation after the environment repair: 70 tests passed. The Torch training-protocol test
 module was skipped locally because Torch is not installed in this CPU tooling
 environment; the new tiny/full-model adapter checks are executed by Colab,
-not claimed as locally validated GPU runs. The corrected complete training run
-still requires execution on the user's Colab GPU.
+not claimed as locally validated GPU runs. At the time of this repair, the
+corrected complete run still required execution on the user's Colab GPU. The
+later successful return is audited in the result document linked above.

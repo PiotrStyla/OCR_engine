@@ -10,6 +10,13 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
+**Trening recognizera zakończony, kandydat niepromowany.** Pakiet wag i raport
+zweryfikowany w całości. Na 9 historycznych liniach CER poprawił się z 33,03%
+do 31,90%, ale na 75 zwykłych wzrósł z 5,33% do 6,17%. Łączny CER pogorszył
+się z 8,37% do 8,99%. Zachowujemy model bazowy; nie ma potwierdzenia SOTA.
+[Wynik, audyt i następne bramki](docs/RECOGNIZER_REVIEWED_COLAB_RESULT_20261006.md).
+79 testów CPU przeszło; nie powtarzaj tego samego treningu bez zmiany protokołu.
+
 **Trening na Colabie gotowy na żądanie użytkownika:** osobny eksperyment
 z 70 sprawdzonymi liniami i 500 próbkami zwykłego druku, bez 36 linii z rodzin
 objętych wykluczeniem. 9 linii z oddzielnej kolekcji i 75 zwykłych linii służy
@@ -22,7 +29,7 @@ Nie wgrywaj żadnych plików: wybierz GPU T4 i uruchom wszystko.
 CER 5,33% na 75 zwykłych liniach i 33,03% na 9 historycznych. Tworzenie LoRA
 zatrzymał konflikt odziedziczonego TorchAO 0.10.0 z PEFT 0.19.1. Notebook ma
 poprawione wersje i sprawdza adaptery, gradienty oraz scalanie przed baseline.
-Nowe wagi nie zostały jeszcze wytrenowane; 70 testów CPU przeszło, testy Torch
+Ten nieudany przebieg nie wytworzył nowych wag; 70 testów CPU przeszło, testy Torch
 wymagają środowiska modelowego. [Audyt i poprawka](docs/RECOGNIZER_REVIEWED_COLAB_TRAINING_20261006.md#first-returned-run-failed-before-training).
 
 **Potwierdzenie review zapisane:** 51 pełnych linii ma weryfikację jednego
