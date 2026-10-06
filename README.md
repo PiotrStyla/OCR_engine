@@ -6,9 +6,20 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 5 października 2026
+## Aktualny stan: 6 października 2026
 
 ### Teraz: DATA ENGINE dla recognizera v3
+
+**Nowy eksport review zaimportowany:** 71 zdarzeń, 62 z 64 linii z decyzjami.
+Ostatnie statusy dają 20 potwierdzonych pełnych linii, 31 propozycji z pełną
+linią, 9 odrzuconych wycinków, 2 propozycje bez sprawdzonych granic i 2 linie
+bez decyzji. Zachowano dokładne teksty, stare glify i całą historię; propozycje
+nie są automatycznie zatwierdzane. Spośród 20 potwierdzonych linii 13 jest
+objętych wykluczeniem wspólnych dzieł, a 7 nadal wymaga audytu bibliograficznego.
+Nowy pakiet ma **0 wierszy dopuszczonych do treningu**. 271 testów CPU przeszło.
+[Import, blokada treningu i dokładny następny krok](docs/RECOGNIZER_EXPANSION_REVIEW_IMPORT_20261006.md).
+Nie powtarzaj Colaba ani wszystkich 64 adnotacji. Potrzebne jest potwierdzenie
+statusu 31 poprawionych transkrypcji oraz rozstrzygnięcie pozostałych granic.
 
 **Audyt dzieł: dwie rodziny przecinają splity.** Tomy „Nowych Aten” oraz obie
 „Wyprawy” wymagają wspólnego grupowania ochronnego. Nowa polityka wyłącza
