@@ -2,7 +2,7 @@
 
 Created: 2026-09-30
 
-Last verified update: 2026-10-02
+Last verified update: 2026-10-06
 
 Status: **uploaded, public, and manifest-verified**
 
@@ -51,6 +51,27 @@ The staging tree was scanned for executable/code extensions and common token
 patterns before upload. No matching code files or credential patterns were
 found. The registry is an open research archive. Upstream provenance and
 license limitations remain attached to their source artifacts.
+
+## Reviewed Recognizer Result: 2026-10-06
+
+The table above preserves the earlier bulk-registry snapshots. The completed
+reviewed-recognizer run is now appended under
+`experiments/2026-10-06/recognizer-reviewed-colab-v1-result`:
+
+- Models: `PiotrSty/slayer-ocr-models`, revision
+  `43583c3932fb0cddd3e6a92333360f1d67ca56b3`: complete original result ZIP
+  (912,673,777 bytes), SHA-256
+  `7c97b6c99687863368c31bbd40822d9bd3d69493c2fd2c7c1ab02860426efe2c`.
+  The pinned Hub LFS digest and size were verified; the full bundle was not
+  downloaded again after upload.
+- Evidence: `PiotrSty/slayer-ocr-experiment-evidence`, revision
+  `43b749b453f563f9589ab3d6a418e72079cd3214`: original evidence ZIP, audit,
+  paired predictions, trainer state, checksums and publication/code provenance.
+  All smaller published payloads were downloaded and hash-checked.
+- Candidate retained for research only: historical CER improves slightly,
+  ordinary-print and combined CER regress. No production or SOTA promotion.
+
+[Result details and downloads](RECOGNIZER_REVIEWED_COLAB_RESULT_20261006.md).
 
 ## Reproduction
 

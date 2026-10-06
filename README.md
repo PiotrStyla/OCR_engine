@@ -15,6 +15,7 @@ zweryfikowany w całości. Na 9 historycznych liniach CER poprawił się z 33,03
 do 31,90%, ale na 75 zwykłych wzrósł z 5,33% do 6,17%. Łączny CER pogorszył
 się z 8,37% do 8,99%. Zachowujemy model bazowy; nie ma potwierdzenia SOTA.
 [Wynik, audyt i następne bramki](docs/RECOGNIZER_REVIEWED_COLAB_RESULT_20261006.md).
+[Kompletny model i raport na HF](https://huggingface.co/PiotrSty/slayer-ocr-models/resolve/43583c3932fb0cddd3e6a92333360f1d67ca56b3/experiments/2026-10-06/recognizer-reviewed-colab-v1-result/recognizer-reviewed-colab-v1-result.zip?download=true).
 79 testów CPU przeszło; nie powtarzaj tego samego treningu bez zmiany protokołu.
 
 **Trening na Colabie gotowy na żądanie użytkownika:** osobny eksperyment

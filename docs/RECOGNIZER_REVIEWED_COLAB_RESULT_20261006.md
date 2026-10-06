@@ -35,6 +35,16 @@ checkpoints; it did not include the unchanged baseline as a selectable candidate
 
 ## Integrity And Training
 
+[Complete original result ZIP on HF](https://huggingface.co/PiotrSty/slayer-ocr-models/resolve/43583c3932fb0cddd3e6a92333360f1d67ca56b3/experiments/2026-10-06/recognizer-reviewed-colab-v1-result/recognizer-reviewed-colab-v1-result.zip?download=true).
+
+[Evidence, paired predictions and audit on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/43b749b453f563f9589ab3d6a418e72079cd3214/experiments/2026-10-06/recognizer-reviewed-colab-v1-result).
+
+Both repositories are public. The complete bundle's pinned Hub LFS SHA-256 and
+size match the locally audited source; the 913 MB bundle was not downloaded
+again. Every smaller published evidence/audit file was downloaded at its exact
+revision and matched byte-for-byte. The evidence includes the auditor's pushed
+code revision. This is research archival publication, not model promotion.
+
 - Outer ZIP SHA-256:
   `7c97b6c99687863368c31bbd40822d9bd3d69493c2fd2c7c1ab02860426efe2c`.
 - Model ZIP SHA-256:
