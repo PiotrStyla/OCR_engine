@@ -18,6 +18,7 @@ nie są automatycznie zatwierdzane. Spośród 20 potwierdzonych linii 13 jest
 objętych wykluczeniem wspólnych dzieł, a 7 nadal wymaga audytu bibliograficznego.
 Nowy pakiet ma **0 wierszy dopuszczonych do treningu**. 271 testów CPU przeszło.
 [Import, blokada treningu i dokładny następny krok](docs/RECOGNIZER_EXPANSION_REVIEW_IMPORT_20261006.md).
+[Pełny ZIP na HF: 64 wycinki, 34 konteksty, decyzje i historia](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/98033ad0348f18148db9a3d35192cf5c5ced350e/data/recognizer-expansion-gated-review-v1-20261006/recognizer-expansion-gated-review-v1-20261006.zip?download=true).
 Nie powtarzaj Colaba ani wszystkich 64 adnotacji. Potrzebne jest potwierdzenie
 statusu 31 poprawionych transkrypcji oraz rozstrzygnięcie pozostałych granic.
 

@@ -69,6 +69,20 @@ Images are unchanged IMPACT/PSNC source pixels via
 `c7cb156fb95d2880699c33725bbaf1fbc1008fea`, CC-BY-3.0.
 The public ZIP contains data, not code, weights or simulated review decisions.
 
+## Public Artifacts
+
+- [Complete gated data ZIP: crops, contexts, review and history](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/98033ad0348f18148db9a3d35192cf5c5ced350e/data/recognizer-expansion-gated-review-v1-20261006/recognizer-expansion-gated-review-v1-20261006.zip?download=true).
+- [Public data publication and gate report](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/98033ad0348f18148db9a3d35192cf5c5ced350e/data/recognizer-expansion-gated-review-v1-20261006).
+- [Raw review export, ledger, follow-up queue and import evidence](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/020f26a98e839c837d9ac411da883a58a5047c21/experiments/2026-10-06/recognizer-expansion-review-import-v1).
+
+Published against code revision `91c8d8c`. All published files were downloaded
+again at the immutable HF revisions above and checked against local SHA-256;
+all 125 unique ZIP members were checked individually. The complete package
+checksum manifest has SHA-256
+`87da9067ef6466d754f2f2e80d9985f964156c90c94bd3030fd663c4b1f591ac`.
+The published README is the pre-link report snapshot. Later confirmations must
+create a new version rather than altering this immutable publication.
+
 ```powershell
 python -m training.gate_recognizer_review_import --import-directory RAW_IMPORT --work-audit WORK_AUDIT --config experiments/2026-10-05/recognizer-data-v3-expansion-v1/config.json --metadata-directory REGIONS_METADATA --output FRESH_GATED_OUTPUT
 ```
