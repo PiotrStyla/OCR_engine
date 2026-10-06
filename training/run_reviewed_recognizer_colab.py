@@ -56,6 +56,31 @@ def evaluate(model_path, directories, processor, output):
     return results
 
 
+def preflight(base, directory, processor, recipe):
+    import torch
+    from PIL import Image
+    from transformers import VisionEncoderDecoderModel
+    from training.preflight_reviewed_recognizer import check
+    from training.protocol import configure_generation
+
+    model = VisionEncoderDecoderModel.from_pretrained(base).to('cuda')
+    configure_generation(model, processor.tokenizer)
+    path = next(iter(sorted(directory.glob('*.png'))))
+    with Image.open(path) as image:
+        pixels = processor(images=image.convert('RGB'), return_tensors='pt').pixel_values.to('cuda')
+    text = path.with_suffix('.txt').read_text(encoding='utf-8').strip()
+    labels = processor.tokenizer(text, return_tensors='pt', truncation=False).input_ids.to('cuda')
+    try:
+        report = check(model, pixels, labels, recipe['lora_rank'], recipe['lora_alpha'])
+        report.update(training_sample_id=path.stem, image_sha256=digest(path),
+                      text_sha256=digest(path.with_suffix('.txt')))
+        return report
+    finally:
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+
 def run(dataset_revision, dataset_sha256, output_root='/content'):
     import torch
     from huggingface_hub import hf_hub_download, snapshot_download
@@ -133,7 +158,9 @@ def run(dataset_revision, dataset_sha256, output_root='/content'):
             'dataset_revision': dataset_revision, 'dataset_sha256': dataset_sha256,
             'synthetic_archive_sha256': digest(archive), 'base_revision': cfg['base_revision'],
             'packages': {n: importlib.metadata.version(n) for n in
-                ('torch', 'transformers', 'peft', 'accelerate', 'jiwer', 'huggingface_hub')}})
+                ('torch', 'torchao', 'transformers', 'peft', 'accelerate', 'jiwer', 'huggingface_hub')}})
+        write_json(evidence/'adapter-preflight.json', preflight(base, corpus/'train', processor, cfg['training']))
+        print('FULL_MODEL_ADAPTER_PREFLIGHT_OK', flush=True)
         baseline = evaluate(base, development, processor, evidence/'baseline-predictions.jsonl')
         write_json(evidence/'baseline-metrics.json', baseline)
         validation = work/'validation'

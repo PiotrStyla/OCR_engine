@@ -32,11 +32,18 @@ python = environment/'bin/python'
 if not python.exists():
     venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
 subprocess.run([str(python), '-c', "import torch; assert torch.cuda.is_available(), 'Wybierz GPU T4 w ustawieniach Colaba i uruchom wszystko.'; print('GPU:', torch.cuda.get_device_name(0))"], check=True)
+torch_release = subprocess.check_output([str(python), '-c', "import torch; print('.'.join(torch.__version__.split('+')[0].split('.')[:2]))"], text=True).strip()
+torchao_versions = {{'2.10': '0.16.0', '2.11': '0.17.0'}}
+assert torch_release in torchao_versions, f'Niezweryfikowana wersja Torch: {{torch_release}}. Nie zmieniam CUDA.'
 packages = ['transformers==4.57.6', 'tokenizers==0.22.2', 'huggingface_hub==0.36.2',
             'peft==0.19.1', 'accelerate==1.13.0', 'jiwer==4.0.0',
             'pillow==11.3.0', 'sentencepiece==0.2.1']
 subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', *packages], check=True)
+subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', '--no-deps',
+                'torchao=='+torchao_versions[torch_release]], check=True)
 subprocess.run([str(python), '-c', "from transformers import TrOCRProcessor, VisionEncoderDecoderModel; from transformers.generation import GenerationMixin; import peft, jiwer; print('TRAINING_IMPORTS_OK')"], check=True)
+subprocess.run([str(python), '-m', 'training.preflight_reviewed_recognizer',
+                '--output', str(environment/'adapter-preflight.json')], cwd=repo, check=True)
 print('Gotowe. Dane zostana pobrane automatycznie; niczego nie wgrywaj.')
 '''
     training = '''from google.colab import files

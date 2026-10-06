@@ -155,6 +155,7 @@ def test_tiny_lora_training_and_best_checkpoint(tmp_path):
     configure_generation(model, SimpleNamespace(pad_token_id=1, sep_token_id=2))
     model.generation_config.max_length = 5
     model = _inject_lora(model, 2, 4)
+    assert model.peft_config['default'].task_type is None
     assert all(not p.requires_grad for p in model.base_model.model.encoder.parameters())
     attention = model.base_model.model.decoder.model.decoder.layers[0].self_attn
     assert hasattr(attention.out_proj, "lora_A")
@@ -191,3 +192,15 @@ def test_tiny_lora_training_and_best_checkpoint(tmp_path):
         for name, parameter in model.named_parameters()
         if name in before
     )
+
+
+def test_reviewed_adapter_preflight_exercises_real_trocr():
+    pytest.importorskip('peft')
+    pytest.importorskip('torchao')
+    from training.preflight_reviewed_recognizer import tiny
+    report = tiny()
+    assert report['status'] == 'ok'
+    assert report['updated_adapter_tensors'] > 0
+    assert report['finite_gradients']
+    assert report['merge_and_generation']
+    assert not report['updates_used_in_training']

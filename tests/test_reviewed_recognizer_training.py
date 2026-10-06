@@ -106,6 +106,10 @@ def test_colab_notebook_is_valid_pinned_and_has_no_manual_uploads(tmp_path):
         compile(code, 'notebook-cell', 'exec')
     assert "with_pip=False" in sources[0]
     assert "'fetch', 'origin', 'main'" in sources[0]
+    assert "'2.11': '0.17.0'" in sources[0]
+    assert "'2.10': '0.16.0'" in sources[0]
+    assert "'--no-deps'" in sources[0]
+    assert 'training.preflight_reviewed_recognizer' in sources[0]
     assert 'files.upload' not in '\n'.join(sources)
     assert 'run_reviewed_recognizer_colab' in sources[1]
     assert 'result.zip' in sources[2]
@@ -116,3 +120,12 @@ def test_colab_notebook_is_valid_pinned_and_has_no_manual_uploads(tmp_path):
 def test_development_normalization_never_modernizes_historical_spelling():
     from training.run_reviewed_recognizer_colab import normalize
     assert normalize('\u017f \u00e1 \u0292\u0307') == '\u017f \u00e1 \u0292\u0307'
+
+
+def test_actual_model_preflight_precedes_baseline_and_uses_training_sample():
+    import inspect
+    from training import run_reviewed_recognizer_colab as runner
+    source = inspect.getsource(runner.run)
+    assert source.index("preflight(base, corpus/'train'") < source.index('baseline = evaluate(')
+    assert "'torchao'" in source
+    assert 'adapter-preflight.json' in source

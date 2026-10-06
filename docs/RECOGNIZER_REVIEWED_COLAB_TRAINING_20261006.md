@@ -16,6 +16,39 @@ and exact crop hashes do not overlap between training and development.
 Bibliographic independence of the other collections is not certified; results
 must not be presented as an independent benchmark or gold-label evaluation.
 
+## First Returned Run: Failed Before Training
+
+The returned `recognizer-reviewed-colab-v1-evidence.zip` has SHA-256
+`90d2450f11ddfb8b802079639699ca8b7eb530bf28a7da806549b15d5ed9bdea`.
+All 13 unique members are present; the 12 checksummed payloads verify. The
+baseline metrics were independently recomputed from all 84 raw predictions:
+
+| Development domain | Lines | CER | WER |
+| --- | ---: | ---: | ---: |
+| Ordinary print | 75 | 5.3307% | 22.8800% |
+| Historical text | 9 | 33.0317% | 81.0811% |
+
+These are baseline results, not candidate results. Adapter creation failed:
+Colab supplied `torchao==0.10.0`, whereas the pinned PEFT 0.19.1 checks for
+TorchAO >=0.16.0 even when wrapping ordinary, non-quantized linear layers.
+The archive contains no candidate metrics or training run metadata. No trained
+candidate weights are available from this return.
+
+The corrected setup installs TorchAO 0.17.0 for Torch 2.11, or 0.16.0 for
+Torch 2.10, without replacing Colab's CUDA Torch. Other Torch minor versions
+stop explicitly rather than silently choosing an unverified ABI combination.
+See the [official TorchAO compatibility table](https://github.com/pytorch/ao/issues/2919)
+and [PEFT 0.19.1 availability check](https://github.com/huggingface/peft/blob/v0.19.1/src/peft/import_utils.py).
+
+The setup now exercises a tiny real ViT/TrOCR architecture: adapter attachment,
+aligned loss, finite nonzero gradients, optimizer update, merge and generation.
+The runner repeats this check on the actual pinned base model and one TRAINING
+sample before baseline inference. Both checks use disposable models; their
+updates are not carried into training or checkpoint selection. The shared LoRA
+helper uses generic PEFT, preserving the `pixel_values` interface instead of
+adding text-encoder `input_ids` through the text seq2seq wrapper.
+TorchAO and the full-model preflight report are included in future evidence.
+
 ## Frozen Recipe
 
 - Base: `PiotrSty/trocr-pl-mixed-v3`, revision
@@ -50,8 +83,8 @@ report and checksums. IMPACT/PSNC source attribution and CC-BY-3.0 are retained.
 ## Run
 
 [Open the single training notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
-Its runtime code is pinned to the already-pushed full commit
-`ae6f779d78cedcd15135c61b34175b56e389c061`.
+Its runtime code is pinned to a complete, already-pushed commit in the setup
+cell. Do not reuse the earlier notebook pinned to `ae6f779d78cedcd15135c61b34175b56e389c061`.
 
 Open the notebook, select a GPU T4 runtime and click **Run all**. Do not upload
 any files. The notebook fetches the complete, already-pushed runtime revision,
@@ -70,6 +103,8 @@ CPU checks cover selection, source hashes, work exclusions, page overlap,
 unapproved/modified text rejection, exact historical text retention and notebook
 structure/code syntax. Full model training requires the user's Colab GPU session;
 preparing or opening the notebook is not evidence that training has run.
-Focused validation: 69 tests passed. The existing Torch training-protocol test
+Focused validation after the environment repair: 70 tests passed. The Torch training-protocol test
 module was skipped locally because Torch is not installed in this CPU tooling
-environment; no GPU execution is claimed by these checks.
+environment; the new tiny/full-model adapter checks are executed by Colab,
+not claimed as locally validated GPU runs. The corrected complete training run
+still requires execution on the user's Colab GPU.

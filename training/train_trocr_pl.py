@@ -47,7 +47,7 @@ def _validate_lora_targets(wrapped, target_modules: list[str]) -> None:
 
 def _inject_lora(model, lora_rank: int, lora_alpha: int, include_mlp=False) -> object:
     """Wstrzykuje adaptery LoRA do dekodera modelu (PEFT)."""
-    from peft import LoraConfig, TaskType, get_peft_model
+    from peft import LoraConfig, get_peft_model
 
     targets = ["q_proj", "k_proj", "v_proj", "out_proj"]
     if include_mlp:
@@ -70,7 +70,8 @@ def _inject_lora(model, lora_rank: int, lora_alpha: int, include_mlp=False) -> o
         target_modules=target_modules,
         lora_dropout=0.05,
         bias="none",
-        task_type=TaskType.SEQ_2_SEQ_LM,
+        # Generic PEFT preserves pixel_values; the text seq2seq wrapper adds input_ids.
+        task_type=None,
     )
     wrapped = get_peft_model(model, lora_config)
     _validate_lora_targets(wrapped, target_modules)

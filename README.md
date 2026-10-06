@@ -18,6 +18,13 @@ do kontroli. To trening eksperymentalny, nie otwarcie zamrożonego benchmarku SO
 [Uruchom jeden notebook Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
 Nie wgrywaj żadnych plików: wybierz GPU T4 i uruchom wszystko.
 
+**Pierwszy zwrot z Colaba: trening nie wystartował.** Odczyt bazowy zakończony:
+CER 5,33% na 75 zwykłych liniach i 33,03% na 9 historycznych. Tworzenie LoRA
+zatrzymał konflikt odziedziczonego TorchAO 0.10.0 z PEFT 0.19.1. Notebook ma
+poprawione wersje i sprawdza adaptery, gradienty oraz scalanie przed baseline.
+Nowe wagi nie zostały jeszcze wytrenowane; 70 testów CPU przeszło, testy Torch
+wymagają środowiska modelowego. [Audyt i poprawka](docs/RECOGNIZER_REVIEWED_COLAB_TRAINING_20261006.md#first-returned-run-failed-before-training).
+
 **Potwierdzenie review zapisane:** 51 pełnych linii ma weryfikację jednego
 człowieka, w tym 31 poprawionych propozycji jawnie potwierdzonych w rozmowie.
 Surowy eksport, teksty, stare glify i historia pozostają bez zmian. Zostało
