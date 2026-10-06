@@ -34,6 +34,9 @@ TorchAO >=0.16.0 even when wrapping ordinary, non-quantized linear layers.
 The archive contains no candidate metrics or training run metadata. No trained
 candidate weights are available from this return.
 
+[Original evidence ZIP and recomputed audit on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/e3850b5d2004b3b84b76aa6951c25a6a048adc9d/experiments/2026-10-06/recognizer-reviewed-colab-torchao-failure-v1).
+All published files were downloaded at this pinned revision and hash-checked.
+
 The corrected setup installs TorchAO 0.17.0 for Torch 2.11, or 0.16.0 for
 Torch 2.10, without replacing Colab's CUDA Torch. Other Torch minor versions
 stop explicitly rather than silently choosing an unverified ABI combination.
@@ -83,8 +86,9 @@ report and checksums. IMPACT/PSNC source attribution and CC-BY-3.0 are retained.
 ## Run
 
 [Open the single training notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
-Its runtime code is pinned to a complete, already-pushed commit in the setup
-cell. Do not reuse the earlier notebook pinned to `ae6f779d78cedcd15135c61b34175b56e389c061`.
+Its corrected runtime code is pinned to the already-pushed full commit
+`fe074fee1da33a94ea60a0bcd658a8f6afbb7dc8` in the setup cell.
+Do not reuse the earlier notebook pinned to `ae6f779d78cedcd15135c61b34175b56e389c061`.
 
 Open the notebook, select a GPU T4 runtime and click **Run all**. Do not upload
 any files. The notebook fetches the complete, already-pushed runtime revision,
