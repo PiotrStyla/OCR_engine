@@ -10,11 +10,13 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Trening na Colabie przygotowywany na żądanie użytkownika:** osobny eksperyment
+**Trening na Colabie gotowy na żądanie użytkownika:** osobny eksperyment
 z 70 sprawdzonymi liniami i 500 próbkami zwykłego druku, bez 36 linii z rodzin
 objętych wykluczeniem. 9 linii z oddzielnej kolekcji i 75 zwykłych linii służy
 do kontroli. To trening eksperymentalny, nie otwarcie zamrożonego benchmarku SOTA.
 [Protokół, automatyczne dane i sposób uruchomienia](docs/RECOGNIZER_REVIEWED_COLAB_TRAINING_20261006.md).
+[Uruchom jeden notebook Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
+Nie wgrywaj żadnych plików: wybierz GPU T4 i uruchom wszystko.
 
 **Potwierdzenie review zapisane:** 51 pełnych linii ma weryfikację jednego
 człowieka, w tym 31 poprawionych propozycji jawnie potwierdzonych w rozmowie.

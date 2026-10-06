@@ -49,6 +49,10 @@ report and checksums. IMPACT/PSNC source attribution and CC-BY-3.0 are retained.
 
 ## Run
 
+[Open the single training notebook in Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
+Its runtime code is pinned to the already-pushed full commit
+`ae6f779d78cedcd15135c61b34175b56e389c061`.
+
 Open the notebook, select a GPU T4 runtime and click **Run all**. Do not upload
 any files. The notebook fetches the complete, already-pushed runtime revision,
 creates an isolated interpreter without `ensurepip`, inherits Colab's CUDA Torch,
