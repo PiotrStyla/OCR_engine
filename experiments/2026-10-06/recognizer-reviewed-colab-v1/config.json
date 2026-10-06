@@ -1,0 +1,21 @@
+{
+  "schema": "slayer-recognizer-reviewed-exploratory-training-v1",
+  "purpose": "User-requested exploratory fine-tuning, not benchmark promotion",
+  "base_model": "PiotrSty/trocr-pl-mixed-v3",
+  "base_revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+  "sources": [
+    {"manifest_sha256": "3b4184f45be39756e5e5f2068dd363c9a3c7a535502e953525690b62e5c85b77", "checksums_sha256": "90a7567687eeaeaef6d57f1a7eb4f04f2b92fa9c417d2754677f7b6013253cae", "count": 64, "kind": "original-verified-pool"},
+    {"manifest_sha256": "9dc013724d56ebf13460d5b66bf052103738aa4ec3adcba8043f5ac7a5fa3e41", "checksums_sha256": "606dba648cf9b44cf4f3ea6432d716c0a8d31c280a7a68f77eb0dfd7a1ac9e38", "count": 51, "kind": "confirmed-gated-expansion"}
+  ],
+  "excluded_collections": ["NA1_FT", "NA3_FT", "Wyprawa_1_FT"],
+  "development_collection": "O_cieplicach_FT",
+  "expected_counts": {"approved_source": 115, "excluded_work_family": 36, "historical_train": 70, "historical_development": 9},
+  "synthetic_replay": {"repo": "PiotrSty/ocr-pl-lines", "revision": "d881debb90045fd71ad8e25faeeafeb6adab6622", "filename": "ocr-pl-lines-v1.tar.gz", "count": 500},
+  "training": {"epochs": 3, "batch_size": 2, "gradient_accumulation_steps": 4, "learning_rate": 0.00001, "lora_rank": 16, "lora_alpha": 32, "max_target_length": 128, "historical_repeats": 4, "seed": 42},
+  "normalization": "No modernization; exact annotation files, loader trims outer whitespace only",
+  "independent_benchmark": false,
+  "bibliographic_independence_certified": false,
+  "sota_claim": false,
+  "automatic_production_promotion": false,
+  "publication": "Candidate weights and evidence saved separately; public only under existing user authorization"
+}
