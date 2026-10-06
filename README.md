@@ -18,6 +18,7 @@ decyzje. Spośród 51 przyjętych adnotacji 17 jest objętych wykluczeniem wspó
 dzieł, a 34 wymagają audytu bibliograficznego. **0 wierszy dopuszczonych do treningu.**
 295 testów CPU przeszło; potwierdzenie jest oddzielone od surowych decyzji.
 [Nowa wersja v2: potwierdzenie, dane i ograniczenia](docs/RECOGNIZER_EXPANSION_VISUAL_CONFIRMATION_20261006.md).
+[Pełny ZIP v2 na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/51696dca7a9fa0e3dd49c1edb5013d72fff71c3b/data/recognizer-expansion-confirmed-review-v2-20261006/recognizer-expansion-confirmed-review-v2-20261006.zip?download=true).
 [Archiwalny import v1](docs/RECOGNIZER_EXPANSION_REVIEW_IMPORT_20261006.md).
 Nie trzeba ponownie uruchamiać Colaba ani przeglądać wszystkich 64 linii.
 

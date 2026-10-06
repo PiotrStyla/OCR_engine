@@ -56,3 +56,13 @@ No new Colab inference or full review is required from the user for this version
 The next research work is bibliographic split independence and crop remediation,
 not another blanket request to inspect the same 64 lines. No further review
 task is requested in this handoff.
+
+## Public Artifacts
+
+- [Complete v2 ZIP: crops, contexts, raw history and separate confirmation](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/51696dca7a9fa0e3dd49c1edb5013d72fff71c3b/data/recognizer-expansion-confirmed-review-v2-20261006/recognizer-expansion-confirmed-review-v2-20261006.zip?download=true).
+- [Data publication and gate report](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/tree/51696dca7a9fa0e3dd49c1edb5013d72fff71c3b/data/recognizer-expansion-confirmed-review-v2-20261006).
+- [Confirmation, original export, ledger and evidence](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/b02a11cf3462a0f560f9e6696e753f992ae8727c/experiments/2026-10-06/recognizer-expansion-visual-confirmation-v2).
+
+All published files were downloaded at these immutable revisions and compared
+with local SHA-256 hashes. All 126 unique ZIP members were checked individually.
+Publication binds code revision `395f54b`; the HF README is the pre-link report.
