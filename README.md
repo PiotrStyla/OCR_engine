@@ -10,17 +10,16 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Nowy eksport review zaimportowany:** 71 zdarzeń, 62 z 64 linii z decyzjami.
-Ostatnie statusy dają 20 potwierdzonych pełnych linii, 31 propozycji z pełną
-linią, 9 odrzuconych wycinków, 2 propozycje bez sprawdzonych granic i 2 linie
-bez decyzji. Zachowano dokładne teksty, stare glify i całą historię; propozycje
-nie są automatycznie zatwierdzane. Spośród 20 potwierdzonych linii 13 jest
-objętych wykluczeniem wspólnych dzieł, a 7 nadal wymaga audytu bibliograficznego.
-Nowy pakiet ma **0 wierszy dopuszczonych do treningu**. 271 testów CPU przeszło.
-[Import, blokada treningu i dokładny następny krok](docs/RECOGNIZER_EXPANSION_REVIEW_IMPORT_20261006.md).
-[Pełny ZIP na HF: 64 wycinki, 34 konteksty, decyzje i historia](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/98033ad0348f18148db9a3d35192cf5c5ced350e/data/recognizer-expansion-gated-review-v1-20261006/recognizer-expansion-gated-review-v1-20261006.zip?download=true).
-Nie powtarzaj Colaba ani wszystkich 64 adnotacji. Potrzebne jest potwierdzenie
-statusu 31 poprawionych transkrypcji oraz rozstrzygnięcie pozostałych granic.
+**Potwierdzenie review zapisane:** 51 pełnych linii ma weryfikację jednego
+człowieka, w tym 31 poprawionych propozycji jawnie potwierdzonych w rozmowie.
+Surowy eksport, teksty, stare glify i historia pozostają bez zmian. Zostało
+13 przypadków: 9 odrzuconych wycinków, 2 niesprawdzone granice i 2 brakujące
+decyzje. Spośród 51 przyjętych adnotacji 17 jest objętych wykluczeniem wspólnych
+dzieł, a 34 wymagają audytu bibliograficznego. **0 wierszy dopuszczonych do treningu.**
+295 testów CPU przeszło; potwierdzenie jest oddzielone od surowych decyzji.
+[Nowa wersja v2: potwierdzenie, dane i ograniczenia](docs/RECOGNIZER_EXPANSION_VISUAL_CONFIRMATION_20261006.md).
+[Archiwalny import v1](docs/RECOGNIZER_EXPANSION_REVIEW_IMPORT_20261006.md).
+Nie trzeba ponownie uruchamiać Colaba ani przeglądać wszystkich 64 linii.
 
 **Audyt dzieł: dwie rodziny przecinają splity.** Tomy „Nowych Aten” oraz obie
 „Wyprawy” wymagają wspólnego grupowania ochronnego. Nowa polityka wyłącza

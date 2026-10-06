@@ -7,6 +7,7 @@ import pytest
 from tests.test_recognizer_work_groups import pages, group, line
 from training import gate_recognizer_review_import as module
 from training.audit_recognizer_work_groups import validate_groups
+from training.adjudicate_reviews import text_hash
 from training.full_page_pilot import digest, read_rows, write_json, write_rows
 
 
@@ -117,3 +118,101 @@ def test_failed_replay_does_not_create_output(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match='does not reproduce'):
         module.gate(*args)
     assert not args[-1].exists()
+
+
+def proposal_and_confirmation():
+    row = {**reviewed('pending'), 'review_event_id': 'latest-corrected-event',
+           'sha256': 'crop', 'context': {'image': 'input/regions/region.jpg', 'sha256': 'context'}}
+    row['reviewed_text_sha256'] = text_hash(row['text'])
+    replay = {'review_export_sha256': 'export', 'review_manifest_sha256': 'manifest'}
+    packet = {'schema': 'slayer-line-proposal-visual-confirmation-v1',
+        'source_kind': 'direct-user-message', 'source_actor_role': 'user',
+        'scope': 'all-latest-proposed-complete-line-transcriptions',
+        'resolved_answer': 'visually-verified-against-line-crop',
+        'question': 'Were these corrected transcriptions checked visually?', 'answer': 'tak',
+        'review_export_sha256': 'export', 'review_manifest_sha256': 'manifest',
+        'base_import_checksums_sha256': 'import-checksums', 'confirmation_count': 1,
+        'confirmations': [{'id': row['id'], 'review_event_id': row['review_event_id'],
+            'crop_sha256': row['sha256'], 'context_sha256': row['context']['sha256'],
+            'text_sha256': row['reviewed_text_sha256']}]}
+    return row, packet, replay
+
+
+def test_visual_confirmation_preserves_original_proposal_and_exact_text():
+    row, packet, replay = proposal_and_confirmation()
+    before = deepcopy(row)
+    confirmations = module.validate_confirmation([row], packet, replay, 'import-checksums')
+    result = module.gate_rows([row], pages(), [], confirmations)[0]
+    assert row == before
+    assert result['annotation_verified'] and result['annotation_status'] == 'verified'
+    assert result['review_status'] == 'proposed' and result['import_status'] == 'pending'
+    assert result['annotation_verification_source'] == 'direct-user-visual-confirmation'
+    assert result['text'] == before['text'] and result['review_event_id'] == before['review_event_id']
+    assert result['eligible_for_training'] is result['eligible_for_evaluation'] is False
+
+
+@pytest.mark.parametrize('field,value', [('review_export_sha256', 'other'),
+    ('review_manifest_sha256', 'other'), ('base_import_checksums_sha256', 'other'),
+    ('source_kind', 'agent-assumption'), ('source_actor_role', 'assistant'),
+    ('resolved_answer', 'not-confirmed'), ('scope', 'all-lines'), ('question', ''), ('answer', '')])
+def test_unbound_or_nonuser_confirmation_rejected(field, value):
+    row, packet, replay = proposal_and_confirmation()
+    packet[field] = value
+    with pytest.raises(ValueError, match='provenance or package binding'):
+        module.validate_confirmation([row], packet, replay, 'import-checksums')
+
+
+@pytest.mark.parametrize('field', ['review_event_id', 'crop_sha256', 'context_sha256', 'text_sha256'])
+def test_confirmation_binds_latest_event_and_assets(field):
+    row, packet, replay = proposal_and_confirmation()
+    packet['confirmations'][0][field] = 'different'
+    with pytest.raises(ValueError, match='event, text or crop binding'):
+        module.validate_confirmation([row], packet, replay, 'import-checksums')
+
+
+@pytest.mark.parametrize('mutation', ['duplicate', 'missing', 'extra', 'wrong-count', 'rejected', 'unchecked'])
+def test_confirmation_cannot_expand_or_shrink_the_approved_scope(mutation):
+    row, packet, replay = proposal_and_confirmation()
+    if mutation == 'duplicate':
+        packet['confirmations'] *= 2
+    elif mutation == 'missing':
+        row = {**row, 'id': 'missing'}
+    elif mutation == 'extra':
+        packet['confirmations'].append({**packet['confirmations'][0], 'id': 'other'})
+    elif mutation == 'wrong-count':
+        packet['confirmation_count'] = 2
+    elif mutation == 'rejected':
+        row['geometry_decision'] = 'reject-crop'
+    else:
+        row['geometry_decision'] = 'unreviewed'
+    with pytest.raises(ValueError, match='exactly the proposed complete-line scope'):
+        module.validate_confirmation([row], packet, replay, 'import-checksums')
+
+
+@pytest.mark.parametrize('text', ['', 'two\nlines', 'replacement\ufffd'])
+def test_confirmation_does_not_bypass_text_quality(text):
+    row, packet, replay = proposal_and_confirmation()
+    row['text'] = text
+    row['reviewed_text_sha256'] = packet['confirmations'][0]['text_sha256'] = text_hash(text)
+    with pytest.raises(ValueError, match='event, text or crop binding'):
+        module.validate_confirmation([row], packet, replay, 'import-checksums')
+
+
+def test_confirmed_package_keeps_raw_import_and_copies_separate_confirmation(tmp_path, monkeypatch):
+    args = package_fixture(tmp_path, monkeypatch)
+    row, packet, _ = proposal_and_confirmation()
+    write_rows(args[0]/'reviewed-lines.jsonl', [row])
+    write_json(args[0]/'checksums.json', {p.relative_to(args[0]).as_posix(): digest(p)
+        for p in args[0].rglob('*') if p.is_file() and p.name != 'checksums.json'})
+    packet['base_import_checksums_sha256'] = digest(args[0]/'checksums.json')
+    confirmation = tmp_path/'confirmation.json'
+    write_json(confirmation, packet)
+    report = module.gate(*args, confirmation=confirmation)
+    out = args[-1]
+    assert report['schema'] == 'slayer-recognizer-gated-review-import-v2'
+    assert report['direct_user_confirmed_proposals'] == report['annotation_accepted'] == 1
+    assert report['eligible_training_examples'] == report['original_review_decisions_modified'] == 0
+    assert digest(out/'visual-confirmation.json') == digest(confirmation)
+    assert digest(out/'history/import/reviewed-lines.jsonl') == digest(args[0]/'reviewed-lines.jsonl')
+    assert read_rows(out/'manifest.jsonl')[0]['review_status'] == 'proposed'
+    module.verified_package(out)

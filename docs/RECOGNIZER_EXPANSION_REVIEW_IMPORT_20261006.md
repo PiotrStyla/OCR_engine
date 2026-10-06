@@ -1,5 +1,11 @@
 # Recognizer expansion: imported review with a closed training gate
 
+**Historical v1 snapshot:** the user subsequently confirmed visual review of the
+31 proposed complete-line texts. See the
+[new v2 confirmation report](RECOGNIZER_EXPANSION_VISUAL_CONFIRMATION_20261006.md).
+The v1 artifacts below remain immutable; the pending confirmation described
+here is resolved in v2, not by rewriting the original export.
+
 ## Exact Export, Not Automatic Approval
 
 Imported `slayer-recognizer-line-review-31debfc142b5.json`:
