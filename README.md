@@ -10,6 +10,14 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
+**Następny krok: pilotaż danych replay V2 na CPU.** Jeden notebook pobiera
+komplet źródeł z HF, zachowuje dokładne linie bez bramki pokrycia całej strony
+i pakuje pełne obrazy, TSV oraz wycinki do audytu. Nie uruchamia treningu.
+[Uruchom tylko ten notebook V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_pilot_v2.ipynb).
+Wybierz CPU, Uruchom wszystko, niczego nie wgrywaj. Zwróć
+`printed-replay-pilot-v2-evidence.zip`.
+[Protokół, zawartość ZIP-a i ograniczenia](docs/PRINTED_REPLAY_PILOT_V2_20261007.md).
+
 **Pilotaż rzeczywistego druku V1 zakończony: 12 stron, 396 linii, 0 par.**
 Sumy kontrolne, wersje źródeł oraz wszystkie odrzucenia przeliczone.
 Bramka 40% pokrycia całej strony odrzuciła 26 dokładnych kotwic tekstowych:
@@ -18,6 +26,7 @@ nie odzyskane wycinki ani dane dopuszczone do treningu. Baseline pozostaje.
 Przygotowana poprawka V2 zachowuje reguły dla pojedynczej linii, traktuje
 pokrycie strony diagnostycznie i dołącza pełne obrazy oraz TSV do audytu.
 [Wynik V1 i poprawka V2](docs/PRINTED_REPLAY_PILOT_V1_RESULT_20261007.md).
+[Publiczny audyt i oryginalny ZIP V1 na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/5a3f763e4a6a33efb2b1cac8dc259873a847504e/experiments/2026-10-07/printed-replay-pilot-v1-result).
 [Źródła i ograniczenia pilotażu](docs/PRINTED_REPLAY_PILOT_V1_20261007.md).
 Nie powtarzaj V1 bez zmiany protokołu; nie wytworzył korpusu replay.
 

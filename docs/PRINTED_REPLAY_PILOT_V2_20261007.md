@@ -2,7 +2,7 @@
 
 ## Run
 
-Open `training/colab_printed_replay_pilot_v2.ipynb` in Colab. Select **CPU**,
+Open [the V2 notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_pilot_v2.ipynb) in Colab. Select **CPU**,
 then **Run all**. Upload nothing. The notebook downloads the same pinned source
 ZIP from Hugging Face and verifies its SHA256 before extraction.
 
