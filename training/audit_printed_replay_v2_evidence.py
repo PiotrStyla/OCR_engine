@@ -126,17 +126,29 @@ def contact_sheets(evidence, predictions, output, *, context=False):
     return paths
 
 
-def audit(archive_path, output):
+def visual_sample(predictions):
+    pages, families = {}, {}
+    for row in predictions:
+        pages.setdefault(row["page_id"], []).append(row)
+        families.setdefault(row["work_family"], []).append(row)
+    selected = {min(rows, key=lambda r: (r["min_word_confidence"], r["id"]))["id"] for rows in pages.values()}
+    selected.update(max(rows, key=lambda r: (len(r["text"]), r["id"]))["id"] for rows in families.values())
+    return [row for row in predictions if row["id"] in selected]
+
+
+def audit(archive_path, output, *, code_revision=V2_REVISION,
+          source_checksums=SOURCE_CHECKSUMS, works=None, sample_review=False,
+          result_schema="slayer-printed-replay-v2-audit-v1"):
     archive_path, output = Path(archive_path), Path(output)
     with zipfile.ZipFile(archive_path) as archive:
         checksums = verify_archive(archive)
         report = json.loads(archive.read("report.json"))
         environment = json.loads(archive.read("environment.json"))
         require(report["schema"] == "slayer-printed-replay-mining-v2" and
-                report["page_min_coverage"] == 0 and environment["code_revision"] == V2_REVISION and
-                environment["source_checksums_sha256"] == SOURCE_CHECKSUMS,
+                report["page_min_coverage"] == 0 and environment["code_revision"] == code_revision and
+                environment["source_checksums_sha256"] == source_checksums,
                 "Unexpected V2 protocol/source lineage")
-        runner = subprocess.check_output(["git", "show", V2_REVISION + ":training/mine_printed_replay.py"])
+        runner = subprocess.check_output(["git", "show", code_revision + ":training/mine_printed_replay.py"])
         require(hashlib.sha256(runner).hexdigest() == environment["runner_sha256"], "Pinned runner mismatch")
         output.mkdir(parents=True, exist_ok=False)
         evidence = output / "evidence"
@@ -149,8 +161,11 @@ def audit(archive_path, output):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(archive.read(member))
     shutil.copyfile(archive_path, output / archive_path.name)
-    sources = verify_source_package(evidence / "source-package")
-    require(digest(evidence / "source-package/checksums.json") == SOURCE_CHECKSUMS, "Pinned source mismatch")
+    sources = verify_source_package(evidence / "source-package", works=works)
+    require(digest(evidence / "source-package/checksums.json") == source_checksums, "Pinned source mismatch")
+    if works is not None:
+        policy = json.loads((evidence / "source-package/source-policy.json").read_text(encoding="utf-8"))
+        require(policy["works"] == works, "Pinned work policy mismatch")
     for name in ("checksums.json", "manifest.jsonl", "source-policy.json"):
         require((evidence / ("source-" + name)).read_bytes() ==
                 (evidence / "source-package" / name).read_bytes(), "Duplicate source receipt mismatch")
@@ -181,23 +196,30 @@ def audit(archive_path, output):
             len(predictions) == report["candidates"], "Aggregate result mismatch")
     require(report["eligible_for_training"] is False and report["eligible_for_evaluation"] is False,
             "Unexpected training/evaluation promotion")
-    sheets = contact_sheets(evidence, predictions, output)
-    context = contact_sheets(evidence, predictions, output, context=True)
-    result = {"schema": "slayer-printed-replay-v2-audit-v1", "archive_sha256": digest(archive_path),
-        "payloads_verified": len(checksums), "code_revision": V2_REVISION,
-        "source_checksums_sha256": SOURCE_CHECKSUMS, "pages": len(sources),
+    selected = visual_sample(predictions) if sample_review else predictions
+    sheets = contact_sheets(evidence, selected, output)
+    context = contact_sheets(evidence, selected, output, context=True)
+    by_source = {row["id"]: row for row in sources}
+    result = {"schema": result_schema, "archive_sha256": digest(archive_path),
+        "payloads_verified": len(checksums), "code_revision": code_revision,
+        "source_checksums_sha256": source_checksums, "pages": len(sources),
         "lines_recomputed_from_word_tsv": sum(r["lines"] for r in page_results),
         "candidate_pairs_verified": len(predictions), "candidate_splits": splits,
+        "candidate_work_families": dict(Counter(row["work_family"] for row in predictions)),
+        "source_work_domains": dict(Counter(by_source[row["page_id"]].get("domain", "historical-print") for row in predictions)),
         "pixel_exact_native_crops": len(predictions), "exclusion_reasons_reproduced": counts,
         "page_results": page_results, "original_scan_sha256_receipts": scan_receipts,
         "contact_sheets": sheets, "context_sheets": context,
+        "visual_sample_ids": [row["id"] for row in selected],
+        "visual_selection": "Lowest-confidence accepted pair per positive page and longest pair per work" if sample_review else "All accepted pairs",
         "visual_review_status": "pending-agent-inspection",
         "training_ready": False, "evaluation_ready": False, "baseline_changed": False,
-        "decision": "Preserve 25 candidate lines and one probe; scale independent replay sources before training.",
+        "decision": "Preserve verified candidate pairs and work-held-out probes; no automatic training/evaluation promotion.",
         "limitations": ["Exact-anchor selection favors easy lines.",
+            "Domain labels describe source works, not independently classified page contents.",
             "Original DjVu decoding and Tesseract execution were not independently rerun locally.",
             "Returned native pixels/TSV verify derivation, not independent ground truth.",
-            "Two work families and one probe line are not a representative benchmark.",
+            "Exact-anchor historical print is not a representative modern-document benchmark.",
             "Upstream pagequality=4 is not project human review; model pretraining exposure unknown."],
         "auditor_sha256": digest(__file__)}
     write_json(output / "audit.json", result)

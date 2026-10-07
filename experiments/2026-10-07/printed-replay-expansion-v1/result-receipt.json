@@ -1,0 +1,55 @@
+{
+  "schema": "slayer-printed-replay-expansion-result-receipt-v1",
+  "archive": {
+    "sha256": "5e32ce9e545f23143ef4f61cedc804e414f5c3e60e6fe23833641702bb453732",
+    "bytes": 94678979
+  },
+  "runtime_revision": "c8ae68ae741d2c30d95317c2c0bb84d347d79a16",
+  "source_checksums_sha256": "53e3c81ec06e7a1c75f0b3a3553d97252716a5ccfe495e510b61d540f030b5ad",
+  "pages": 34,
+  "work_families": 8,
+  "payloads_verified": 741,
+  "lines_recomputed": 1387,
+  "pairs": 192,
+  "splits": {
+    "replay-candidate": 127,
+    "replay-probe": 65
+  },
+  "visual_sample_count": 31,
+  "visual_review_kind": "AI-agent-not-human",
+  "geometry": {
+    "rejected_exact_anchors": 99,
+    "source_order_conflicts": 0,
+    "bbox_extent_conflicts": 27,
+    "rescued_pairs": 0
+  },
+  "public_artifacts": {
+    "schema": "slayer-publication-verification-v1",
+    "repo_id": "PiotrSty/slayer-ocr-experiment-evidence",
+    "revision": "610f8a23d931a012088ad20453eaa1a1783fd1e2",
+    "path": "experiments/2026-10-07/printed-replay-expansion-v1-result",
+    "files": 17,
+    "public": true,
+    "files_sha256_verified_without_auth": 17
+  },
+  "audit_files": {
+    "audit.json": {
+      "sha256": "519cee9f65440ebd0bbde9c561209fce0f9e2363a8554b64606d243197d97366",
+      "bytes": 13093
+    },
+    "geometry-diagnostic.json": {
+      "sha256": "09c08b727969e5f50241cc0e0832f3fdc0e830cf7854256ba761fa313aee568c",
+      "bytes": 13502
+    },
+    "visual-review.json": {
+      "sha256": "2050571d1944ed1e034d5e6b47b72044b983122ac83311202283bab7437f2684",
+      "bytes": 8309
+    }
+  },
+  "cpu_tests_passed": 71,
+  "legacy_v2_archive_reaudit_passed": true,
+  "training_ready": false,
+  "evaluation_ready": false,
+  "baseline_changed": false,
+  "next_stage": "Frozen eight-page line-geometry/deskew comparison; no unchanged mining rerun or immediate training."
+}

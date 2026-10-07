@@ -16,21 +16,30 @@ Zweryfikowano 173 sumy plików, odtworzono 396 linii z pełnego TSV i sprawdzono
 kontekstu nie wykazał oczywistych błędów; nie zastępuje weryfikacji człowieka.
 [Wynik, audyt i następne bramki](docs/PRINTED_REPLAY_PILOT_V2_RESULT_20261007.md).
 
-**Teraz: expansion V1 na CPU, 34 strony z ośmiu nowych rodzin.**
+**Expansion V1 zakończony: 192 pary z ośmiu rodzin, 127 kandydatów i 65 kontrolnych.**
+Zweryfikowano 741 sum plików, odtworzono 1387 linii i porównano wszystkie
+192 wycinki piksel po pikselu. Przegląd AI objął próbkę 31 par, nie całą partię;
+znaleziono też wiersz spisu treści. 99 dokładnych kotwic odrzucono na ośmiu
+stronach przez 27 konfliktów geometrii ramek, bez konfliktów kolejności tekstu.
+[Wynik i następny eksperyment geometrii linii](docs/PRINTED_REPLAY_EXPANSION_V1_RESULT_20261007.md).
+[Kompletny ZIP i audyt na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/610f8a23d931a012088ad20453eaa1a1783fd1e2/experiments/2026-10-07/printed-replay-expansion-v1-result).
+Model bazowy pozostaje bez zmian; dane kontrolne nie trafiają do treningu.
+Nie trzeba ponawiać Colaba ani wykonywać dodatkowego review teraz.
+
+**Archiwalny protokół expansion V1 na CPU: 34 strony z ośmiu nowych rodzin.**
 24 strony są kandydatami replay, 10 należy do dwóch osobnych rodzin kontrolnych.
 Źródła obejmują eseje, wspomnienia, geografię, wycinki prasowe i prozę;
 to nadal dawny druk, nie reprezentatywny korpus współczesnych dokumentów.
-[Uruchom tylko ten notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_expansion_v1.ipynb).
-Wybierz CPU i Uruchom wszystko. Niczego nie wgrywaj; zwróć
-`printed-replay-expansion-v1-evidence.zip`. Notebook nie trenuje modelu.
+[Archiwalny notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/8e9b3d663c6a73aa4837a9e732503a0d39bd3d5e/training/colab_printed_replay_expansion_v1.ipynb).
+Zwrócony `printed-replay-expansion-v1-evidence.zip` został już sprawdzony.
+Notebook nie trenuje modelu.
 [Protokół i ograniczenia](docs/PRINTED_REPLAY_EXPANSION_V1_20261007.md).
 [Kompletny pakiet źródeł na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/5fc2e96fdfc2df83a386c80ffb765bb22e1030e8/data/printed-replay-source-expansion-v1-20261007/printed-replay-source-expansion-v1.zip?download=true).
 [Pełny audyt i oryginalny ZIP replay V2 na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/fbcff86826be1e06773095bb433d44a9bb05e46f/experiments/2026-10-07/printed-replay-pilot-v2-result).
 
 Nie trenuj na samych 25 liniach z jednej książki i nie powtarzaj niezmienionego
-pilotażu. Model bazowy pozostaje bez zmian. 64 testy regresji przeszły;
-nowy notebook ma walidację formatu i składni, ale jego wykonanie w Colabie
-pozostaje do sprawdzenia zwrotnym ZIP-em.
+pilotażu. Model bazowy pozostaje bez zmian. 71 testów regresji przeszło;
+wykonanie rozszerzonego notebooka potwierdza zweryfikowany zwrotny ZIP.
 [Archiwalny notebook replay V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/d0630b6240f9191a853a980becdb2d6ffb3f81ef/training/colab_printed_replay_pilot_v2.ipynb).
 [Protokół, zawartość ZIP-a i ograniczenia](docs/PRINTED_REPLAY_PILOT_V2_20261007.md).
 
