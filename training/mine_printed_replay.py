@@ -42,7 +42,9 @@ def parse_tsv(text, width, height):
     return result
 
 
-def exact_anchors(lines, reference, width, height):
+def exact_anchors(lines, reference, width, height, *, page_min_coverage=0.4):
+    if not 0 <= page_min_coverage <= 1:
+        raise ValueError("Invalid page coverage threshold")
     source = normalize(reference)
     matched, rejected = [], []
     for index, line in enumerate(lines):
@@ -75,13 +77,15 @@ def exact_anchors(lines, reference, width, height):
         rejected.extend({**line, "reason": "anchor-order-or-line-overlap"} for line in matched)
         matched = []
     coverage = sum(len(line["text"]) for line in matched) / max(1, len(source))
-    if coverage < 0.4:
+    if coverage < page_min_coverage:
         rejected.extend({**line, "reason": "page-exact-anchor-coverage-below-40-percent"} for line in matched)
         matched = []
     return matched, rejected, coverage
 
 
-def run(source_root, output):
+def run(source_root, output, *, protocol="v1"):
+    if protocol not in ("v1", "v2"):
+        raise ValueError("Unknown printed replay protocol")
     from PIL import Image
     source_root, output = Path(source_root), Path(output)
     pages = verify_source_package(source_root)
@@ -120,7 +124,8 @@ def run(source_root, output):
         (directory / "tesseract.stderr.txt").write_text(process.stderr, encoding="utf-8")
         reference = (source_root / page["reference_file"]).read_text(encoding="utf-8")
         lines = parse_tsv(process.stdout, width, height)
-        matched, rejected, coverage = exact_anchors(lines, reference, width, height)
+        matched, rejected, coverage = exact_anchors(lines, reference, width, height,
+            page_min_coverage=0.4 if protocol == "v1" else 0)
         for line in matched:
             identifier = f"{page['id']}-line-{line['line_index']:03d}"
             pair_dir = output / "pairs" / page["split"]
@@ -131,6 +136,7 @@ def run(source_root, output):
             native.crop(crop_box).save(image_path)
             text_path.write_text(line["text"], encoding="utf-8")
             candidates.append({"id": identifier, "page_id": page["id"],
+                "line_index": line["line_index"], "tesseract_key": line["key"],
                 "work_family": page["work_family"], "split": page["split"],
                 "image": image_path.relative_to(output).as_posix(), "image_sha256": digest(image_path),
                 "text_file": text_path.relative_to(output).as_posix(), "text_sha256": digest(text_path),
@@ -151,7 +157,8 @@ def run(source_root, output):
         print("LINES_READY", page["id"], len(matched), "of", len(lines), flush=True)
     write_rows(output / "manifest.jsonl", candidates)
     write_rows(output / "quarantine.jsonl", quarantine)
-    write_json(output / "report.json", {"schema": "slayer-printed-replay-mining-v1", "pages": page_reports,
+    write_json(output / "report.json", {"schema": "slayer-printed-replay-mining-" + protocol, "pages": page_reports,
+        "page_min_coverage": 0.4 if protocol == "v1" else 0,
         "candidates": len(candidates), "splits": dict(Counter(r["split"] for r in candidates)),
         "quarantine_reasons": dict(Counter(r["reason"] for r in quarantine)),
         "eligible_for_training": False, "eligible_for_evaluation": False,
@@ -171,11 +178,17 @@ def run(source_root, output):
     for name in ("checksums.json", "manifest.jsonl", "source-policy.json"):
         shutil.copyfile(source_root / name, evidence / ("source-" + name))
     shutil.copytree(source_root, evidence / "source-package")
+    if protocol == "v2":
+        for page in pages:
+            target = evidence / "native-pages" / page["id"]
+            target.mkdir(parents=True)
+            for name in ("page.png", "tesseract.tsv", "tesseract.stderr.txt"):
+                shutil.copyfile(output / "pages" / page["id"] / name, target / name)
     if (output / "pairs").exists():
         shutil.copytree(output / "pairs", evidence / "pairs")
     write_json(evidence / "checksums.json", {p.relative_to(evidence).as_posix(): digest(p)
         for p in sorted(evidence.rglob("*")) if p.is_file()})
-    archive = Path(shutil.make_archive(str(output / "printed-replay-pilot-v1-evidence"), "zip", evidence))
+    archive = Path(shutil.make_archive(str(output / ("printed-replay-pilot-" + protocol + "-evidence")), "zip", evidence))
     print("EVIDENCE_ZIP", archive, flush=True)
     return archive
 
@@ -184,5 +197,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-root", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--protocol", choices=("v1", "v2"), default="v1")
     args = parser.parse_args()
-    run(args.source_root, args.output)
+    run(args.source_root, args.output, protocol=args.protocol)

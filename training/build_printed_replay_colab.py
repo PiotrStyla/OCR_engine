@@ -9,10 +9,12 @@ DATA_SHA256 = "6510428da9c19dd76cc4e5ba2f1c0e45409119b97c608ddcff22f71e84a334eb"
 DATA_PATH = "data/printed-replay-source-pilot-v1-20261007/printed-replay-source-pilot-v1.zip"
 
 
-def build(target, revision):
+def build(target, revision, version="v1"):
     import nbformat
     if not re.fullmatch("[0-9a-f]{40}", revision):
         raise ValueError("Use a complete already-pushed runtime revision")
+    if version not in ("v1", "v2"):
+        raise ValueError("Unknown notebook version")
     setup = f'''from pathlib import Path
 import hashlib
 import os
@@ -39,7 +41,7 @@ if not python.exists():
     venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
 subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir',
                 'pillow==11.3.0', 'huggingface_hub==0.36.2', 'beautifulsoup4==4.13.5',
-                'pytest==8.4.2'], check=True)
+                'pytest==8.4.2', 'nbformat==5.10.4'], check=True)
 os.environ['HF_HUB_DISABLE_XET'] = '1'
 os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
 subprocess.run([str(python), '-m', 'pytest', 'tests/test_printed_replay_pilot.py',
@@ -80,6 +82,10 @@ assert EVIDENCE_ZIP is not None and EVIDENCE_ZIP.is_file(), 'Brak kompletnego ZI
 print('Gotowy ZIP:', EVIDENCE_ZIP)
 files.download(str(EVIDENCE_ZIP))
 '''
+    if version == "v2":
+        setup = setup.replace("printed-replay-pilot-v1", "printed-replay-pilot-v2")
+        mining = mining.replace("'--output', str(work/'mining')]",
+                                "'--output', str(work/'mining'), '--protocol', 'v2']")
     notebook = nbformat.v4.new_notebook(cells=[
         nbformat.v4.new_markdown_cell('# Real printed replay: pilot V1\n\n'
             'Wybierz **CPU** i **Uruchom wszystko**. Niczego nie wgrywaj. '
@@ -100,12 +106,23 @@ files.download(str(EVIDENCE_ZIP))
             'language_info': {'name': 'python'},
             'colab': {'name': 'printed-replay-pilot-v1.ipynb', 'provenance': []}})
     nbformat.validate(notebook)
+    if version == "v2":
+        for cell in notebook.cells:
+            if cell.cell_type == "markdown":
+                cell.source = cell.source.replace("pilot V1", "pilot V2").replace(
+                    "printed-replay-pilot-v1", "printed-replay-pilot-v2")
+        notebook.cells[0].source += ("\n\nV2 zachowuje dokladne linie nawet przy niskim "
+            "pokryciu strony i dolacza pelne obrazy oraz TSV. Nie zmniejsza progu "
+            "pewnosci slow ani nie dopuszcza automatycznie danych do treningu.")
+        notebook.metadata["colab"]["name"] = "printed-replay-pilot-v2.ipynb"
     nbformat.write(notebook, Path(target))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--code-revision', required=True)
-    parser.add_argument('--output', default='training/colab_printed_replay_pilot_v1.ipynb')
+    parser.add_argument('--output')
+    parser.add_argument('--version', choices=('v1', 'v2'), default='v1')
     args = parser.parse_args()
-    build(args.output, args.code_revision)
+    target = args.output or f'training/colab_printed_replay_pilot_{args.version}.ipynb'
+    build(target, args.code_revision, args.version)

@@ -1,3 +1,9 @@
+import ast
+import hashlib
+import json
+from types import SimpleNamespace
+import zipfile
+
 import pytest
 
 from training.mine_printed_replay import exact_anchors, normalize, parse_tsv
@@ -56,6 +62,23 @@ def test_low_coverage_page_not_admitted():
     assert rejected[0]["reason"] == "page-exact-anchor-coverage-below-40-percent"
 
 
+def test_v2_preserves_exact_line_without_claiming_page_quality():
+    text = "Jedyna poprawna linia tekstu."
+    good, rejected, coverage = exact_anchors([line(text)], text + " inne" * 100,
+                                            500, 700, page_min_coverage=0)
+    assert len(good) == 1 and not rejected and coverage < 0.4
+    assert good[0]["text"] == text
+
+
+def test_v2_still_protects_confidence_and_order():
+    text = "Jedyna poprawna linia tekstu."
+    good, rejected, _ = exact_anchors([line(text, confidence=89)], text,
+                                      500, 700, page_min_coverage=0)
+    assert not good and rejected[0]["reason"] == "word-confidence-below-90"
+    with pytest.raises(ValueError, match="threshold"):
+        exact_anchors([], "", 500, 700, page_min_coverage=-1)
+
+
 def test_tsv_words_grouped_by_native_line():
     header = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
     row = "5\t1\t1\t1\t1\t1\t10\t20\t30\t10\t95.2\tPo\u017f\u0142a\u0142\n"
@@ -90,3 +113,60 @@ def test_package_checksum_coverage(tmp_path):
     (tmp_path / "unexpected.txt").write_text("payload")
     with pytest.raises(ValueError, match="coverage"):
         verify_source_package(tmp_path)
+
+
+def test_v2_builder_pins_original_input_and_selects_new_protocol(tmp_path):
+    import nbformat
+    from training.build_printed_replay_colab import DATA_PATH, DATA_REVISION, build
+    target = tmp_path / "v2.ipynb"
+    build(target, "a" * 40, "v2")
+    notebook = nbformat.read(target, 4)
+    nbformat.validate(notebook)
+    code = "\n".join(c.source for c in notebook.cells if c.cell_type == "code")
+    ast.parse(code)
+    assert DATA_PATH in code and DATA_REVISION in code
+    assert "'--protocol', 'v2'" in code
+    assert "printed-replay-pilot-v2-" in code
+
+
+def test_v2_packaging_contains_native_pages_and_no_promotion(tmp_path, monkeypatch):
+    from PIL import Image
+    from training import mine_printed_replay as module
+    source = tmp_path / "source"
+    source.mkdir()
+    text = "Jedyna poprawna linia tekstu."
+    (source / "reference.txt").write_text(text + " inne" * 100, encoding="utf-8")
+    for name in ("checksums.json", "source-policy.json"):
+        (source / name).write_text("{}")
+    (source / "manifest.jsonl").write_text("")
+    original = b"mock DjVu"
+    rows = [{"id": "page-" + split, "split": split, "work_family": split, "scan_page": 1,
+             "original_scan_url": "mock", "original_scan_sha1": hashlib.sha1(original).hexdigest(),
+             "reference_file": "reference.txt", "reference_sha256": "mock", "source_revision": 1,
+             "source_url": "mock", "scan_license": "public-domain", "transcription_license": "CC-BY-SA-4.0"}
+            for split in ("replay-candidate", "replay-probe")]
+    monkeypatch.setattr(module, "verify_source_package", lambda root: rows)
+    monkeypatch.setattr(module, "download", lambda *args, **kwargs: original)
+    monkeypatch.setattr(module.shutil, "which", lambda command: command)
+    def process(command, **kwargs):
+        if command[0] == "ddjvu" and "-format=ppm" in command:
+            assert "-subsample=1" in command
+            Image.new("RGB", (500, 700), "white").save(command[-1])
+        if command[0] == "tesseract":
+            assert "reference.txt" not in command
+            header = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
+            return SimpleNamespace(stdout=header + "5\t1\t1\t1\t1\t1\t10\t10\t470\t10\t99\t" + text + "\n", stderr="")
+        return SimpleNamespace(stdout="", stderr="mock decoder version")
+    monkeypatch.setattr(module.subprocess, "run", process)
+    monkeypatch.setattr(module.subprocess, "check_output", lambda *args, **kwargs: "mock version")
+    result = module.run(source, tmp_path / "output", protocol="v2")
+    with zipfile.ZipFile(result) as archive:
+        report = json.loads(archive.read("report.json"))
+        assert report["schema"] == "slayer-printed-replay-mining-v2"
+        assert report["candidates"] == 2 and not report["eligible_for_training"]
+        for row in rows:
+            assert "native-pages/" + row["id"] + "/page.png" in archive.namelist()
+            assert "native-pages/" + row["id"] + "/tesseract.tsv" in archive.namelist()
+        candidates = [json.loads(s) for s in archive.read("manifest.jsonl").decode().splitlines()]
+        assert all(not r["eligible_for_training"] and not r["eligible_for_evaluation"] for r in candidates)
+        assert all(r["line_index"] == 0 and r["text"] == text for r in candidates)

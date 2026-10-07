@@ -10,14 +10,16 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Następny krok: rzeczywisty druk zamiast kolejnego identycznego treningu.**
-Przygotowany pilotaż ma 12 skanów z uwierzytelnionymi tekstami Wikiźródeł:
-8 stron do kandydatów replay i 4 strony z innej książki do osobnej kontroli.
-Notebook CPU pobiera dane sam, dekoduje oryginalne DjVu i zachowuje tylko
-dokładne kotwice tekstowe, bez modernizowania pisowni. To przygotowanie danych,
-nie jeszcze trening ani certyfikowany benchmark.
-[Uruchom pilotaż CPU w Colabie](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_pilot_v1.ipynb).
-[Źródła, ograniczenia i następna bramka](docs/PRINTED_REPLAY_PILOT_V1_20261007.md).
+**Pilotaż rzeczywistego druku V1 zakończony: 12 stron, 396 linii, 0 par.**
+Sumy kontrolne, wersje źródeł oraz wszystkie odrzucenia przeliczone.
+Bramka 40% pokrycia całej strony odrzuciła 26 dokładnych kotwic tekstowych:
+25 dla kandydatów replay i jedną dla osobnej kontroli. To propozycje tekstowe,
+nie odzyskane wycinki ani dane dopuszczone do treningu. Baseline pozostaje.
+Przygotowana poprawka V2 zachowuje reguły dla pojedynczej linii, traktuje
+pokrycie strony diagnostycznie i dołącza pełne obrazy oraz TSV do audytu.
+[Wynik V1 i poprawka V2](docs/PRINTED_REPLAY_PILOT_V1_RESULT_20261007.md).
+[Źródła i ograniczenia pilotażu](docs/PRINTED_REPLAY_PILOT_V1_20261007.md).
+Nie powtarzaj V1 bez zmiany protokołu; nie wytworzył korpusu replay.
 
 **V2 zakończony i sprawdzony: pozostaje baza.** Wszystkie trzy warianty trenowały
 na T4; 0 z 9 checkpointów przeszło bramki. Najbliższy kandydat ma historyczny
