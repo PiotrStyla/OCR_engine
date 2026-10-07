@@ -10,14 +10,30 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Następny trening: V2 z ochroną zwykłego druku.** Jeden notebook pobiera dane
+**Następny krok: rzeczywisty druk zamiast kolejnego identycznego treningu.**
+Przygotowany pilotaż ma 12 skanów z uwierzytelnionymi tekstami Wikiźródeł:
+8 stron do kandydatów replay i 4 strony z innej książki do osobnej kontroli.
+Notebook CPU pobiera dane sam, dekoduje oryginalne DjVu i zachowuje tylko
+dokładne kotwice tekstowe, bez modernizowania pisowni. To przygotowanie danych,
+nie jeszcze trening ani certyfikowany benchmark.
+[Uruchom pilotaż CPU w Colabie](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_pilot_v1.ipynb).
+[Źródła, ograniczenia i następna bramka](docs/PRINTED_REPLAY_PILOT_V1_20261007.md).
+
+**V2 zakończony i sprawdzony: pozostaje baza.** Wszystkie trzy warianty trenowały
+na T4; 0 z 9 checkpointów przeszło bramki. Najbliższy kandydat ma historyczny
+CER 31,90% zamiast 33,03%, ale zwykły 5,53% zamiast 5,33% i łączny 8,42%
+zamiast 8,37%. ZIP oraz predykcje zostały zweryfikowane i przeliczone;
+przesłany pakiet nie zawiera wag. Nie powtarzaj tego samego treningu.
+[Audyt V2, wyniki i dalszy kierunek](docs/RECOGNIZER_REVIEWED_COLAB_V2_RESULT_20261007.md).
+
+**Protokół V2 z ochroną zwykłego druku.** Jeden notebook pobiera dane
 automatycznie i porównuje kontrolę, niższy learning rate oraz większy replay.
 Poprawiony tor straty ewaluacyjnej ma preflight, a wybór checkpointu uwzględnia
 osobno obie domeny. Jeżeli kandydaci nie przejdą bramek, pozostaje model bazowy.
 [Uruchom Colab V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v2.ipynb).
 [Protokół i pobranie wyników](docs/RECOGNIZER_REVIEWED_COLAB_V2_20261007.md).
-Wybierz GPU T4 i uruchom wszystko; niczego nie wgrywaj. Trening V2 nie został
-jeszcze wykonany. Duży pakiet wag można zachować na Drive z ostatniej komórki.
+To archiwalny, zakończony eksperyment. Duży pakiet wag można zachować na Drive
+z ostatniej komórki, jeśli przyszły wariant przejdzie bramki.
 
 **Trening recognizera zakończony, kandydat niepromowany.** Pakiet wag i raport
 zweryfikowany w całości. Na 9 historycznych liniach CER poprawił się z 33,03%
@@ -33,7 +49,7 @@ objętych wykluczeniem. 9 linii z oddzielnej kolekcji i 75 zwykłych linii słu�
 do kontroli. To trening eksperymentalny, nie otwarcie zamrożonego benchmarku SOTA.
 [Protokół, automatyczne dane i sposób uruchomienia](docs/RECOGNIZER_REVIEWED_COLAB_TRAINING_20261006.md).
 [Archiwalny notebook Colab V1](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
-Nie powtarzaj V1; bieżący notebook to V2 powyżej.
+Nie powtarzaj V1 ani zakończonego V2; bieżący krok to pilotaż danych replay powyżej.
 
 **Pierwszy zwrot z Colaba: trening nie wystartował.** Odczyt bazowy zakończony:
 CER 5,33% na 75 zwykłych liniach i 33,03% na 9 historycznych. Tworzenie LoRA

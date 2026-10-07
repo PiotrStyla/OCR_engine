@@ -1,5 +1,9 @@
 # Reviewed recognizer V2: protected ordinary print
 
+**Completed:** [audited result, 7 October 2026](RECOGNIZER_REVIEWED_COLAB_V2_RESULT_20261007.md).
+All three variants trained; none passed the gate. Keep the baseline and do not
+repeat this recipe unchanged. The instructions below preserve the original protocol.
+
 ## Run One Notebook
 
 [Open Colab V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v2.ipynb).
@@ -103,4 +107,6 @@ the session ends. No Drive authorization is requested when the option is false.
 135 focused CPU tests passed (selection, input gates, splits, audit and notebook
 structure); one Torch-dependent module was skipped. Torch is not installed
 in the local test runtime, so model-dependent tests are deferred to the Colab
-setup. GPU training and the new experimental results are not yet verified.
+setup. The returned T4 evidence is now audited in the linked result report:
+all three training histories and generated-text metrics reproduce. Model weights
+were not included in that evidence-only return and were not independently inspected.
