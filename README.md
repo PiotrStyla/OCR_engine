@@ -10,12 +10,17 @@ ani potwierdzonym silnikiem SOTA.**
 
 ### Teraz: DATA ENGINE dla recognizera v3
 
-**Następny krok: pilotaż danych replay V2 na CPU.** Jeden notebook pobiera
-komplet źródeł z HF, zachowuje dokładne linie bez bramki pokrycia całej strony
-i pakuje pełne obrazy, TSV oraz wycinki do audytu. Nie uruchamia treningu.
-[Uruchom tylko ten notebook V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_pilot_v2.ipynb).
-Wybierz CPU, Uruchom wszystko, niczego nie wgrywaj. Zwróć
-`printed-replay-pilot-v2-evidence.zip`.
+**Pilotaż replay V2 zakończony: 26 par, w tym 25 kandydatów i jedna kontrolna.**
+Zweryfikowano 173 sumy plików, odtworzono 396 linii z pełnego TSV i sprawdzono
+26 wycinków piksel po pikselu względem obrazów stron. Przegląd AI wycinków oraz
+kontekstu nie wykazał oczywistych błędów; nie zastępuje weryfikacji człowieka.
+[Wynik, audyt i następne bramki](docs/PRINTED_REPLAY_PILOT_V2_RESULT_20261007.md).
+
+**Następny krok: większy, zróżnicowany korpus rzeczywistego druku.** Nie trenuj
+na samych 25 liniach z jednej książki i nie powtarzaj niezmienionego pilotażu.
+Potrzebujemy nowych rodzin dokumentów oraz lepszego dopasowania linii do źródeł,
+z ochroną zbiorów kontrolnych. Model bazowy pozostaje bez zmian.
+[Archiwalny notebook replay V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/d0630b6240f9191a853a980becdb2d6ffb3f81ef/training/colab_printed_replay_pilot_v2.ipynb).
 [Protokół, zawartość ZIP-a i ograniczenia](docs/PRINTED_REPLAY_PILOT_V2_20261007.md).
 
 **Pilotaż rzeczywistego druku V1 zakończony: 12 stron, 396 linii, 0 par.**
@@ -60,7 +65,7 @@ objętych wykluczeniem. 9 linii z oddzielnej kolekcji i 75 zwykłych linii słu�
 do kontroli. To trening eksperymentalny, nie otwarcie zamrożonego benchmarku SOTA.
 [Protokół, automatyczne dane i sposób uruchomienia](docs/RECOGNIZER_REVIEWED_COLAB_TRAINING_20261006.md).
 [Archiwalny notebook Colab V1](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
-Nie powtarzaj V1 ani zakończonego V2; bieżący krok to pilotaż danych replay powyżej.
+Nie powtarzaj V1 ani zakończonego V2; bieżący krok to rozbudowa danych replay powyżej.
 
 **Pierwszy zwrot z Colaba: trening nie wystartował.** Odczyt bazowy zakończony:
 CER 5,33% na 75 zwykłych liniach i 33,03% na 9 historycznych. Tworzenie LoRA

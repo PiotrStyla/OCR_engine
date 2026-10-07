@@ -83,21 +83,31 @@ def validate_works(works):
     if any(not w["pages"] or len(set(w["pages"])) != len(w["pages"])
            or any(type(p) is not int or p < 1 for p in w["pages"]) for w in works):
         raise ValueError("Invalid page selection")
+    files = [w["file"] for w in works]
+    hashes = [w["sha1"] for w in works]
+    if len(set(files)) != len(files) or len(set(hashes)) != len(hashes):
+        raise ValueError("Repeated scan across work identities/splits")
+    for work in works:
+        safe_relative(work["id"])
+        if "/" in work["id"] or not work["file"].endswith(".djvu") or (
+                len(work["sha1"]) != 40 or any(c not in "0123456789abcdef" for c in work["sha1"])):
+            raise ValueError("Invalid work identifier/scan hash")
 
 
-def collect(output):
+def collect(output, *, works=None):
     from PIL import Image
     output = Path(output)
-    validate_works(WORKS)
+    works = WORKS if works is None else works
+    validate_works(works)
     output.mkdir(parents=True, exist_ok=False)
     rows, rejected = [], []
     write_json(output / "source-policy.json", {
-        "schema": "slayer-printed-replay-source-policy-v1", "works": WORKS,
+        "schema": "slayer-printed-replay-source-policy-v1", "works": works,
         "protected_work_families": PROTECTED_WORKS, "required_quality": 4,
         "status": "source-pilot-not-training-data", "evaluation_eligible": False,
         "normalization": "No spelling changes; rendered page body retained verbatim",
-        "limitations": "Two work families only; no independent transcription/crop review; not PolEval split reconstruction."})
-    for work in WORKS:
+        "limitations": "Upstream validated historical print, not project-reviewed crops or representative modern documents; not PolEval split reconstruction."})
+    for work in works:
         for page in work["pages"]:
             identifier = f"{work['id']}-{page:04d}"
             title = f"Strona:{work['file']}/{page}"
@@ -142,6 +152,7 @@ def collect(output):
                 image_path = directory / "page.jpg"
                 image_path.write_bytes(image_bytes)
                 rows.append({"id": identifier, "work_family": work["id"],
+                    "domain": work.get("domain", "historical-print"),
                     "split": work["split"], "year": work["year"], "scan_page": page,
                     "source_title": source_page["title"], "source_page_id": source_page["pageid"],
                     "source_revision": rev["revid"], "source_timestamp": rev["timestamp"],
@@ -166,7 +177,9 @@ def collect(output):
     write_rows(output / "manifest.jsonl", rows)
     write_rows(output / "rejected.jsonl", rejected)
     report = {"schema": "slayer-printed-replay-sources-v1", "collected_at": datetime.now(timezone.utc).isoformat(),
-              "pages_requested": 12, "pages": len(rows), "splits": dict(Counter(r["split"] for r in rows)),
+              "pages_requested": sum(len(w["pages"]) for w in works), "pages": len(rows),
+              "work_families": len({r["work_family"] for r in rows}),
+              "splits": dict(Counter(r["split"] for r in rows)),
               "rejected": len(rejected), "ready_for_line_alignment": bool(rows) and
               {r["split"] for r in rows} == {"replay-candidate", "replay-probe"},
               "eligible_for_training": False, "eligible_for_evaluation": False}
@@ -176,7 +189,7 @@ def collect(output):
     return report
 
 
-def verify_source_package(root):
+def verify_source_package(root, *, works=None):
     root = Path(root)
     checksums = json.loads((root / "checksums.json").read_text(encoding="utf-8"))
     actual = {p.relative_to(root).as_posix() for p in root.rglob("*")
@@ -191,7 +204,9 @@ def verify_source_package(root):
     if len({r["image_sha256"] for r in rows}) != len(rows):
         raise ValueError("Duplicate source page image")
     groups = {}
-    identities = {w["id"]: w for w in WORKS}
+    works = WORKS if works is None else works
+    validate_works(works)
+    identities = {w["id"]: w for w in works}
     for row in rows:
         work = identities.get(row["work_family"])
         if work is None or row["split"] != work["split"] or row["scan_page"] not in work["pages"]:
@@ -209,9 +224,9 @@ def verify_source_package(root):
     return rows
 
 
-def package(root):
+def package(root, *, works=None):
     root = Path(root)
-    rows = verify_source_package(root)
+    rows = verify_source_package(root, works=works)
     notice = ("# Printed replay source pilot V1\n\n"
         "12 physical-book scan pages; 8 candidate pages from Dzieje grzechu (1928), "
         "4 probe pages from Lalka (1890). These are two separate work families.\n\n"
@@ -229,10 +244,18 @@ def package(root):
         "training eligibility or SOTA.\n\n"
         "Original training/development/test exposure of upstream models is unknown. "
         "The probe is not a certified untouched test.\n")
+    if works is not None:
+        counts = Counter(r["split"] for r in rows)
+        notice = notice.replace("# Printed replay source pilot V1", "# Printed replay source expansion V1").replace(
+            "12 physical-book scan pages; 8 candidate pages from Dzieje grzechu (1928), "
+            "4 probe pages from Lalka (1890). These are two separate work families.",
+            f"{len(rows)} physical-book scan pages from {len({r['work_family'] for r in rows})} work families; "
+            f"{counts['replay-candidate']} candidate pages and {counts['replay-probe']} probe pages. "
+            "Work-level splits and rejected pages are recorded in the policy and manifests.")
     (root / "NOTICE.md").write_text(notice, encoding="utf-8")
     write_json(root / "checksums.json", {p.relative_to(root).as_posix(): digest(p)
         for p in sorted(root.rglob("*")) if p.is_file() and p.name != "checksums.json"})
-    verify_source_package(root)
+    verify_source_package(root, works=works)
     target = root.parent / (root.name + ".zip")
     if target.exists():
         raise FileExistsError(target)
@@ -244,5 +267,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
     parser.add_argument("--package", action="store_true")
+    parser.add_argument("--works-config", help="Explicit, reviewed work identities and page selections")
     args = parser.parse_args()
-    print(json.dumps(package(args.output) if args.package else collect(args.output), indent=2))
+    works = json.loads(Path(args.works_config).read_text(encoding="utf-8"))["works"] if args.works_config else None
+    print(json.dumps(package(args.output, works=works) if args.package else collect(args.output, works=works), indent=2))

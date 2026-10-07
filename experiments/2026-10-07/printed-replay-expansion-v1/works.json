@@ -1,0 +1,19 @@
+{
+  "schema": "slayer-printed-replay-expansion-work-selection-v1",
+  "purpose": "Diverse historical printed-source expansion, not representative modern administrative documents",
+  "selection": "From four bounded 500-page Polish Wikisource category metadata batches, require quality-4 membership and latest revision size at least 1800 bytes, then deterministic spread within larger work pools; full body extraction still rejects notes/tables",
+  "excluded_prior_pilot_families": ["zeromski-dzieje-grzechu", "prus-lalka"],
+  "unknown_year_policy": "null means Commons DateTimeOriginal was not available; do not infer a publication year",
+  "eligible_for_training": false,
+  "eligible_for_evaluation": false,
+  "works": [
+    {"id": "schneider-babiagora", "file": "Antoni Schneider - Babiagóra w Beskidach.djvu", "sha1": "30ded47a297a54f6702e02d32e574ca723d379c8", "year": null, "domain": "regional-geography", "split": "replay-candidate", "pages": [1, 4, 8, 11, 15, 18, 22, 26]},
+    {"id": "witkiewicz-teatr", "file": "PL Stanisław Ignacy Witkiewicz-Teatr.djvu", "sha1": "bfb3d5e7f20d3033f6e6b75eef3934b18e2b3334", "year": null, "domain": "cultural-essay", "split": "replay-candidate", "pages": [7, 14, 15, 21, 22, 37, 89]},
+    {"id": "may-nad-rio-de-la-plata", "file": "PL May Nad Rio de la Plata.djvu", "sha1": "1ab64a6128592192190bc07b69019ad3a5c3f739", "year": 1912, "domain": "adventure-fiction", "split": "replay-candidate", "pages": [208, 523, 530, 535, 542, 549, 557, 563]},
+    {"id": "pamietniki-lekarzy-1939", "file": "Pamiętniki lekarzy (1939).djvu", "sha1": "9bce904be9b357e470589cfc98e17b200171a25c", "year": 1939, "domain": "memoir", "split": "replay-candidate", "pages": [65, 66, 67, 68]},
+    {"id": "prokesch-nowa-reforma-1923", "file": "Władysław Prokesch (Nowa Reforma, 1923).djvu", "sha1": "dca181779b7b2b91cca67c0f95f95421ccb5fe73", "year": 1923, "domain": "newspaper-article", "split": "replay-candidate", "pages": [2, 3, 4, 5]},
+    {"id": "zawadzki-kurjer-1904", "file": "Bronisław Zawadzki (Kurjer Warszawski, 1904).djvu", "sha1": "5dc3c0f79da0a9eb976851cd00901ad0a98c3801", "year": 1904, "domain": "newspaper-article", "split": "replay-candidate", "pages": [2, 3, 4]},
+    {"id": "andersen-basnie-1929", "file": "Hans Christian Andersen - Baśnie (1929).djvu", "sha1": "9e3b8f5e1381b4ca549202f242c32062c882f1aa", "year": 1929, "domain": "literary-fiction", "split": "replay-probe", "pages": [224, 225, 234, 236, 265]},
+    {"id": "boccaccio-dekameron", "file": "PL Giovanni Boccaccio - Dekameron.djvu", "sha1": "bb2388ec91b22f8683f69360851ea234b62c0d89", "year": null, "domain": "literary-fiction", "split": "replay-probe", "pages": [267, 319, 320, 321, 345]}
+  ]
+}

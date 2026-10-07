@@ -1,0 +1,18 @@
+{
+  "schema": "slayer-printed-replay-expansion-work-selection-v1",
+  "purpose": "Rejected discovery attempt: quality-4 status alone selected mostly short title pages; preserve this selection as evidence, do not use for the expansion notebook",
+  "selection": "Quality-4 pages discovered in the public Polish Wikisource API on 2026-10-07; content extraction may reject title pages, notes and tables",
+  "excluded_prior_pilot_families": ["zeromski-dzieje-grzechu", "prus-lalka"],
+  "eligible_for_training": false,
+  "eligible_for_evaluation": false,
+  "works": [
+    {"id": "dabski-pokoj-ryski", "file": "Jan Dąbski - Pokój ryski.djvu", "sha1": "e9c78ad599c6ac284d509cd81c99ca223ef77d34", "year": 1931, "domain": "political-history", "split": "replay-candidate", "pages": [3, 13, 39, 151, 233, 264]},
+    {"id": "junosza-dach-nad-glowa", "file": "Władysław Junosza-Szaniawski - Czy chcesz mieć dach nad głową.djvu", "sha1": "230b9dfbdd49972654d4ebc6a9b9fe0e3abde2c6", "year": 1934, "domain": "housing-guide", "split": "replay-candidate", "pages": [7, 8]},
+    {"id": "ossendowski-polesie", "file": "F. Antoni Ossendowski - Polesie.djvu", "sha1": "dcbac9fbd475edde6424e179583e1c3d588fe574", "year": 1934, "domain": "travel-description", "split": "replay-candidate", "pages": [3, 7, 8, 19, 27]},
+    {"id": "mann-literatura-wloska", "file": "Maurycy Mann - Literatura włoska.djvu", "sha1": "46ee2f25dfbc98282c0d181904fa6df8fd955976", "year": 1933, "domain": "educational-essay", "split": "replay-candidate", "pages": [19, 35, 75, 83, 103]},
+    {"id": "zawadzki-obrazy-rusi", "file": "Władysław Zawadzki - Obrazy Rusi Czerwonej.djvu", "sha1": "b05528da9316cc8735670cc4d24256f5eef250dc", "year": 1869, "domain": "historical-description", "split": "replay-candidate", "pages": [4, 5]},
+    {"id": "szymanowski-kultura-muzyczna", "file": "PL Szymanowski - Wychowawcza rola kultury muzycznej.djvu", "sha1": "0461fb54eabc1523e59ecb78130accbf672aebd8", "year": 1931, "domain": "cultural-essay", "split": "replay-candidate", "pages": [5, 8, 11]},
+    {"id": "morawski-sadecczyzna", "file": "Szczęsny Morawski - Sądecczyzna.djvu", "sha1": "fe6ca5b22b6fe22d833588f9b0717c033616c47d", "year": 1863, "domain": "regional-history", "split": "replay-probe", "pages": [1, 260, 264, 266]},
+    {"id": "belza-byc-albo-nie-byc", "file": "Stanisław Bełza - Być albo nie być.djvu", "sha1": "299838f81cdfc956c773c509960c778baa5971cd", "year": 1913, "domain": "travel-essay", "split": "replay-probe", "pages": [7, 10]}
+  ]
+}

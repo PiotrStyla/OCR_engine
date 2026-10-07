@@ -83,12 +83,16 @@ def exact_anchors(lines, reference, width, height, *, page_min_coverage=0.4):
     return matched, rejected, coverage
 
 
-def run(source_root, output, *, protocol="v1"):
+def run(source_root, output, *, protocol="v1", works=None):
     if protocol not in ("v1", "v2"):
         raise ValueError("Unknown printed replay protocol")
     from PIL import Image
     source_root, output = Path(source_root), Path(output)
-    pages = verify_source_package(source_root)
+    pages = verify_source_package(source_root) if works is None else verify_source_package(source_root, works=works)
+    if works is not None:
+        policy = json.loads((source_root / "source-policy.json").read_text(encoding="utf-8"))
+        if policy["works"] != works:
+            raise ValueError("Explicit work configuration differs from frozen source policy")
     if not pages or {p["split"] for p in pages} != {"replay-candidate", "replay-probe"}:
         raise ValueError("Require nonempty candidate and probe sources")
     for command in ("ddjvu", "tesseract"):
@@ -198,5 +202,7 @@ if __name__ == "__main__":
     parser.add_argument("--source-root", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--protocol", choices=("v1", "v2"), default="v1")
+    parser.add_argument("--works-config", help="Explicit work identities for a frozen expansion input")
     args = parser.parse_args()
-    run(args.source_root, args.output, protocol=args.protocol)
+    works = json.loads(Path(args.works_config).read_text(encoding="utf-8"))["works"] if args.works_config else None
+    run(args.source_root, args.output, protocol=args.protocol, works=works)
