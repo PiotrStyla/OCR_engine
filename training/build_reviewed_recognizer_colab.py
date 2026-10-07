@@ -53,7 +53,8 @@ print('Gotowe. Dane zostana pobrane automatycznie; niczego nie wgrywaj.')
         setup = setup.replace('/content/OCR_engine-reviewed', '/content/OCR_engine-reviewed-v2')
         setup = setup.replace('/content/slayer-reviewed-training-env', '/content/slayer-reviewed-training-v2-env')
         setup = setup.replace("'sentencepiece==0.2.1'", "'sentencepiece==0.2.1', 'pytest==8.4.2'")
-        setup += '''subprocess.run([str(python), '-m', 'pytest', 'tests/test_training_protocol.py',
+        setup += '''os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
+subprocess.run([str(python), '-m', 'pytest', 'tests/test_training_protocol.py',
                 '-q'], cwd=repo, check=True)
 os.environ['HF_HUB_DISABLE_XET'] = '1'
 '''
