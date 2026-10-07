@@ -11,6 +11,7 @@ import logging
 from pathlib import Path
 import importlib.metadata
 import subprocess
+import json
 
 import torch
 from transformers import (
@@ -95,6 +96,7 @@ def train(
     seed: int = 42,
     max_target_length: int = 128,
     gradient_accumulation_steps: int = 1,
+    selection_policy: str | None = None,
 ) -> None:
     if isinstance(train_dirs, str):
         train_dirs = [train_dirs]
@@ -169,6 +171,17 @@ def train(
         if val_samples:
             val_ds = TrOCRLineDataset(val_samples, processor, max_target_length)
 
+    metrics = compute_ocr_metrics(processor.tokenizer)
+    if selection_policy:
+        from .reviewed_recognizer_selection import checkpoint_metrics
+        policy = json.loads(Path(selection_policy).read_text(encoding='utf-8'))
+        references = []
+        for path in sorted(Path(val_dir).glob('*.png')):
+            domain, identifier = path.stem.split('__', 1)
+            references.append(dict(domain=domain, id=identifier,
+                reference=path.with_suffix('.txt').read_text(encoding='utf-8')))
+        metrics = checkpoint_metrics(processor.tokenizer, references, policy['baseline'], output)
+
     args = Seq2SeqTrainingArguments(
         output_dir=output_dir,
         num_train_epochs=epochs,
@@ -180,7 +193,7 @@ def train(
         eval_strategy="epoch" if val_ds else "no",
         predict_with_generate=True,
         load_best_model_at_end=True,
-        metric_for_best_model='cer',
+        metric_for_best_model='selection_score' if selection_policy else 'cer',
         greater_is_better=False,
         save_total_limit=2,
         seed=seed,
@@ -203,6 +216,7 @@ def train(
         use_4bit=use_4bit, include_mlp=include_mlp, neftune_noise=neftune_noise,
         max_target_length=max_target_length,
         gradient_accumulation_steps=gradient_accumulation_steps,
+        selection_policy=policy if selection_policy else None,
         trainable_parameters=sum(p.numel() for p in model.parameters() if p.requires_grad),
         packages={name:importlib.metadata.version(name) for name in ['torch','transformers','peft','accelerate','jiwer']},
         training_arguments=args.to_dict()))
@@ -213,13 +227,15 @@ def train(
         train_dataset=train_ds,
         eval_dataset=val_ds,
         data_collator=lambda b: _collate(b, processor),
-        compute_metrics=compute_ocr_metrics(processor.tokenizer),
+        compute_metrics=metrics,
     )
     trainer.train()
     trainer.save_state()
     write_json(output/'best_metrics.json', trainer.evaluate())
     write_json(output/'selection.json', dict(best_checkpoint=trainer.state.best_model_checkpoint,
-                                           best_cer=trainer.state.best_metric))
+        best_metric=trainer.state.best_metric,
+        best_cer=None if selection_policy else trainer.state.best_metric,
+        metric_name=args.metric_for_best_model, baseline_comparison_required=bool(selection_policy)))
 
     # Zapis: adaptery w output_dir/adapter + scalony pełny model w output_dir
     # (Recognizer ładuje pełny model przez VisionEncoderDecoderModel.from_pretrained)
@@ -250,6 +266,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument('--seed', type=int, default=42)
     p.add_argument('--max-target-length', type=int, default=128)
     p.add_argument('--gradient-accumulation-steps', type=int, default=1)
+    p.add_argument('--selection-policy', help='Development-domain baseline metrics JSON for guarded selection')
     return p.parse_args()
 
 
@@ -265,6 +282,7 @@ def main() -> None:
         revision=a.revision, include_mlp=a.include_mlp, seed=a.seed,
         max_target_length=a.max_target_length,
         gradient_accumulation_steps=a.gradient_accumulation_steps,
+        selection_policy=a.selection_policy,
     )
 
 

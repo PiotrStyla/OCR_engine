@@ -4,6 +4,7 @@ import importlib.metadata
 import json
 from pathlib import Path
 from types import SimpleNamespace
+import tempfile
 
 
 def check(model, pixels, labels, rank, alpha):
@@ -37,6 +38,19 @@ def check(model, pixels, labels, rank, alpha):
     if not changed:
         raise RuntimeError('Preflight optimizer did not update adapters')
     merged = model.merge_and_unload().eval()
+    from transformers import Seq2SeqTrainingArguments
+    with tempfile.TemporaryDirectory(prefix='trocr-loss-preflight-') as output:
+        trainer = AlignedSeq2SeqTrainer(model=merged, args=Seq2SeqTrainingArguments(
+            output_dir=output, use_cpu=not cuda, report_to='none', predict_with_generate=True))
+        batch = {'pixel_values': pixels, 'labels': labels}
+        with torch.no_grad():
+            expected_loss = trainer.compute_loss(merged, batch).detach()
+        evaluation_loss, _, evaluation_labels = trainer.prediction_step(
+            merged, batch, False, max_new_tokens=2, num_beams=1, early_stopping=False)
+        if not torch.allclose(evaluation_loss, expected_loss, rtol=1e-5, atol=1e-5):
+            raise RuntimeError('Generation evaluation bypassed aligned token loss')
+        if not torch.equal(evaluation_labels[:, :labels.shape[-1]], labels):
+            raise RuntimeError('Evaluation changed reference token positions')
     with torch.inference_mode(), torch.autocast(pixels.device.type, dtype=torch.float16, enabled=cuda):
         generated = merged.generate(pixel_values=pixels, max_new_tokens=2, num_beams=1,
                                     early_stopping=False)
@@ -45,6 +59,8 @@ def check(model, pixels, labels, rank, alpha):
     return {'status': 'ok', 'loss': float(loss.detach()), 'updated_adapter_tensors': changed,
         'trainable_parameters': sum(p.numel() for p in trainable.values()),
         'finite_gradients': True, 'merge_and_generation': True,
+        'generation_evaluation_aligned_loss': True,
+        'aligned_evaluation_loss': float(evaluation_loss),
         'disposable_model': True, 'updates_used_in_training': False,
         'packages': {name: importlib.metadata.version(name) for name in
                      ('torch', 'torchao', 'transformers', 'peft')}}

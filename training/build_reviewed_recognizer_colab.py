@@ -7,11 +7,14 @@ DATA_REVISION = '3a301fd12a6272b28774d1888213ddf528b47f24'
 DATA_SHA256 = '3e39b7d02b90a0a741adde506c0467698c46fe86c82846d3cc0e648eebaae32e'
 
 
-def build(target, code_revision):
+def build(target, code_revision, version='v1'):
     import nbformat
 
     if not re.fullmatch('[0-9a-f]{40}', code_revision):
         raise ValueError('Use the complete, already pushed runtime commit SHA')
+    if version not in ('v1', 'v2'):
+        raise ValueError('Unknown notebook version')
+    stem = 'recognizer-reviewed-colab-' + version
     setup = f'''from pathlib import Path
 import os
 import subprocess
@@ -46,6 +49,14 @@ subprocess.run([str(python), '-m', 'training.preflight_reviewed_recognizer',
                 '--output', str(environment/'adapter-preflight.json')], cwd=repo, check=True)
 print('Gotowe. Dane zostana pobrane automatycznie; niczego nie wgrywaj.')
 '''
+    if version == 'v2':
+        setup = setup.replace('/content/OCR_engine-reviewed', '/content/OCR_engine-reviewed-v2')
+        setup = setup.replace('/content/slayer-reviewed-training-env', '/content/slayer-reviewed-training-v2-env')
+        setup = setup.replace("'sentencepiece==0.2.1'", "'sentencepiece==0.2.1', 'pytest==8.4.2'")
+        setup += '''subprocess.run([str(python), '-m', 'pytest', 'tests/test_training_protocol.py',
+                '-q'], cwd=repo, check=True)
+os.environ['HF_HUB_DISABLE_XET'] = '1'
+'''
     training = '''from google.colab import files
 
 RESULT_DIRECTORY = None
@@ -68,16 +79,75 @@ if return_code:
 assert RESULT_DIRECTORY is not None, 'Brak potwierdzenia zakonczenia treningu.'
 print('TRENING_ZAKONCZONY', RESULT_DIRECTORY)
 '''
+    if version == 'v2':
+        training = training.replace("'training.run_reviewed_recognizer_colab',\n           '--dataset-revision', DATA_REVISION, '--dataset-sha256', DATA_SHA256",
+                                    "'training.run_reviewed_recognizer_colab_v2'")
     download = '''assert RESULT_DIRECTORY is not None, 'Najpierw musi zakonczyc sie komorka treningu.'
 result_zip = RESULT_DIRECTORY/'recognizer-reviewed-colab-v1-result.zip'
 assert result_zip.is_file(), 'Brak kompletnego archiwum wyniku.'
 print('Model i raport w jednym pliku:', result_zip)
 files.download(str(result_zip))
 '''
+    title = ('# TrOCR V2: ochrona zwyklego druku\n\n'
+        'Wybierz **GPU T4** i **Uruchom wszystko**. Nie wgrywaj zadnych plikow.\n\n'
+        'Trzy warianty po 3 epoki: LR 1e-5 / replay 500, LR 3e-6 / replay 500, '
+        'LR 3e-6 / replay 2000. Wszystkie zaczynaja od tej samej przypietej bazy. '
+        '70 linii historycznych w treningu; kontrola: 9 historycznych i 75 zwyklych.\n\n'
+        'Kandydat musi poprawic historyczny i laczny CER, bez regresji CER/WER zwyklego '
+        'druku i bez dodatkowych znakow zastepczych. W przeciwnym razie pozostaje baza. '
+        'Stara pisownia pozostaje bez zmian. To wybor na zbiorze development, nie dowod SOTA.\n\n'
+        'Raport pobierze sie automatycznie. Dla duzego ZIP-a z wagami jest opcjonalny zapis '
+        'na Dysku Google w ostatniej komorce. Nie wymaga to ponownego treningu.')
+    if version == 'v2':
+        download = '''assert RESULT_DIRECTORY is not None, 'Najpierw musi zakonczyc sie trening.'
+assert EVIDENCE_ZIP is not None and EVIDENCE_ZIP.is_file(), 'Brak raportu.'
+result_zip = RESULT_DIRECTORY/'recognizer-reviewed-colab-v2-result.zip'
+assert result_zip.is_file(), 'Brak kompletnego archiwum wyniku.'
+import json
+selection = json.loads((RESULT_DIRECTORY/'evidence/selection.json').read_text())
+print('Wybor:', selection['selected'])
+print('CER: baza i warianty (historyczny / zwykly / laczny)')
+baseline = json.loads((RESULT_DIRECTORY/'evidence/baseline-metrics.json').read_text())
+for name, metrics in [('unchanged-baseline', baseline)] + [(row['id'], row['metrics']) for row in selection['candidates']]:
+    print(name, ' / '.join(f"{100*metrics[domain]['cer']:.3f}%" for domain in
+          ('historical-development', 'ordinary-development', 'combined')))
+for row in selection['candidates']:
+    print(row['id'], 'przechodzi' if row['eligible'] else 'odrzucony: '+', '.join(row['reasons']))
+print('Kompletny pakiet:', result_zip, 'Bajty:', result_zip.stat().st_size)
+print('Jesli pozostaje baza, ZIP zawiera raport i przypieta tozsamosc bazy, bez nowych wag.')
+files.download(str(EVIDENCE_ZIP))
+'''
+        backup = '''BACKUP_TO_DRIVE = False
+# Aby zachowac duzy pakiet, zmien powyzej na True i uruchom tylko te komorke.
+if BACKUP_TO_DRIVE:
+    from google.colab import drive
+    import hashlib
+    import shutil
+    drive.mount('/content/drive')
+    destination = Path('/content/drive/MyDrive/OCR_engine')/RESULT_DIRECTORY.name
+    destination.mkdir(parents=True, exist_ok=True)
+    target = destination/result_zip.name
+    def sha256(path):
+        h = hashlib.sha256()
+        with path.open('rb') as stream:
+            for chunk in iter(lambda: stream.read(8*1024*1024), b''):
+                h.update(chunk)
+        return h.hexdigest()
+    expected = sha256(result_zip)
+    if target.exists():
+        assert sha256(target) == expected, 'Na Drive istnieje inny plik; nie nadpisuje go.'
+    else:
+        shutil.copyfile(result_zip, target)
+    assert sha256(target) == expected, 'Kopia na Drive nie przeszla kontroli SHA256.'
+    print('Zapisano kompletny pakiet na Drive:', target, 'SHA256:', expected)
+else:
+    print('Wagi sa w sesji Colaba. Aby zachowac je przed jej zakonczeniem, ustaw BACKUP_TO_DRIVE=True i uruchom tylko te komorke.')
+'''
+        compile(backup, 'backup', 'exec')
     for name, code in [('setup', setup), ('training', training), ('download', download)]:
         compile(code, name, 'exec')
-    notebook = nbformat.v4.new_notebook(cells=[
-        nbformat.v4.new_markdown_cell('# Trening TrOCR: sprawdzone transkrypcje\n\n'
+    cells = [
+        nbformat.v4.new_markdown_cell(title if version == 'v2' else '# Trening TrOCR: sprawdzone transkrypcje\n\n'
             'Wybierz **GPU T4** i **Uruchom wszystko**. Nie wgrywaj zadnych plikow.\n\n'
             '70 sprawdzonych linii treningowych, 500 probek zwyklego druku, 3 epoki LoRA. '
             'Kontrola: 9 linii historycznych z oddzielnej kolekcji i 75 zwyklych linii. '
@@ -89,11 +159,15 @@ files.download(str(result_zip))
         nbformat.v4.new_markdown_cell('## 2. Dane, kontrola, trening i porownanie'),
         nbformat.v4.new_code_cell(training),
         nbformat.v4.new_markdown_cell('## 3. Pobranie modelu i raportu'),
-        nbformat.v4.new_code_cell(download)], metadata={
-            'accelerator': 'GPU', 'colab': {'name': 'colab_recognizer_reviewed_training_v1.ipynb'},
+        nbformat.v4.new_code_cell(download)]
+    if version == 'v2':
+        cells += [nbformat.v4.new_markdown_cell('## 4. Zachowaj pelny pakiet na Drive (opcjonalnie)'),
+                  nbformat.v4.new_code_cell(backup)]
+    notebook = nbformat.v4.new_notebook(cells=cells, metadata={
+            'accelerator': 'GPU', 'colab': {'name': 'colab_recognizer_reviewed_training_' + version + '.ipynb'},
             'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'}})
     for index, cell in enumerate(notebook.cells):
-        cell.id = 'reviewed-training-'+str(index)
+        cell.id = 'reviewed-training-'+version+'-'+str(index)
     nbformat.validate(notebook)
     nbformat.write(notebook, Path(target))
 
@@ -102,5 +176,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--code-revision', required=True)
     parser.add_argument('--output', default=str(Path(__file__).with_name('colab_recognizer_reviewed_training_v1.ipynb')))
+    parser.add_argument('--version', choices=('v1', 'v2'), default='v1')
     args = parser.parse_args()
-    build(args.output, args.code_revision)
+    build(args.output, args.code_revision, args.version)

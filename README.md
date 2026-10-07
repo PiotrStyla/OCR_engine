@@ -6,9 +6,18 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 6 października 2026
+## Aktualny stan: 7 października 2026
 
 ### Teraz: DATA ENGINE dla recognizera v3
+
+**Następny trening: V2 z ochroną zwykłego druku.** Jeden notebook pobiera dane
+automatycznie i porównuje kontrolę, niższy learning rate oraz większy replay.
+Poprawiony tor straty ewaluacyjnej ma preflight, a wybór checkpointu uwzględnia
+osobno obie domeny. Jeżeli kandydaci nie przejdą bramek, pozostaje model bazowy.
+[Uruchom Colab V2](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v2.ipynb).
+[Protokół i pobranie wyników](docs/RECOGNIZER_REVIEWED_COLAB_V2_20261007.md).
+Wybierz GPU T4 i uruchom wszystko; niczego nie wgrywaj. Trening V2 nie został
+jeszcze wykonany. Duży pakiet wag można zachować na Drive z ostatniej komórki.
 
 **Trening recognizera zakończony, kandydat niepromowany.** Pakiet wag i raport
 zweryfikowany w całości. Na 9 historycznych liniach CER poprawił się z 33,03%
@@ -18,13 +27,13 @@ się z 8,37% do 8,99%. Zachowujemy model bazowy; nie ma potwierdzenia SOTA.
 [Kompletny model i raport na HF](https://huggingface.co/PiotrSty/slayer-ocr-models/resolve/43583c3932fb0cddd3e6a92333360f1d67ca56b3/experiments/2026-10-06/recognizer-reviewed-colab-v1-result/recognizer-reviewed-colab-v1-result.zip?download=true).
 79 testów CPU przeszło; nie powtarzaj tego samego treningu bez zmiany protokołu.
 
-**Trening na Colabie gotowy na żądanie użytkownika:** osobny eksperyment
+**Archiwalny protokół V1:** osobny eksperyment
 z 70 sprawdzonymi liniami i 500 próbkami zwykłego druku, bez 36 linii z rodzin
 objętych wykluczeniem. 9 linii z oddzielnej kolekcji i 75 zwykłych linii służy
 do kontroli. To trening eksperymentalny, nie otwarcie zamrożonego benchmarku SOTA.
 [Protokół, automatyczne dane i sposób uruchomienia](docs/RECOGNIZER_REVIEWED_COLAB_TRAINING_20261006.md).
-[Uruchom jeden notebook Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
-Nie wgrywaj żadnych plików: wybierz GPU T4 i uruchom wszystko.
+[Archiwalny notebook Colab V1](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_recognizer_reviewed_training_v1.ipynb).
+Nie powtarzaj V1; bieżący notebook to V2 powyżej.
 
 **Pierwszy zwrot z Colaba: trening nie wystartował.** Odczyt bazowy zakończony:
 CER 5,33% na 75 zwykłych liniach i 33,03% na 9 historycznych. Tworzenie LoRA

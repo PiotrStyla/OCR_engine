@@ -122,6 +122,25 @@ def _decoder_input_preparer(model):
 
 
 class AlignedSeq2SeqTrainer(Seq2SeqTrainer):
+    def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None, **gen_kwargs):
+        if not self.args.predict_with_generate or prediction_loss_only or 'labels' not in inputs:
+            return super().prediction_step(model, inputs, prediction_loss_only,
+                                           ignore_keys=ignore_keys, **gen_kwargs)
+        prepared = self._prepare_inputs(inputs)
+        # HF's generation branch otherwise bypasses compute_loss and uses native decoder loss.
+        generation_inputs = {key: value for key, value in prepared.items()
+                             if key not in ('labels', 'decoder_input_ids', 'decoder_attention_mask')}
+        _, generated, _ = super().prediction_step(model, generation_inputs, False,
+                                                  ignore_keys=ignore_keys, **gen_kwargs)
+        with torch.no_grad(), self.compute_loss_context_manager():
+            loss = self.compute_loss(model, prepared).detach().mean()
+        if self.args.prediction_loss_only:
+            return loss, None, None
+        labels = prepared['labels']
+        if generated is not None and labels.shape[-1] < generated.shape[-1]:
+            labels = self._pad_tensors_to_max_len(labels, generated.shape[-1])
+        return loss, generated, labels
+
     def compute_loss(
         self,
         model,
@@ -134,7 +153,8 @@ class AlignedSeq2SeqTrainer(Seq2SeqTrainer):
         unwrapped = accelerator.unwrap_model(model) if accelerator is not None else model
         prepare = _decoder_input_preparer(unwrapped)
         decoder_input_ids = prepare(labels=labels)
-        model_inputs = {key: value for key, value in inputs.items() if key != "labels"}
+        model_inputs = {key: value for key, value in inputs.items()
+                        if key not in ('labels', 'decoder_input_ids', 'use_cache')}
         outputs = model(**model_inputs, decoder_input_ids=decoder_input_ids, use_cache=False)
         loss = aligned_token_loss(outputs.logits, labels, num_items_in_batch)
         return (loss, outputs) if return_outputs else loss

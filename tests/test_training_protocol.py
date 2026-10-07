@@ -90,6 +90,36 @@ def test_trainer_shifts_decoder_input_once_but_not_loss_labels():
     assert model.call["use_cache"] is False
 
 
+def test_generation_prediction_uses_aligned_loss_and_never_sends_labels(monkeypatch):
+    from contextlib import nullcontext
+    from transformers import Seq2SeqTrainer
+
+    model = _PerfectModel()
+    trainer = object.__new__(AlignedSeq2SeqTrainer)
+    trainer.args = SimpleNamespace(predict_with_generate=True, prediction_loss_only=False)
+    trainer._prepare_inputs = lambda inputs: inputs
+    trainer.compute_loss_context_manager = nullcontext
+    trainer._pad_tensors_to_max_len = lambda values, length: torch.nn.functional.pad(
+        values, (0, length - values.shape[-1]), value=1)
+    captured = {}
+
+    def generate_only(self, model, inputs, prediction_loss_only, **kwargs):
+        captured.update(inputs)
+        assert not {'labels', 'decoder_input_ids', 'decoder_attention_mask'} & set(inputs)
+        return None, torch.tensor([[2, 3, 1, 1]]), None
+
+    monkeypatch.setattr(Seq2SeqTrainer, 'prediction_step', generate_only)
+    labels = torch.tensor([[2, 3, -100]])
+    loss, generated, returned = trainer.prediction_step(model, {
+        'pixel_values': torch.ones(1), 'labels': labels,
+        'decoder_input_ids': torch.tensor([[0, 2, 3]]),
+        'decoder_attention_mask': torch.ones_like(labels)}, False)
+    assert loss.item() < 1e-6
+    assert returned.tolist() == [[2, 3, -100, 1]]
+    assert generated.shape[-1] == 4
+    assert labels.tolist() == [[2, 3, -100]]
+
+
 def test_decoder_preparer_unwraps_multi_gpu_module():
     model = _PerfectModel()
     wrapped = SimpleNamespace(module=model)
@@ -203,4 +233,5 @@ def test_reviewed_adapter_preflight_exercises_real_trocr():
     assert report['updated_adapter_tensors'] > 0
     assert report['finite_gradients']
     assert report['merge_and_generation']
+    assert report['generation_evaluation_aligned_loss']
     assert not report['updates_used_in_training']
