@@ -9,6 +9,8 @@ All 173 payload checksums, complete checksum coverage, safe archive paths,
 the pinned source package and the runner at
 `8b88ee5c8dd6cdbb429dbf6980077eaf35f32676` were verified.
 
+[Public original ZIP, machine audit and separate visual-review receipt](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/fbcff86826be1e06773095bb433d44a9bb05e46f/experiments/2026-10-07/printed-replay-pilot-v2-result).
+
 Environment receipts report Pillow 11.3.0, Tesseract 5.3.4 and DjVuLibre 3.5.28.
 These are recorded versions, not an independently reproduced local OCR run.
 

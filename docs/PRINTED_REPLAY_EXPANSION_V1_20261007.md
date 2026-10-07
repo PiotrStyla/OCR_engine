@@ -53,6 +53,9 @@ inputs: the notebook retrieves original DjVu files and verifies their SHA1.
 ## Run One Notebook
 
 Use `training/colab_printed_replay_expansion_v1.ipynb` on **CPU** and run all cells.
+[Open the single Colab notebook](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/training/colab_printed_replay_expansion_v1.ipynb).
+[Frozen complete source package on HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-datasets/resolve/5fc2e96fdfc2df83a386c80ffb765bb22e1030e8/data/printed-replay-source-expansion-v1-20261007/printed-replay-source-expansion-v1.zip?download=true).
+[Acquisition evidence, including rejected first attempt](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/039322625dd2b43f08e10c72c9dec9c2cfe7a9a0/experiments/2026-10-07/printed-replay-expansion-v1-source-acquisition).
 No files, tokens or GPU are needed. The notebook downloads the complete frozen
 source package from a pinned public HF revision and verifies its SHA256.
 Code and work selection are pinned separately to complete revision/checksum
@@ -77,7 +80,7 @@ must target segmentation/teacher agreement rather than training on a tiny pool.
 
 ## Validation Boundary
 
-The source acquisition and package verification completed locally. Regression
+The source acquisition and package verification completed locally. 64 regression
 tests cover work/scan alias separation, frozen input checks, CPU-only notebook
 generation, original V1/V2 behavior and crop audits. Notebook schema and Python
 cell syntax are validated. Native DjVu decoding/Tesseract and Colab end-to-end

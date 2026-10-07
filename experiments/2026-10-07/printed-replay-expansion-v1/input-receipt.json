@@ -1,0 +1,14 @@
+{
+  "revision": "5fc2e96fdfc2df83a386c80ffb765bb22e1030e8",
+  "sha256": "95661ff30f5b904f67896e8079d8332d4665cdf9b9b3d579bc4a2e3f6d548769",
+  "path": "data/printed-replay-source-expansion-v1-20261007/printed-replay-source-expansion-v1.zip",
+  "works_config": "experiments/2026-10-07/printed-replay-expansion-v1/works.json",
+  "works_config_sha256": "ee01b99977b100d3eb3a309c0e59fb9f3d762017d74b66ccdac048a4789f4b93",
+  "pages": 34,
+  "work_families": 8,
+  "candidate_pages": 24,
+  "probe_pages": 10,
+  "code_revision": "c8ae68ae741d2c30d95317c2c0bb84d347d79a16",
+  "eligible_for_training": false,
+  "eligible_for_evaluation": false
+}
