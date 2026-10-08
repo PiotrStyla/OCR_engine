@@ -36,7 +36,18 @@ def image_message(path, prompt=PROMPT):
     elif content.startswith(b'\xff\xd8\xff'):
         mime = 'image/jpeg'
     else:
-        raise ValueError('Expected PNG or JPEG; render PDF pages first')
+        # Chat endpoints reject formats like the IMPACT TIFFs stored under .jpg
+        # names. Decoding and sending PNG keeps the decoded pixels identical;
+        # the source file is never modified.
+        import io
+        from PIL import Image
+        with Image.open(io.BytesIO(content)) as image:
+            image.load()
+            payload = image if image.mode in ('RGB', 'L') else image.convert('RGB')
+            buffer = io.BytesIO()
+            payload.save(buffer, format='PNG')
+            content = buffer.getvalue()
+        mime = 'image/png'
     return [{'type':'text','text':prompt},
             {'type':'image_url','image_url':{'url':f'data:{mime};base64,' + base64.b64encode(content).decode('ascii')}}]
 

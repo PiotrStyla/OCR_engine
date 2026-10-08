@@ -93,6 +93,23 @@ class FakeClient:
             usage=FakeUsage(), model='fake-model')
 
 
+def test_image_message_transports_tiff_as_lossless_png(tmp_path):
+    import base64
+    import io
+    import PIL.Image
+    from ocr.page_parser import image_message
+    pixels = PIL.Image.new('L', (24, 12))
+    pixels.putpixel((3, 4), 137)
+    tiff = tmp_path / 'scan.jpg'
+    pixels.save(tiff, format='TIFF')
+    content = image_message(tiff, 'prompt')[1]['image_url']['url']
+    mime, encoded = content.split(',', 1)
+    assert mime == 'data:image/png;base64'
+    with PIL.Image.open(io.BytesIO(base64.b64decode(encoded))) as decoded:
+        assert decoded.format == 'PNG' and decoded.size == (24, 12)
+        assert decoded.getpixel((3, 4)) == 137
+
+
 def test_send_page_composes_frozen_prompt_and_usage():
     from ocr.page_parser import image_message
     client = FakeClient(['{"gross_total": "1 234,56 zł"}'])
