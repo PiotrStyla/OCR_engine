@@ -51,7 +51,7 @@ subprocess.run(['git', '-C', str(repo), 'checkout', '--detach', CODE_REVISION], 
 assert subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip() == CODE_REVISION
 python = sys.executable  # interpreter runtime'u: CUDA torch z Colaba musi zostac na miejscu
 subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir',
-                'transformers==4.57.6', 'accelerate==1.13.0', 'jiwer==4.0.0',
+                'transformers==4.57.6', 'accelerate==1.13.0', 'jiwer==4.0.0', 'bitsandbytes',
                 'huggingface_hub==0.36.2', 'pytest==8.4.2', 'nbformat==5.10.4'], check=True)
 os.environ['HF_HUB_DISABLE_XET'] = '1'
 os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
@@ -67,6 +67,7 @@ assert torch_info.endswith('True'), ('Runtime bez GPU albo torch bez CUDA (patrz
     'Ustaw: Runtime > Zmien typ srodowiska > T4, uruchom ponownie od komorki 1.')
 work = Path('/content/polocrbench-sota-v1-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
 work.mkdir()
+print('CODE_REVISION', CODE_REVISION)
 print('WORKDIR', work)
 '''
     inputs = '''from huggingface_hub import hf_hub_download

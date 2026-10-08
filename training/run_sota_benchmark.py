@@ -41,6 +41,7 @@ MODELS = {
 }
 DEFAULT_MAX_NEW_TOKENS = 4096
 DEFAULT_MAX_PIXELS = 4194304  # profil 4MP sprawdzony na T4 (training/full_page_validation_4mp.py)
+DEFAULT_MIN_PIXELS = 262144   # jw. (profil comparison-v5)
 
 
 def digest(path):
@@ -88,7 +89,8 @@ def model_image(path):
     return target
 
 
-def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS, max_pixels=DEFAULT_MAX_PIXELS):
+def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS, max_pixels=DEFAULT_MAX_PIXELS,
+                   min_pixels=DEFAULT_MIN_PIXELS):
     """Real predictor for a model id; imports the model stack on first use."""
     if model not in MODELS:
         raise ValueError(f"Unknown model: {model}")
@@ -96,21 +98,39 @@ def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS, max_pixels=D
     if spec["kind"] == "vlm":
         prompt = load_templates()["A"]
         import torch
-        from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
+        from PIL import Image
+        from transformers import AutoProcessor, BitsAndBytesConfig, Qwen3VLForConditionalGeneration
+        # Memory profile proven on Tesla T4 with 4MP pages
+        # (training/full_page_pilot.py:load_qwen): 4-bit NF4, fp16, sdpa.
+        quantization = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                                          bnb_4bit_compute_dtype=torch.float16,
+                                          bnb_4bit_use_double_quant=True)
         engine = Qwen3VLForConditionalGeneration.from_pretrained(
-            spec["source"], dtype="auto", device_map="auto", attn_implementation="sdpa")
-        processor = AutoProcessor.from_pretrained(spec["source"], max_pixels=max_pixels)
+            spec["source"], device_map={"": 0}, torch_dtype=torch.float16,
+            attn_implementation="sdpa", quantization_config=quantization).eval()
+        processor = AutoProcessor.from_pretrained(spec["source"],
+                                                 min_pixels=min_pixels, max_pixels=max_pixels)
+        eos = engine.generation_config.eos_token_id
+        eos = eos if isinstance(eos, list) else [eos]
 
         def predict(path):
+            with Image.open(path) as source:
+                image = source.convert("RGB")
             messages = [{"role": "user", "content": [
-                {"type": "image", "image": str(path)}, {"type": "text", "text": prompt}]}]
+                {"type": "image", "image": image}, {"type": "text", "text": prompt}]}]
             inputs = processor.apply_chat_template(messages, tokenize=True, add_generation_prompt=True,
                                                    return_dict=True, return_tensors="pt").to(engine.device)
             with torch.inference_mode():
-                generated = engine.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
-            trimmed = [out[len(inp):] for inp, out in zip(inputs.input_ids, generated)]
-            return processor.batch_decode(trimmed, skip_special_tokens=True,
-                                          clean_up_tokenization_spaces=False)[0]
+                outputs = engine.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False,
+                                          eos_token_id=eos,
+                                          pad_token_id=processor.tokenizer.pad_token_id)
+            generated = outputs[0][inputs["input_ids"].shape[1]:]
+            ids = generated.tolist()
+            ended = bool(ids and ids[-1] in eos)
+            if not ended and len(ids) >= max_new_tokens:
+                raise ValueError(f"Incomplete response: generation hit max_new_tokens={max_new_tokens}")
+            return processor.decode(generated, skip_special_tokens=True,
+                                    clean_up_tokenization_spaces=False)
         return predict
 
     try:
@@ -144,7 +164,7 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
         raise FileExistsError(output)
     output.mkdir(parents=True)
     predict = predictor if predictor is not None else load_predictor(
-        model, max_new_tokens=max_new_tokens, max_pixels=max_pixels)
+        model, max_new_tokens=max_new_tokens, max_pixels=max_pixels, min_pixels=DEFAULT_MIN_PIXELS)
     predictions = []
     started = time.time()
     for row in selected:
@@ -166,7 +186,7 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
     (output / "score.json").write_text(json.dumps(score, ensure_ascii=False, indent=2), encoding="utf-8")
     spec = MODELS[model]
     versions = {}
-    for package in ("transformers", "torch", "paddlepaddle", "paddlex", "paddleocr", "jiwer"):
+    for package in ("transformers", "torch", "bitsandbytes", "paddlepaddle", "paddlex", "paddleocr", "jiwer"):
         try:
             versions[package] = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:
@@ -179,7 +199,9 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
                                 / "prompts" / "zero_shot_prompt_v1.md") if spec["prompt"] else None,
         "max_new_tokens": max_new_tokens if spec["prompt"] else None,
         "max_pixels": max_pixels if spec["prompt"] else None,
+        "min_pixels": DEFAULT_MIN_PIXELS if spec["prompt"] else None,
         "attn_implementation": "sdpa" if spec["prompt"] else None,
+        "quantization": "bnb-nf4-4bit" if spec["prompt"] else None,
         "backend": getattr(load_predictor, "backend", None),
         "benchmark_manifest_sha256": digest(manifest),
         "pages_total": len(rows), "pages_predicted": len(selected),
