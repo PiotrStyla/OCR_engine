@@ -52,7 +52,13 @@ if not paddle_ok:
     print("Kola GPU Paddle niedostepne dla tego Pythona; silnik CPU (poprawny, lecz wolny).")
     subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle==3.3.1", "paddleocr[doc-parser]"], check=True)
 versions = subprocess.check_output([python, "-c",
-    'import importlib.metadata as m; print({p: m.version(p) for p in ("paddleocr", "paddlepaddle", "paddlex", "transformers", "torch", "bitsandbytes")})'],
+    'import importlib.metadata as m\n'
+    'def v(name):\n'
+    '    try:\n'
+    '        return m.version(name)\n'
+    '    except m.PackageNotFoundError:\n'
+    '        return None\n'
+    'print({p: v(p) for p in ("paddleocr", "paddlex", "paddlepaddle", "paddlepaddle-gpu", "transformers", "torch", "bitsandbytes")})'],
     text=True).strip()
 print("STACK_PACKAGES", versions)
 

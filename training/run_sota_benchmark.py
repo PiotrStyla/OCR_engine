@@ -194,7 +194,8 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
     (output / "score.json").write_text(json.dumps(score, ensure_ascii=False, indent=2), encoding="utf-8")
     spec = MODELS[model]
     versions = {}
-    for package in ("transformers", "torch", "bitsandbytes", "paddlepaddle", "paddlex", "paddleocr", "jiwer"):
+    for package in ("transformers", "torch", "bitsandbytes", "paddlepaddle", "paddlepaddle-gpu",
+                    "paddlex", "paddleocr", "jiwer"):
         try:
             versions[package] = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:
