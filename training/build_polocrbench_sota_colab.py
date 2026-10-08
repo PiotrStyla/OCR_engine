@@ -98,7 +98,7 @@ for model in MODELS:
     result = subprocess.run(command, cwd=repo)
     assert result.returncode == 0, f'Smoke test nie przeszedl dla {model}. Wklej blad; nie uruchamiaj pelnego pomiaru.'
     smoke_pred = _json.loads((out/'predictions.jsonl').read_text(encoding='utf-8').splitlines()[0])
-    assert smoke_pred['status'] == 'ok' and smoke_pred['text'].strip(), f'Pusty wynik smoke dla {model}.'
+    assert smoke_pred['status'] == 'ok' and smoke_pred['text'].strip(), f'Pusty/bledny smoke dla {model}: {smoke_pred}'
     print('SMOKE_OK', model)
 '''
     full = '''import json as _json

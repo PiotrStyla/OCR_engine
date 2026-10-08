@@ -105,6 +105,39 @@ def test_extract_markdown_rejects_unusable_results(result):
         sota.extract_markdown(result)
 
 
+def test_model_image_transcodes_tiff_and_passes_png(tmp_path):
+    from PIL import Image
+    source = tmp_path / "page.jpg"
+    pixels = Image.new("L", (20, 10))
+    pixels.putpixel((4, 5), 77)
+    pixels.save(source, format="TIFF")
+    converted = sota.model_image(source)
+    assert converted.suffix == ".png" and converted != source
+    with Image.open(converted) as image:
+        assert image.format == "PNG" and image.size == (20, 10)
+        assert image.getpixel((4, 5)) == 77
+    png = tmp_path / "plain.png"
+    pixels.save(png, format="PNG")
+    assert sota.model_image(png) == png
+
+
+def test_runner_passes_transcoded_image_to_predictor(tmp_path):
+    from PIL import Image
+    rows = staged(tmp_path, TEXTS)
+    Image.new("L", (8, 8)).save(tmp_path / rows[0]["image"], format="TIFF")
+    rows[0]["sha256"] = hashlib.sha256((tmp_path / rows[0]["image"]).read_bytes()).hexdigest()
+    (tmp_path / "manifest.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    seen = []
+
+    def predict(path):
+        seen.append(path)
+        return TEXTS[0]
+
+    sota.run("qwen3vl", tmp_path, tmp_path / "out", predictor=predict, limit=1)
+    assert seen[0].suffix == ".png" and seen[0] != tmp_path / rows[0]["image"]
+
+
 def test_runner_rejects_unknown_model_and_existing_output(tmp_path):
     with pytest.raises(ValueError, match="Unknown model"):
         sota.run("gpt5", tmp_path, tmp_path / "out", predictor=lambda p: "")

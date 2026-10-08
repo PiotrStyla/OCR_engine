@@ -69,6 +69,24 @@ def extract_markdown(result):
     return text.strip()
 
 
+def model_image(path):
+    """PNG/JPEG pass through; other formats (IMPACT TIFFs under .jpg names) are
+    transcoded losslessly to PNG so vision loaders accept them. Decoded pixels
+    are unchanged; the source file is never modified."""
+    data = Path(path).read_bytes()
+    if data.startswith(b"\x89PNG\r\n\x1a\n") or data.startswith(b"\xff\xd8\xff"):
+        return Path(path)
+    import io
+    import tempfile
+    from PIL import Image
+    with Image.open(io.BytesIO(data)) as image:
+        image.load()
+        payload = image if image.mode in ("RGB", "L") else image.convert("RGB")
+        target = Path(tempfile.mkdtemp(prefix="polocrbench-sota-image-")) / (Path(path).stem + ".png")
+        payload.save(target, format="PNG")
+    return target
+
+
 def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS):
     """Real predictor for a model id; imports the model stack on first use."""
     if model not in MODELS:
@@ -131,7 +149,7 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
             raise ValueError(f"Missing staged image: {row['id']}")
         page_started = time.time()
         try:
-            text = predict(image)
+            text = predict(model_image(image))
             status, body = "ok", text
         except Exception as error:  # noqa: BLE001 - a failed page is scored, not fatal
             status, body = "error", f"{type(error).__name__}: {error}"
