@@ -83,9 +83,10 @@ print('INPUT_READY', staged, len(rows), 'stron')
 '''
     paddle = '''# Silnik Paddle: oficjalne kola GPU Paddle 3.x nie istnieja dla Python 3.13
 # (PyPI: paddlepaddle-gpu 2.6.2, max cp312), a runtime Colaba to wlasnie 3.13.
-# Instalujemy silnik CPU paddlepaddle 3.3.1 (kolo cp313 istnieje) + paddleocr.
+# Instalujemy silnik CPU paddlepaddle 3.3.1 (kolo cp313 istnieje) + paddleocr
+# z ekstra doc-parser (= paddlex[ocr], wymagane przez pipeline PaddleOCR-VL).
 # Pomiar jest pelnoprawny (te same wyjscia modelu), tylko wolniejszy niz na GPU.
-subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', 'paddleocr', 'paddlepaddle==3.3.1'], check=True)
+subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', 'paddleocr[doc-parser]', 'paddlepaddle==3.3.1'], check=True)
 versions = subprocess.check_output([str(python), '-c',
     'import importlib.metadata as m; print({p: m.version(p) for p in ("paddleocr", "paddlepaddle", "paddlex", "transformers", "torch")})'],
     text=True)
@@ -96,7 +97,10 @@ for model in MODELS:
     out = work/'smoke'/model
     command = [str(python), '-m', 'training.run_sota_benchmark', '--model', model,
                '--benchmark', str(staged), '--output', str(out), '--limit', '1']
-    result = subprocess.run(command, cwd=repo)
+    result = subprocess.run(command, cwd=repo, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(result.stdout[-3000:])
+        print(result.stderr[-3000:])
     assert result.returncode == 0, f'Smoke test nie przeszedl dla {model}. Wklej blad; nie uruchamiaj pelnego pomiaru.'
     smoke_pred = _json.loads((out/'predictions.jsonl').read_text(encoding='utf-8').splitlines()[0])
     assert smoke_pred['status'] == 'ok' and smoke_pred['text'].strip(), f'Pusty/bledny smoke dla {model}: {smoke_pred}'
