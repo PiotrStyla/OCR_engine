@@ -45,10 +45,14 @@ subprocess.check_call([python, "-c", "import torch; assert torch.cuda.is_availab
 paddle_home = Path("/kaggle/working/paddle-env")
 paddle_python = str(paddle_home / "bin" / "python")
 if not Path(paddle_python).exists():
-    subprocess.run([python, "-m", "venv", str(paddle_home)], check=True)
+    # Kaggle: ensurepip w obrazie jest uszkodzony (venv pada), uv tworzy
+    # srodowisko bez pipa i instaluje przez 'uv pip' - bez bootstrapu.
+    subprocess.run([python, "-m", "pip", "install", "-q", "uv"], check=True)
+    subprocess.run([python, "-m", "uv", "venv", str(paddle_home)], check=True)
 paddle_ok = False
 for cu in ("cu118", "cu126"):
-    attempt = subprocess.run([paddle_python, "-m", "pip", "install", "-q", "paddlepaddle-gpu==3.3.1",
+    attempt = subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
+                             "paddlepaddle-gpu==3.3.1",
                              "--extra-index-url", f"https://www.paddlepaddle.org.cn/packages/stable/{cu}/",
                              "paddleocr[doc-parser]", "jiwer", "pillow"], capture_output=True, text=True)
     print("PADDLE_GPU_TRY", cu, "rc", attempt.returncode)
@@ -58,8 +62,8 @@ for cu in ("cu118", "cu126"):
     print(attempt.stderr[-800:])
 if not paddle_ok:
     print("Kola GPU Paddle niedostepne dla tego Pythona; silnik CPU (poprawny, lecz wolny).")
-    subprocess.run([paddle_python, "-m", "pip", "install", "-q", "paddlepaddle==3.3.1",
-                    "paddleocr[doc-parser]", "jiwer", "pillow"], check=True)
+    subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
+                    "paddlepaddle==3.3.1", "paddleocr[doc-parser]", "jiwer", "pillow"], check=True)
 versions = subprocess.check_output([paddle_python, "-c",
     'import importlib.metadata as m\n'
     'def v(name):\n'
