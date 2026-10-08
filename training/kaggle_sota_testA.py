@@ -38,18 +38,18 @@ print("CODE_REVISION", CODE_REVISION)
 # Torch z obrazu Kaggle zostaje nietkniete; dokladamy tylko potrzebne pakiety.
 subprocess.run([python, "-m", "pip", "install", "-q", "transformers==4.57.6", "accelerate==1.13.0",
                 "bitsandbytes", "jiwer==4.0.0", "huggingface_hub==0.36.2"], check=True)
-paddle = subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle-gpu==3.3.1",
-                        "--extra-index-url", "https://www.paddlepaddle.org.cn/packages/stable/cu123/",
-                        "paddleocr[doc-parser]"], capture_output=True, text=True)
-if paddle.returncode != 0:
-    print("Kola GPU Paddle (cu123) nie weszly, probuje cu118:")
-    print(paddle.stderr[-1200:])
-    paddle = subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle-gpu==3.3.1",
-                            "--extra-index-url", "https://www.paddlepaddle.org.cn/packages/stable/cu118/",
-                            "paddleocr[doc-parser]"], capture_output=True, text=True)
-if paddle.returncode != 0:
-    print("Kola GPU Paddle niedostepne dla tego Pythona; silnik CPU (poprawny, lecz wolny):")
-    print(paddle.stderr[-1200:])
+paddle_ok = False
+for cu in ("cu118", "cu126"):
+    attempt = subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle-gpu==3.3.1",
+                             "--extra-index-url", f"https://www.paddlepaddle.org.cn/packages/stable/{cu}/",
+                             "paddleocr[doc-parser]"], capture_output=True, text=True)
+    print("PADDLE_GPU_TRY", cu, "rc", attempt.returncode)
+    if attempt.returncode == 0:
+        paddle_ok = True
+        break
+    print(attempt.stderr[-800:])
+if not paddle_ok:
+    print("Kola GPU Paddle niedostepne dla tego Pythona; silnik CPU (poprawny, lecz wolny).")
     subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle==3.3.1", "paddleocr[doc-parser]"], check=True)
 versions = subprocess.check_output([python, "-c",
     'import importlib.metadata as m; print({p: m.version(p) for p in ("paddleocr", "paddlepaddle", "paddlex", "transformers", "torch", "bitsandbytes")})'],
