@@ -9,7 +9,7 @@ IMPACT_REPOSITORY = "PiotrSty/impact-print-v2"
 IMPACT_REVISION = "a2480fde6f15284701458ff370b81cce50dc5c2d"
 IMPACT_SHA256 = "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0"
 IMPACT_PATH = "impact-print-v2-test.tar.gz"
-DEFAULT_MODELS = ("paddlevl", "qwen3vl")
+DEFAULT_MODELS = ("qwen3vl", "paddlevl")
 
 
 def build(target, revision, *, input_spec=None, models=DEFAULT_MODELS):
@@ -80,9 +80,13 @@ rows = [_json.loads(line) for line in (staged/'manifest.jsonl').read_text(encodi
 assert len(rows) == 36, f'Oczekiwano 36 stron testu A, jest {len(rows)}.'
 print('INPUT_READY', staged, len(rows), 'stron')
 '''
-    paddle = '''subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', 'paddlex', 'paddlepaddle-gpu'], check=True)
+    paddle = '''# Silnik Paddle: oficjalne kola GPU Paddle 3.x nie istnieja dla Python 3.13
+# (PyPI: paddlepaddle-gpu 2.6.2, max cp312), a runtime Colaba to wlasnie 3.13.
+# Instalujemy silnik CPU paddlepaddle 3.3.1 (kolo cp313 istnieje) + paddleocr.
+# Pomiar jest pelnoprawny (te same wyjscia modelu), tylko wolniejszy niz na GPU.
+subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', 'paddleocr', 'paddlepaddle==3.3.1'], check=True)
 versions = subprocess.check_output([str(python), '-c',
-    'import importlib.metadata as m; print({p: m.version(p) for p in ("paddlex", "paddlepaddle", "paddleocr", "transformers", "torch")})'],
+    'import importlib.metadata as m; print({p: m.version(p) for p in ("paddleocr", "paddlepaddle", "paddlex", "transformers", "torch")})'],
     text=True)
 print('STACK', versions)
 '''
@@ -158,8 +162,11 @@ files.download(str(zip_path))
             'staging weryfikuje sumy wszystkich obrazów względem zamrożonego manifestu.'),
         nbformat.v4.new_code_cell(inputs),
         nbformat.v4.new_markdown_cell(
-            '## 3. Stos modelowy GPU\n\n'
-            'Wersje faktycznie uruchomione trafiają do `run.json` każdego pomiaru.'),
+            '## 3. Stos modelowy\n\n'
+            'Qwen3-VL idzie przez transformers z CUDA torch Colaba. Dla '
+            'PaddleOCR-VL silnik GPU nie jest dostępny dla Python 3.13 na Colab, '
+            'więc pomiar PaddleOCR-VL leci na silniku CPU — poprawny, lecz '
+            'wolniejszy (decyzja i wersje są nagrane w komórce i w `run.json`).'),
         nbformat.v4.new_code_cell(paddle),
         nbformat.v4.new_markdown_cell('## 4. Smoke test (1 strona na model)'),
         nbformat.v4.new_code_cell(smoke),
