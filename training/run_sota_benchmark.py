@@ -63,15 +63,19 @@ def extract_markdown(result):
     An empty page is a valid prediction (the frozen metric scores it); only a
     result without usable markdown structure is an error.
     """
-    markdown = result.get("markdown") if isinstance(result, dict) else getattr(result, "markdown", None)
+    markdown = getattr(result, "markdown", None)
+    if markdown is None and isinstance(result, dict):
+        markdown = result.get("markdown")
     if isinstance(markdown, dict):
         text = markdown.get("markdown_texts")
     elif isinstance(markdown, str):
         text = markdown
     else:
-        text = result.get("markdown_text") if isinstance(result, dict) else getattr(result, "markdown_text", None)
+        text = getattr(result, "markdown_text", None)
+        if text is None and isinstance(result, dict):
+            text = result.get("markdown_text")
     if not isinstance(text, str):
-        raise ValueError("PaddleOCR-VL result has no markdown text")
+        raise ValueError(f"PaddleOCR-VL result has no markdown text (markdown type {type(markdown).__name__})")
     return text.strip()
 
 

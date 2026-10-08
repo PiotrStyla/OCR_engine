@@ -142,6 +142,25 @@ def test_runner_passes_transcoded_image_to_predictor(tmp_path):
     assert seen[0].suffix == ".png" and seen[0] != tmp_path / rows[0]["image"]
 
 
+class PaddleResultShaped(dict):
+    """Mimics PaddleOCRVLResult: dict subclass whose markdown is a property."""
+
+    def __init__(self, text):
+        super().__init__(input_path="page.png", layout_det_res={})
+        self._text = text
+
+    @property
+    def markdown(self):
+        return {"markdown_texts": self._text, "markdown_images": {}}
+
+
+def test_extract_markdown_reads_property_on_dict_subclass_results():
+    assert sota.extract_markdown(PaddleResultShaped("  # Naglowek  ")) == "# Naglowek"
+    assert sota.extract_markdown(PaddleResultShaped("")) == ""
+    with pytest.raises(ValueError, match="markdown"):
+        sota.extract_markdown(PaddleResultShaped(None))
+
+
 def test_runner_rejects_unknown_model_and_existing_output(tmp_path):
     with pytest.raises(ValueError, match="Unknown model"):
         sota.run("gpt5", tmp_path, tmp_path / "out", predictor=lambda p: "")
