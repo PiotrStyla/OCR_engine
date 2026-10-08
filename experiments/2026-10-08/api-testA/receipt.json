@@ -1,0 +1,24 @@
+{
+  "protocol_version": "polocrbench-vision-baseline-v1",
+  "subtask": "A",
+  "track": "zero-shot",
+  "prompt_version": "polocrbench-zero-shot-prompt-v1",
+  "models": {
+    "gpt-4o-mini": "openai/gpt-4o-mini",
+    "qwen3-vl-235b": "qwen/qwen3-vl-235b-a22b-instruct",
+    "gpt-5.4": "openai/gpt-5.4"
+  },
+  "pages": 36,
+  "max_tokens": 8192,
+  "temperature": 0,
+  "transport": "IMPACT TIFF pages transcoded losslessly to PNG data URLs (ocr/page_parser.image_message)",
+  "frozen_input": {
+    "repository": "PiotrSty/impact-print-v2",
+    "revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+    "archive_sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0"
+  },
+  "measurement_only": true,
+  "training_performed": false,
+  "promoted": false,
+  "code_revision": "0c9322ec61f213d8f96273bbcf2c0f0599b9b6d6"
+}

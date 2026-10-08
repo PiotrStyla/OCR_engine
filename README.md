@@ -47,14 +47,19 @@ bez strojenia wag, adapterów i korekt; nic nie jest promowane.
 [Protokół i ograniczenia](docs/POLLOCR_SOTA_MEASUREMENT_V1_20261008.md).
 Po zwróceniu ZIP-a metryki są przeliczane lokalnie z predykcji.
 
-**Status pomiarów (8 października):** pełny pomiar CPU Surya 2 (`surya-ocr`
-0.22.1, backend `llama-server` b11503) na 36 stronach jest w toku lokalnie —
-~353 s inferencji na stronę; wynik trafi do osobnego dokumentu. Ścieżki API są
-chwilowo zablokowane brakiem kredytów (OpenRouter 402, OpenAI 429
-`credit_balance_exhausted`) — doładowanie kont odblokowuje pomiar modeli API
-zero-shot. Audyt zwróconego ZIP-a: `training/audit_polocrbench_sota_evidence.py`
-przelicza wszystkie metryki z predykcji, sprawdza piny wejścia, flagi
-pomiarowe i hash zamrożonego promptu (7 testów CPU).
+**Status pomiarów (8 października):** pierwszy pomiar API zero-shot na
+zamrożonym teście A **zakończony** — frontier `gpt-5.4` CER **16,87%**,
+Qwen3-VL-235B 20,48%, `gpt-4o-mini` 58,11% (modernizuje pisownię i odmawia
+2 stron) wobec baseline'u Tesseract.js 34,94%. Bez uszkodzonej strony GT
+(errata, referencja 4 znaki) `gpt-5.4` schodzi do 13,46%. Trzy przebiegi to
+koszt poniżej 1 USD. [Wynik, tabele i wnioski](docs/POLLOCR_SOTA_API_RESULT_20261008.md),
+[dowody w experiments/2026-10-08/api-testA](experiments/2026-10-08/api-testA/README.md).
+W toku: pełny pomiar CPU Surya 2 (backend `llama-server` b11503) na 36 stronach
+— ~353 s/stronę. Ścieżka GPU (Colab: PaddleOCR-VL-1.6 + Qwen3-VL-4B) czeka na
+odpalenie. Audyt zwróconego ZIP-a Colab:
+`training/audit_polocrbench_sota_evidence.py` przelicza wszystkie metryki z
+predykcji, sprawdza piny wejścia, flagi pomiarowe i hash zamrożonego promptu
+(7 testów CPU).
 
 ### DATA ENGINE recognizera V3: rozbudowa danych replay
 

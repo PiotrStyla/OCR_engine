@@ -1,0 +1,29 @@
+{
+  "protocol_version": "polocrbench-vision-baseline-v1",
+  "prompt_version": "polocrbench-zero-shot-prompt-v1",
+  "prompt_sha256": "69f80f1c0bbc2a0f1531babee5fa4a2e8b3f8db50ef8ea3426879469169c909e",
+  "manifest_sha256": "b7ed83788ae887565bb2e305d760a869d120fbaa8546949ad4b4dbfe6d0db211",
+  "subtask": "A",
+  "pages": 36,
+  "model": "openai/gpt-5.4",
+  "base_url": "https://openrouter.ai/api/v1",
+  "key_env": "OPENROUTER_API_KEY",
+  "started_utc": "2026-10-08T16:23:10.264841+00:00",
+  "pages_expected": 36,
+  "pages_completed": 36,
+  "error_pages": 0,
+  "state": "completed",
+  "finished_utc": "2026-10-08T16:36:19.337935+00:00",
+  "cost": {
+    "pages_timed": 36,
+    "mean_elapsed_seconds": 21.619,
+    "max_elapsed_seconds": 31.0,
+    "total_elapsed_seconds": 778.284,
+    "tokens": {
+      "completion_tokens": 23206,
+      "cost": 0,
+      "prompt_tokens": 108480,
+      "total_tokens": 131686
+    }
+  }
+}
