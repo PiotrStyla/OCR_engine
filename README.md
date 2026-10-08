@@ -6,9 +6,31 @@ z dokumentów. Repozytorium zawiera backendy OCR, narzędzia treningowe,
 ewaluatory i artefakty eksperymentów. **Nie jest jeszcze ukończonym benchmarkiem
 ani potwierdzonym silnikiem SOTA.**
 
-## Aktualny stan: 7 października 2026
+## Aktualny stan: 8 października 2026
 
-### Teraz: DATA ENGINE dla recognizera v3
+### Teraz: geometria linii w DATA ENGINE recognizera v3
+
+**Eksperyment geometrii linii V1 zakończony: deskew odzyskuje 43 z 99 kotwic.**
+Porównano niezmienioną segmentację natywną z obróceniem całej strony o jeden
+kąt (mediana nachylenia wierszy, limit ±5°) na ośmiu stronach z konfliktami i
+trzech kontrolnych. Wariant natywny odtwarza dokładnie 27 konfliktów i 99
+odrzuconych kotwic z wcześniejszej diagnostyki; tekst, kotwice i progi pewności
+są bramkami zamrożonego minera w obu wariantach. Pojedynczy kąt strony odzyskuje
+**43 kotwice na trzech stronach** (May 0523/0542/0549), 56 pozostaje za bramką:
+materiał wydawniczy 0557/0563 i uparta para na obu stronach Witkiewicza zostają
+z konfliktami 2–4 px, a płaska gazeta Zawadzkiego wychodzi **gorzej** (1 → 4
+konflikty) przez puchnięcie ramek AABB i zaokrągleń o 0–2 px. 7 z 43 odzyskanych
+wycinków ma prostokąt słowa sąsiada w granicach (46–554 px²). Strony kontrolne
+identyczne w obu wariantach. Błąd odwrotnego mapowania współrzędnych ≤ 5,2e-13 px.
+**Nic nie wchodzi do treningu** (`promoted_pairs` 0). 8 testów CPU geometrii
+przeszło. Następny krok: geometria per linii (obrócone quady słów) na tych samych
+11 stronach, z twardą bramką regresji dla gazety; przed budową zbioru replay
+należy rozróżnić prozę, spis treści i materiał wydawniczy.
+[Protokół](docs/PRINTED_REPLAY_GEOMETRY_V1_20261008.md).
+[Wynik, audyt i następny eksperyment](docs/PRINTED_REPLAY_GEOMETRY_V1_RESULT_20261008.md).
+[Kompletny ZIP, arkusze i paragony na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/089ff368ec0f5b49230940c09a7f20b3d62859c4/experiments/2026-10-08/printed-replay-geometry-v1).
+
+### DATA ENGINE recognizera V3: rozbudowa danych replay
 
 **Pilotaż replay V2 zakończony: 26 par, w tym 25 kandydatów i jedna kontrolna.**
 Zweryfikowano 173 sumy plików, odtworzono 396 linii z pełnego TSV i sprawdzono

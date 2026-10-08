@@ -44,6 +44,11 @@ validation/
 node_modules/
 tools/cpu-baseline/cache/
 
+# Ciężkie dowody eksperymentów: pełny pakiet jest na HF (wycinki, teksty, ZIP)
+experiments/*/printed-replay-geometry-v1/evidence/crops/
+experiments/*/printed-replay-geometry-v1/evidence/texts/
+experiments/*/printed-replay-geometry-v1/printed-replay-geometry-v1-evidence.zip
+
 # Environment / secrets
 .env
 .env.*

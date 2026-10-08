@@ -1,0 +1,6 @@
+{
+  "python_pillow": "12.2.0",
+  "module_sha256": "643ac1be48120bc5646a14150fd43f763e930271606af5cbdac7a73de0d01359",
+  "code_revision": "8c153f9505a56abc12a9a2e798359bfcb56c04db",
+  "native_mapping": "rotate_point/affine checked against PIL.Image.rotate in tests"
+}
