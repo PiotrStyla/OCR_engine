@@ -98,7 +98,8 @@ def test_correct_disabled_returns_unchanged():
     assert corrector.correct("oryginalny tekst") == "oryginalny tekst"
 
 
-def test_correct_no_api_key_returns_unchanged():
+def test_correct_no_api_key_returns_unchanged(monkeypatch):
+    monkeypatch.delenv('FABRYKA_API_KEY', raising=False)
     config = OcrConfig(correct_text=True, fabryka_api_key=None)
     corrector = TextCorrector(config)
     assert corrector.correct("tekst") == "tekst"
@@ -162,7 +163,8 @@ def test_correct_preserves_system_prompt():
 # --- check_connection ---
 
 
-def test_check_connection_no_key():
+def test_check_connection_no_key(monkeypatch):
+    monkeypatch.delenv('FABRYKA_API_KEY', raising=False)
     corrector = TextCorrector(OcrConfig(fabryka_api_key=None))
     ok, msg = corrector.check_connection()
     assert ok is False
