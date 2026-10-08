@@ -96,12 +96,14 @@ def test_vlm_run_records_frozen_prompt(tmp_path):
     ({"markdown": {"markdown_texts": "tekst"}}, "tekst"),
     ({"markdown_text": "wprost"}, "wprost"),
     (type("R", (), {"markdown": "surowy markdown"})(), "surowy markdown"),
+    ({"markdown": {"markdown_texts": ""}}, ""),
 ])
 def test_extract_markdown_documented_shapes(result, expected):
     assert sota.extract_markdown(result) == expected
 
 
-@pytest.mark.parametrize("result", [{"markdown": {}}, {"markdown": {"markdown_texts": "  "}}, object()])
+@pytest.mark.parametrize("result", [{"markdown": {}}, {"markdown": {"markdown_texts": None}},
+                                    {"markdown": {"markdown_texts": 42}}, object()])
 def test_extract_markdown_rejects_unusable_results(result):
     with pytest.raises(ValueError, match="markdown"):
         sota.extract_markdown(result)

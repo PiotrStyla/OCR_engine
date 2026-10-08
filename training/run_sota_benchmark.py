@@ -58,7 +58,11 @@ def write_rows(path, rows):
 
 
 def extract_markdown(result):
-    """Markdown text from a PaddleOCR-VL result (documented attribute/JSON shapes)."""
+    """Markdown text from a PaddleOCR-VL result (documented attribute/JSON shapes).
+
+    An empty page is a valid prediction (the frozen metric scores it); only a
+    result without usable markdown structure is an error.
+    """
     markdown = result.get("markdown") if isinstance(result, dict) else getattr(result, "markdown", None)
     if isinstance(markdown, dict):
         text = markdown.get("markdown_texts")
@@ -66,7 +70,7 @@ def extract_markdown(result):
         text = markdown
     else:
         text = result.get("markdown_text") if isinstance(result, dict) else getattr(result, "markdown_text", None)
-    if not isinstance(text, str) or not text.strip():
+    if not isinstance(text, str):
         raise ValueError("PaddleOCR-VL result has no markdown text")
     return text.strip()
 
@@ -135,14 +139,14 @@ def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS, max_pixels=D
 
     try:
         from paddleocr import PaddleOCRVL
-        pipeline, backend = PaddleOCRVL(pipeline_version="v1"), "paddleocr.PaddleOCRVL"
+        pipeline, backend = PaddleOCRVL(pipeline_version="v1.6"), "paddleocr.PaddleOCRVL-1.6"
     except ImportError:
         from paddlex import create_pipeline
-        pipeline, backend = create_pipeline(pipeline=spec["source"]), "paddlex"
+        pipeline, backend = create_pipeline(pipeline=spec["source"]), "paddlex:" + spec["source"]
     load_predictor.backend = backend
 
     def predict(path):
-        results = list(pipeline.predict(str(path)))
+        results = list(pipeline.predict(str(path), max_new_tokens=max_new_tokens))
         texts = [extract_markdown(result) for result in results]
         return "\n\n".join(texts)
     return predict

@@ -81,26 +81,37 @@ rows = [_json.loads(line) for line in (staged/'manifest.jsonl').read_text(encodi
 assert len(rows) == 36, f'Oczekiwano 36 stron testu A, jest {len(rows)}.'
 print('INPUT_READY', staged, len(rows), 'stron')
 '''
-    paddle = '''# Silnik Paddle: oficjalne kola GPU Paddle 3.x nie istnieja dla Python 3.13
-# (PyPI: paddlepaddle-gpu 2.6.2, max cp312), a runtime Colaba to wlasnie 3.13.
-# Instalujemy silnik CPU paddlepaddle 3.3.1 (kolo cp313 istnieje) + paddleocr
-# z ekstra doc-parser (= paddlex[ocr], wymagane przez pipeline PaddleOCR-VL).
-# Pomiar jest pelnoprawny (te same wyjscia modelu), tylko wolniejszy niz na GPU.
-subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir', 'paddleocr[doc-parser]', 'paddlepaddle==3.3.1'], check=True)
-versions = subprocess.check_output([str(python), '-c',
-    'import importlib.metadata as m; print({p: m.version(p) for p in ("paddleocr", "paddlepaddle", "paddlex", "transformers", "torch")})'],
+    paddle = '''# PaddleOCR-VL: pipeline 1.6 wymaga paddlepaddle 3.x, a oficjalne kola GPU
+# Paddle nie istnieja dla Python 3.13 (runtime Colaba). Budujemy osobny
+# Python 3.12 przez uv i tam instalujemy silnik GPU (cu118, T4 jest obslugiwane).
+# Gdyby kola GPU nie weszly, zostaje silnik CPU (poprawny, lecz ~28 min/strone).
+subprocess.run([str(python), '-m', 'pip', 'install', '-q', 'uv'], check=True)
+subprocess.run([str(python), '-m', 'uv', 'venv', '--python', '3.12', '/content/paddle312'], check=True)
+paddle_python = '/content/paddle312/bin/python'
+gpu = subprocess.run([str(python), '-m', 'uv', 'pip', 'install', '-q', '--python', paddle_python,
+                      'paddlepaddle-gpu==3.3.1', '--extra-index-url',
+                      'https://www.paddlepaddle.org.cn/packages/stable/cu118/',
+                      'paddleocr[doc-parser]', 'jiwer', 'pillow'], capture_output=True, text=True)
+if gpu.returncode != 0:
+    print('Kola GPU Paddle nie weszly, ide na silnik CPU:')
+    print(gpu.stderr[-1500:])
+    subprocess.run([str(python), '-m', 'uv', 'pip', 'install', '-q', '--python', paddle_python,
+                    'paddlepaddle==3.3.1', 'paddleocr[doc-parser]', 'jiwer', 'pillow'], check=True)
+versions = subprocess.check_output([paddle_python, '-c',
+    'import importlib.metadata as m; print({p: m.version(p) for p in ("paddleocr", "paddlepaddle", "paddlex")})'],
     text=True)
-print('STACK', versions)
+print('PADDLE_STACK', versions)
+PYTHONS = {'qwen3vl': str(python), 'paddlevl': paddle_python}
 '''
     smoke = '''import json as _json
 for model in MODELS:
     out = work/'smoke'/model
-    command = [str(python), '-m', 'training.run_sota_benchmark', '--model', model,
+    command = [PYTHONS[model], '-m', 'training.run_sota_benchmark', '--model', model,
                '--benchmark', str(staged), '--output', str(out), '--limit', '1']
     result = subprocess.run(command, cwd=repo, capture_output=True, text=True)
     if result.returncode != 0:
-        print(result.stdout[-3000:])
-        print(result.stderr[-3000:])
+        print(result.stdout)
+        print(result.stderr)
     assert result.returncode == 0, f'Smoke test nie przeszedl dla {model}. Wklej blad; nie uruchamiaj pelnego pomiaru.'
     smoke_pred = _json.loads((out/'predictions.jsonl').read_text(encoding='utf-8').splitlines()[0])
     assert smoke_pred['status'] == 'ok' and smoke_pred['text'].strip(), f'Pusty/bledny smoke dla {model}: {smoke_pred}'
@@ -110,7 +121,7 @@ for model in MODELS:
 summary = {}
 for model in MODELS:
     out = work/'runs'/model
-    command = [str(python), '-m', 'training.run_sota_benchmark', '--model', model,
+    command = [PYTHONS[model], '-m', 'training.run_sota_benchmark', '--model', model,
                '--benchmark', str(staged), '--output', str(out)]
     result = subprocess.run(command, cwd=repo)
     assert result.returncode == 0, f'Pomiar nie ukonczyl sie dla {model}.'
