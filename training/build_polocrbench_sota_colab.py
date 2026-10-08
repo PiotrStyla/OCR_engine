@@ -35,7 +35,6 @@ import hashlib
 import os
 import subprocess
 import sys
-import venv
 from datetime import datetime, timezone
 
 CODE_REVISION = {revision!r}
@@ -50,10 +49,7 @@ if not repo.exists():
 subprocess.run(['git', '-C', str(repo), 'fetch', 'origin', 'main'], check=True)
 subprocess.run(['git', '-C', str(repo), 'checkout', '--detach', CODE_REVISION], check=True)
 assert subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip() == CODE_REVISION
-environment = Path('/content/slayer-sota-env')
-python = environment/'bin/python'
-if not python.exists():
-    venv.EnvBuilder(with_pip=False, system_site_packages=True).create(environment)
+python = sys.executable  # interpreter runtime'u: CUDA torch z Colaba musi zostac na miejscu
 subprocess.run([str(python), '-m', 'pip', 'install', '--no-cache-dir',
                 'transformers==4.57.6', 'accelerate==1.13.0', 'jiwer==4.0.0',
                 'huggingface_hub==0.36.2', 'pytest==8.4.2', 'nbformat==5.10.4'], check=True)
@@ -61,8 +57,14 @@ os.environ['HF_HUB_DISABLE_XET'] = '1'
 os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
 subprocess.run([str(python), '-m', 'pytest', 'tests/test_sota_benchmark.py',
                 '-q', '-p', 'no:cacheprovider'], cwd=repo, check=True)
-assert subprocess.check_output([str(python), '-c', 'import torch; print(torch.cuda.is_available())'],
-                               text=True).strip() == 'True', 'Wlacz GPU (T4) w runtime Colab.'
+torch_info = subprocess.check_output([str(python), '-c',
+    'import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())'],
+    text=True).strip()
+print('TORCH', torch_info)
+print('GPU:', subprocess.run(['nvidia-smi', '--query-gpu=name', '--format=csv,noheader'],
+                             capture_output=True, text=True).stdout.strip() or 'brak')
+assert torch_info.endswith('True'), ('Runtime bez GPU albo torch bez CUDA (patrz TORCH/GPU wyzej). '
+    'Ustaw: Runtime > Zmien typ srodowiska > T4, uruchom ponownie od komorki 1.')
 work = Path('/content/polocrbench-sota-v1-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
 work.mkdir()
 print('WORKDIR', work)
@@ -140,7 +142,8 @@ files.download(str(zip_path))
     notebook = nbformat.v4.new_notebook(cells=[
         nbformat.v4.new_markdown_cell(
             '# PolOCRBench test A: pomiar SOTA v1\n\n'
-            'Wybierz **GPU T4** i **Uruchom wszystko**. Niczego nie wgrywaj.\n\n'
+            '**Najpierw ustaw GPU:** `Runtime → Zmień typ środowiska → T4 GPU`, potem '
+            '**Uruchom wszystko**. Niczego nie wgrywaj.\n\n'
             'Zamrożone 36 stron testu A (IMPACT history_print), ścieżka zero-shot: '
             + ", ".join(models) + '. Plik promptu i szablony są niezmienne '
             '(`benchmarks/polocrbench/prompts/zero_shot_prompt_v1.md`).\n\n'
