@@ -30,6 +30,23 @@ należy rozróżnić prozę, spis treści i materiał wydawniczy.
 [Wynik, audyt i następny eksperyment](docs/PRINTED_REPLAY_GEOMETRY_V1_RESULT_20261008.md).
 [Kompletny ZIP, arkusze i paragony na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/089ff368ec0f5b49230940c09a7f20b3d62859c4/experiments/2026-10-08/printed-replay-geometry-v1).
 
+### Pomiar SOTA na zamrożonym teście A — notebook gotowy
+
+**Mierzymy lukę do SOTA na 36 stronach testu A (IMPACT history_print).**
+Dwa systemy GPU w ścieżce zero-shot: PaddleOCR-VL-1.6 (pipeline, własny
+Markdown) oraz Qwen3-VL-4B-Instruct (zamrożony szablon A, dekodowanie greedy).
+Wejście przypięte (`PiotrSty/impact-print-v2@a2480fde…`, suma SHA-256 archiwum),
+staging weryfikuje sumy wszystkich obrazów względem zamrożonego manifestu,
+ewaluator v1.1 liczy CER/WER micro i strukturę Markdown. Smoke test jednej
+strony na model przed pełnym pomiarem, każdy model w osobnym procesie (pamięć
+GPU zwalniana między przebiegami), faktyczne wersje stosu w `run.json`. Dowody
+`polocrbench-sota-measurement-v1-evidence.zip` (predykcje per strona, metryki,
+paragony) wracają do audytu, z kopią na Dysku. **To pomiar, nie trening** —
+bez strojenia wag, adapterów i korekt; nic nie jest promowane.
+[Uruchom Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/27036749d0304c5bce5c2f3107c3fe81e666024c/training/colab_polocrbench_sota_measurement_v1.ipynb).
+[Protokół i ograniczenia](docs/POLLOCR_SOTA_MEASUREMENT_V1_20261008.md).
+Po zwróceniu ZIP-a metryki są przeliczane lokalnie z predykcji.
+
 ### DATA ENGINE recognizera V3: rozbudowa danych replay
 
 **Pilotaż replay V2 zakończony: 26 par, w tym 25 kandydatów i jedna kontrolna.**
