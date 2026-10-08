@@ -35,14 +35,22 @@ subprocess.run(["git", "-C", str(repo), "checkout", "--detach", CODE_REVISION], 
 assert subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip() == CODE_REVISION
 print("CODE_REVISION", CODE_REVISION)
 
-# Torch z obrazu Kaggle zostaje nietkniete; dokladamy tylko potrzebne pakiety.
+# Torch z obrazu Kaggle zostaje nietkniete: Paddle GPU ciagnie wlasne bibioteki
+# NVIDIA (nccl/cudnn) i instalowany obok lamie torcha (undefined symbol: ncclCommShrink).
+# Dlatego silnik Paddle idzie do OSOBNEGO srodowiska, a pomiar kazdego modelu
+# leci wlasnym interpreterem.
 subprocess.run([python, "-m", "pip", "install", "-q", "transformers==4.57.6", "accelerate==1.13.0",
                 "bitsandbytes", "jiwer==4.0.0", "huggingface_hub==0.36.2"], check=True)
+subprocess.check_call([python, "-c", "import torch; assert torch.cuda.is_available()"])
+paddle_home = Path("/kaggle/working/paddle-env")
+paddle_python = str(paddle_home / "bin" / "python")
+if not Path(paddle_python).exists():
+    subprocess.run([python, "-m", "venv", str(paddle_home)], check=True)
 paddle_ok = False
 for cu in ("cu118", "cu126"):
-    attempt = subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle-gpu==3.3.1",
+    attempt = subprocess.run([paddle_python, "-m", "pip", "install", "-q", "paddlepaddle-gpu==3.3.1",
                              "--extra-index-url", f"https://www.paddlepaddle.org.cn/packages/stable/{cu}/",
-                             "paddleocr[doc-parser]"], capture_output=True, text=True)
+                             "paddleocr[doc-parser]", "jiwer", "pillow"], capture_output=True, text=True)
     print("PADDLE_GPU_TRY", cu, "rc", attempt.returncode)
     if attempt.returncode == 0:
         paddle_ok = True
@@ -50,17 +58,21 @@ for cu in ("cu118", "cu126"):
     print(attempt.stderr[-800:])
 if not paddle_ok:
     print("Kola GPU Paddle niedostepne dla tego Pythona; silnik CPU (poprawny, lecz wolny).")
-    subprocess.run([python, "-m", "pip", "install", "-q", "paddlepaddle==3.3.1", "paddleocr[doc-parser]"], check=True)
-versions = subprocess.check_output([python, "-c",
+    subprocess.run([paddle_python, "-m", "pip", "install", "-q", "paddlepaddle==3.3.1",
+                    "paddleocr[doc-parser]", "jiwer", "pillow"], check=True)
+versions = subprocess.check_output([paddle_python, "-c",
     'import importlib.metadata as m\n'
     'def v(name):\n'
     '    try:\n'
     '        return m.version(name)\n'
     '    except m.PackageNotFoundError:\n'
     '        return None\n'
-    'print({p: v(p) for p in ("paddleocr", "paddlex", "paddlepaddle", "paddlepaddle-gpu", "transformers", "torch", "bitsandbytes")})'],
+    'print({p: v(p) for p in ("paddleocr", "paddlex", "paddlepaddle", "paddlepaddle-gpu", "jiwer")})'],
     text=True).strip()
-print("STACK_PACKAGES", versions)
+print("PADDLE_STACK", versions)
+subprocess.check_call([python, "-c", "import torch; assert torch.cuda.is_available()"])
+print("TORCH_UNTOUCHED ok")
+PYTHONS = {"qwen3vl": python, "paddlevl": paddle_python}
 
 from huggingface_hub import hf_hub_download
 archive = Path(hf_hub_download(IMPACT_REPOSITORY, IMPACT_PATH, repo_type="dataset", revision=IMPACT_REVISION))
@@ -75,7 +87,7 @@ print("INPUT_READY", staged, len(rows), "stron")
 
 for model in MODELS:
     out = WORK / "smoke" / model
-    result = subprocess.run([python, "-m", "training.run_sota_benchmark", "--model", model,
+    result = subprocess.run([PYTHONS[model], "-m", "training.run_sota_benchmark", "--model", model,
                              "--benchmark", str(staged), "--output", str(out), "--limit", "1"],
                             cwd=repo, capture_output=True, text=True)
     if result.returncode != 0:
@@ -89,7 +101,7 @@ for model in MODELS:
 summary = {}
 for model in MODELS:
     out = WORK / "runs" / model
-    result = subprocess.run([python, "-m", "training.run_sota_benchmark", "--model", model,
+    result = subprocess.run([PYTHONS[model], "-m", "training.run_sota_benchmark", "--model", model,
                              "--benchmark", str(staged), "--output", str(out)], cwd=repo)
     assert result.returncode == 0, f"Pomiar nie ukonczyl sie dla {model}."
     score = json.loads((out / "score.json").read_text(encoding="utf-8"))
