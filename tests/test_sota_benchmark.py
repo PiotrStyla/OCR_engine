@@ -11,7 +11,7 @@ from training.validate_submission import ZERO_SHOT_PROMPTS
 
 
 def staged(tmp_path, texts):
-    (tmp_path / "images").mkdir()
+    (tmp_path / "images").mkdir(parents=True)
     rows = []
     for index, text in enumerate(texts):
         image = tmp_path / "images" / f"page{index}.png"
@@ -119,8 +119,19 @@ def test_evidence_is_deterministic_for_identical_predictions(tmp_path):
     lookup = by_path(rows)
     first = sota.run("paddlevl", tmp_path, tmp_path / "a",
                      predictor=lambda p: lookup[p.relative_to(tmp_path).as_posix()])
-    second = sota.run("paddlevl", tmp_path, tmp_path / "b",
+    second = sota.run("paddlevl", tmp_path, tmp_path / "a2",
                       predictor=lambda p: lookup[p.relative_to(tmp_path).as_posix()])
     for key in ("cer_micro", "wer_micro", "structure_similarity", "benchmark_manifest_sha256"):
         assert first[key] == second[key]
-    assert (tmp_path / "a" / "predictions.jsonl").read_text() == (tmp_path / "b" / "predictions.jsonl").read_text()
+
+    def payloads(directory):
+        rows = [json.loads(line) for line in (directory / "predictions.jsonl").read_text().splitlines()]
+        return [{k: v for k, v in row.items() if k != "elapsed_seconds"} for row in rows]
+
+    def score(directory):
+        data = json.loads((directory / "score.json").read_text())
+        data.pop("predictions_sha256")
+        return data
+
+    assert payloads(tmp_path / "a") == payloads(tmp_path / "a2")
+    assert score(tmp_path / "a") == score(tmp_path / "a2")
