@@ -40,6 +40,7 @@ MODELS = {
                  "prompt": False, "decoding": "pipeline-default", "max_new_tokens": 0},
 }
 DEFAULT_MAX_NEW_TOKENS = 4096
+DEFAULT_MAX_PIXELS = 4194304  # profil 4MP sprawdzony na T4 (training/full_page_validation_4mp.py)
 
 
 def digest(path):
@@ -87,7 +88,7 @@ def model_image(path):
     return target
 
 
-def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS):
+def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS, max_pixels=DEFAULT_MAX_PIXELS):
     """Real predictor for a model id; imports the model stack on first use."""
     if model not in MODELS:
         raise ValueError(f"Unknown model: {model}")
@@ -96,8 +97,9 @@ def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS):
         prompt = load_templates()["A"]
         import torch
         from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
-        engine = Qwen3VLForConditionalGeneration.from_pretrained(spec["source"], dtype="auto", device_map="auto")
-        processor = AutoProcessor.from_pretrained(spec["source"])
+        engine = Qwen3VLForConditionalGeneration.from_pretrained(
+            spec["source"], dtype="auto", device_map="auto", attn_implementation="sdpa")
+        processor = AutoProcessor.from_pretrained(spec["source"], max_pixels=max_pixels)
 
         def predict(path):
             messages = [{"role": "user", "content": [
@@ -126,7 +128,8 @@ def load_predictor(model, *, max_new_tokens=DEFAULT_MAX_NEW_TOKENS):
     return predict
 
 
-def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEFAULT_MAX_NEW_TOKENS):
+def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEFAULT_MAX_NEW_TOKENS,
+        max_pixels=DEFAULT_MAX_PIXELS):
     if model not in MODELS:
         raise ValueError(f"Unknown model: {model}")
     if limit < 0:
@@ -140,7 +143,8 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
     if output.exists():
         raise FileExistsError(output)
     output.mkdir(parents=True)
-    predict = predictor if predictor is not None else load_predictor(model, max_new_tokens=max_new_tokens)
+    predict = predictor if predictor is not None else load_predictor(
+        model, max_new_tokens=max_new_tokens, max_pixels=max_pixels)
     predictions = []
     started = time.time()
     for row in selected:
@@ -174,6 +178,8 @@ def run(model, benchmark, output, *, predictor=None, limit=0, max_new_tokens=DEF
         "prompt_sha256": digest(Path(__file__).resolve().parents[1] / "benchmarks" / "polocrbench"
                                 / "prompts" / "zero_shot_prompt_v1.md") if spec["prompt"] else None,
         "max_new_tokens": max_new_tokens if spec["prompt"] else None,
+        "max_pixels": max_pixels if spec["prompt"] else None,
+        "attn_implementation": "sdpa" if spec["prompt"] else None,
         "backend": getattr(load_predictor, "backend", None),
         "benchmark_manifest_sha256": digest(manifest),
         "pages_total": len(rows), "pages_predicted": len(selected),
@@ -197,5 +203,8 @@ if __name__ == "__main__":
     parser.add_argument("--output", required=True)
     parser.add_argument("--limit", type=int, default=0, help="Smoke test: first N pages only")
     parser.add_argument("--max-new-tokens", type=int, default=DEFAULT_MAX_NEW_TOKENS)
+    parser.add_argument("--max-pixels", type=int, default=DEFAULT_MAX_PIXELS,
+                        help="Vision token budget per page (OOM safety on small GPUs)")
     args = parser.parse_args()
-    run(args.model, args.benchmark, args.output, limit=args.limit, max_new_tokens=args.max_new_tokens)
+    run(args.model, args.benchmark, args.output, limit=args.limit,
+        max_new_tokens=args.max_new_tokens, max_pixels=args.max_pixels)

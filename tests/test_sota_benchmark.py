@@ -85,6 +85,7 @@ def test_vlm_run_records_frozen_prompt(tmp_path):
     assert report["prompt_used"] is True and report["prompt_version"] == PROMPT_VERSION
     assert report["prompt_sha256"] == ZERO_SHOT_PROMPTS[PROMPT_VERSION]
     assert report["decoding"] == "greedy"
+    assert report["max_pixels"] == sota.DEFAULT_MAX_PIXELS and report["attn_implementation"] == "sdpa"
     prompt = Path(__file__).resolve().parents[1] / "benchmarks/polocrbench/prompts/zero_shot_prompt_v1.md"
     assert report["prompt_sha256"] == hashlib.sha256(prompt.read_bytes()).hexdigest()
 
