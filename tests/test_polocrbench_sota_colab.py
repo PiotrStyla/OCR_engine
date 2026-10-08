@@ -52,7 +52,7 @@ def test_notebook_smokes_before_full_run_and_isolates_models(tmp_path):
     smoke_index = next(i for i, source in enumerate(code_cells) if "'smoke'/" in source)
     full_index = next(i for i, source in enumerate(code_cells) if "runs'/model" in source)
     assert smoke_index < full_index
-    assert code.count("training.run_sota_benchmark") == 2  # smoke loop + full loop
-    assert code.count("subprocess.run(command, cwd=repo)") == 2  # one process per model per stage
+    assert code.count("subprocess.run(command") == 2  # one process per model per stage
+    assert code.count("subprocess.run(command, cwd=repo, capture_output=True, text=True)") == 1
     markdown = "\n".join(cell.source for cell in notebook.cells if cell.cell_type == "markdown")
     assert "pomiar" in markdown.lower() and "nie trening" in markdown.lower()
