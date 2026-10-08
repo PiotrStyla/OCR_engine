@@ -173,6 +173,20 @@ def run_pages(subtask, pages, predict, output, metadata):
     return run
 
 
+def environment_info():
+    """Reproducibility receipt: package versions and the llama.cpp backend path."""
+    import importlib.metadata
+    import os
+    versions = {}
+    for package in ('surya-ocr', 'torch', 'pillow'):
+        try:
+            versions[package] = importlib.metadata.version(package)
+        except importlib.metadata.PackageNotFoundError:
+            versions[package] = None
+    return {'package_versions': versions,
+            'llama_cpp_binary': os.environ.get('LLAMA_CPP_BINARY')}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--subtask', choices=_SUBTASKS, required=True)
@@ -184,7 +198,8 @@ def main():
     plan = {'protocol_version': PROTOCOL_VERSION, 'engine': 'surya2',
             'manifest_sha256': digest(args.manifest), 'subtask': args.subtask,
             'pages': len(pages),
-            'table_slots': sum(len(page['rows']) for page in pages) if args.subtask == 'B' else None}
+            'table_slots': sum(len(page['rows']) for page in pages) if args.subtask == 'B' else None,
+            **environment_info()}
     if not args.execute:
         print(json.dumps({key: value for key, value in
                           {**plan, 'state': 'preflight-only'}.items() if value is not None},

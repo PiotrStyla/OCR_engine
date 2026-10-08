@@ -6,6 +6,7 @@ import pytest
 from training.run_surya_benchmark import (
     align_tables,
     blocks_to_text,
+    environment_info,
     load_page_cases,
     run_pages,
 )
@@ -101,3 +102,10 @@ def test_a_run_writes_one_text_row_per_page(tmp_path):
             (tmp_path / 'run' / 'predictions.jsonl').read_text(encoding='utf-8').splitlines()]
     assert rows == [{'id': 'p1', 'status': 'ok', 'text': 'Ala\nma kota',
                      'elapsed_seconds': 0.5}]
+
+
+def test_environment_info_records_versions_and_backend(monkeypatch):
+    monkeypatch.setenv('LLAMA_CPP_BINARY', 'C:/tools/llama-server.exe')
+    info = environment_info()
+    assert info['llama_cpp_binary'] == 'C:/tools/llama-server.exe'
+    assert set(info['package_versions']) == {'surya-ocr', 'torch', 'pillow'}

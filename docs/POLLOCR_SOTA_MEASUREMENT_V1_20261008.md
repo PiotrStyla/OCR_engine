@@ -71,7 +71,32 @@ python -m pytest -q tests/test_sota_benchmark.py tests/test_polocrbench_sota_col
 ```
 
 Po zwróceniu ZIP-a audyt lokalny przelicza metryki z predykcji i sprawdza
-zgodność pinów (osobny krok).
+piny:
+
+```powershell
+python -m training.audit_polocrbench_sota_evidence `
+  --archive polocrbench-sota-measurement-v1-evidence.zip `
+  --benchmark data/impact-test-a-staged --output runs/sota-audit
+```
+
+Audytor (`training/audit_polocrbench_sota_evidence.py`) wymaga dokładnego
+zestawu członków ZIP-a, paragonu wejścia zgodnego z pinami, flag
+`measurement_only`/`training_performed`, hasha zamrożonego promptu tam, gdzie
+prompt obowiązuje, i **przelicza** CER/WER/strukturę zwróconych predykcji
+przez `training.transcription_eval`; raportowane wartości są tylko porównywane.
+Testy: `tests/test_audit_polocrbench_sota_evidence.py` (7 przypadków, m.in.
+drążona predykcja, zły hash promptu, flaga treningu, nadmiarowy członek ZIP-a).
+
+## Status pomiarów (2026-10-08)
+
+- **CPU, Surya 2** (`surya-ocr` 0.22.1, backend `llama-server` b11503,
+  `LLAMA_CPP_BINARY`): pełny pomiar 36 stron odpalony lokalnie, ~353 s
+  inferencji na stronę; wynik w osobnym dokumencie po zakończeniu.
+- **API zero-shot zablokowany**: `OPENROUTER_API_KEY` — 402 (brak kredytów,
+  ~3,9k tokenów salda), `OPENAI_API_KEY` — 429 `credit_balance_exhausted`.
+  Pomiar modeli API wymaga doładowania konta; to jedyny ręczny krok poza
+  Colabem.
+- **GPU (Colab)**: notebook gotowy do odpalenia (PaddleOCR-VL-1.6 + Qwen3-VL).
 
 ## Ograniczenia
 
