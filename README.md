@@ -43,8 +43,11 @@ GPU zwalniana między przebiegami), faktyczne wersje stosu w `run.json`. Dowody
 `polocrbench-sota-measurement-v1-evidence.zip` (predykcje per strona, metryki,
 paragony) wracają do audytu, z kopią na Dysku. **To pomiar, nie trening** —
 bez strojenia wag, adapterów i korekt; nic nie jest promowane.
-[Uruchom Colab](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/notebooks/colab_sota_testA.ipynb)
-(przypięta rewizja kodu wewnątrz notebooka: `27036749…`).
+[Uruchom na Kaggle (zalecane)](training/kaggle_sota_testA.ipynb) —
+jeden notebook, `Accelerator: GPU T4` + `Internet: on`, Run All; wynikowy
+`polocrbench-sota-measurement-v1-evidence.zip` w panelu Output.
+[Colab (alternatywnie)](https://colab.research.google.com/github/PiotrStyla/OCR_engine/blob/main/notebooks/colab_sota_testA.ipynb)
+(przypięta rewizja kodu wewnątrz notebooka: `2d518280…`).
 [Protokół i ograniczenia](docs/POLLOCR_SOTA_MEASUREMENT_V1_20261008.md).
 Po zwróceniu ZIP-a metryki są przeliczane lokalnie z predykcji.
 

@@ -12,7 +12,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-CODE_REVISION = "PENDING_PIN"  # przypinane po publikacji tego skryptu
+CODE_REVISION = "2d518280481c1c47b7d5f6b8f2739bf7281b1ae2"  # przypinane po publikacji tego skryptu
 IMPACT_REPOSITORY = "PiotrSty/impact-print-v2"
 IMPACT_REVISION = "a2480fde6f15284701458ff370b81cce50dc5c2d"
 IMPACT_SHA256 = "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0"

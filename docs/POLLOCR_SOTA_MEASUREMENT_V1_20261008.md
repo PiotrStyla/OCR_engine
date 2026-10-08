@@ -51,12 +51,18 @@ proste, białe znaki; wielkość liter i diakrytyki zachowane.
 
 ## Notebook
 
-`notebooks/colab_sota_testA.ipynb` (GPU T4, „Uruchom
+Ścieżka **Kaggle** (zalecana): `training/kaggle_sota_testA.ipynb` albo ten sam
+kod jako jedna komórka `training/kaggle_sota_testA.py`. Ustawienia notebooka:
+**Accelerator: GPU T4**, **Internet: on**, potem Run All. Kaggle ma Python ≤3.12,
+więc silnik GPU Paddle (`paddlepaddle-gpu==3.3.1`, cu123/cu118) wchodzi bez
+osobnego środowiska; przy braku kół GPU skrypt schodzi na silnik CPU i to
+zapisuje. Wynik: `polocrbench-sota-measurement-v1-evidence.zip` w panelu Output.
+
+Ścieżka **Colab**: `notebooks/colab_sota_testA.ipynb` (GPU T4, „Uruchom
 wszystko", bez ręcznych wgrań): przypięta rewizja kodu i wejścia, testy CPU
 przed pomiarem, smoke test 1 strony na model, każdy model w osobnym procesie,
-spakowanie dowodów. Stos paddle (`paddlex`, `paddlepaddle-gpu`) nie jest
-wstępnie przypięty — zmienne macierze kół GPU na Colab; faktyczne wersje
-trafiają do `run.json` i to one identyfikują przebieg.
+spakowanie dowodów. Runtime Colab (Python 3.13) nie ma kół GPU Paddle 3.x, więc
+tam PaddleOCR-VL leci na osobnym Pythonie 3.12 (uv) lub na silniku CPU.
 
 Budowa z przypiętą rewizją kodu:
 
