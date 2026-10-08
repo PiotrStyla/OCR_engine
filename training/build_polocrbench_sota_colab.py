@@ -171,7 +171,7 @@ files.download(str(zip_path))
         nbformat.v4.new_code_cell(package)], metadata={
             'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'},
             'language_info': {'name': 'python'},
-            'colab': {'name': 'colab_polocrbench_sota_measurement_v1.ipynb', 'provenance': []}})
+            'colab': {'name': 'colab_sota_testA.ipynb', 'provenance': []}})
     nbformat.validate(notebook)
     nbformat.write(notebook, Path(target))
     return notebook
@@ -180,7 +180,7 @@ files.download(str(zip_path))
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--code-revision", required=True)
-    parser.add_argument("--output", default="training/colab_polocrbench_sota_measurement_v1.ipynb")
+    parser.add_argument("--output", default="notebooks/colab_sota_testA.ipynb")
     parser.add_argument("--input-receipt")
     parser.add_argument("--models", default=",".join(DEFAULT_MODELS))
     args = parser.parse_args()

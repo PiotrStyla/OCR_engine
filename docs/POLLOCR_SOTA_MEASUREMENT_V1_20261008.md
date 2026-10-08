@@ -51,7 +51,7 @@ proste, białe znaki; wielkość liter i diakrytyki zachowane.
 
 ## Notebook
 
-`training/colab_polocrbench_sota_measurement_v1.ipynb` (GPU T4, „Uruchom
+`notebooks/colab_sota_testA.ipynb` (GPU T4, „Uruchom
 wszystko", bez ręcznych wgrań): przypięta rewizja kodu i wejścia, testy CPU
 przed pomiarem, smoke test 1 strony na model, każdy model w osobnym procesie,
 spakowanie dowodów. Stos paddle (`paddlex`, `paddlepaddle-gpu`) nie jest
