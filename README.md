@@ -47,6 +47,15 @@ bez strojenia wag, adapterów i korekt; nic nie jest promowane.
 [Protokół i ograniczenia](docs/POLLOCR_SOTA_MEASUREMENT_V1_20261008.md).
 Po zwróceniu ZIP-a metryki są przeliczane lokalnie z predykcji.
 
+**Status pomiarów (8 października):** pełny pomiar CPU Surya 2 (`surya-ocr`
+0.22.1, backend `llama-server` b11503) na 36 stronach jest w toku lokalnie —
+~353 s inferencji na stronę; wynik trafi do osobnego dokumentu. Ścieżki API są
+chwilowo zablokowane brakiem kredytów (OpenRouter 402, OpenAI 429
+`credit_balance_exhausted`) — doładowanie kont odblokowuje pomiar modeli API
+zero-shot. Audyt zwróconego ZIP-a: `training/audit_polocrbench_sota_evidence.py`
+przelicza wszystkie metryki z predykcji, sprawdza piny wejścia, flagi
+pomiarowe i hash zamrożonego promptu (7 testów CPU).
+
 ### DATA ENGINE recognizera V3: rozbudowa danych replay
 
 **Pilotaż replay V2 zakończony: 26 par, w tym 25 kandydatów i jedna kontrolna.**
