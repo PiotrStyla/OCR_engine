@@ -1,0 +1,60 @@
+{
+ "schema": "slayer-recognizer-guarded-training-v3",
+ "extends": "experiments/2026-10-07/recognizer-reviewed-colab-v2/config.json",
+ "dataset_revision": "3a301fd12a6272b28774d1888213ddf528b47f24",
+ "dataset_sha256": "3e39b7d02b90a0a741adde506c0467698c46fe86c82846d3cc0e648eebaae32e",
+ "synthetic_archive_sha256": "5667c3966416361ab90666b63690effaea735a097a0525cc49e3df74e07d27e4",
+ "synthetic_order_prefix": "recognizer-v3:",
+ "expansion_evidence": {
+  "repo": "PiotrSty/slayer-ocr-experiment-evidence",
+  "revision": "610f8a23d931a012088ad20453eaa1a1783fd1e2",
+  "filename": "experiments/2026-10-07/printed-replay-expansion-v1-result/printed-replay-expansion-v1-evidence.zip",
+  "sha256": "5e32ce9e545f23143ef4f61cedc804e414f5c3e60e6fe23833641702bb453732"
+ },
+ "reviewed_v3": {
+  "expected_pairs": 226,
+  "from_pool": 99,
+  "from_expansion": 127,
+  "probe_held_out": 65,
+  "split": "replay-candidate"
+ },
+ "variants": [
+  {
+   "id": "control-lr1e5-replay500",
+   "learning_rate": 1e-05,
+   "replay_count": 500
+  },
+  {
+   "id": "low-lr3e6-replay500",
+   "learning_rate": 3e-06,
+   "replay_count": 500
+  },
+  {
+   "id": "low-lr3e6-replay2000",
+   "learning_rate": 3e-06,
+   "replay_count": 2000
+  }
+ ],
+ "training": {
+  "epochs": 3,
+  "batch_size": 2,
+  "gradient_accumulation_steps": 4,
+  "historical_repeats": 4,
+  "lora_rank": 16,
+  "lora_alpha": 32,
+  "max_target_length": 128,
+  "seed": 42
+ },
+ "selection": {
+  "historical_cer": "strictly improves over unchanged baseline",
+  "ordinary_cer_and_wer": "no regression against unchanged baseline",
+  "replacement_characters": "no increase in either development domain",
+  "combined_cer": "strictly improves over unchanged baseline",
+  "fallback": "unchanged-baseline",
+  "checkpoint_metric": "selection_score",
+  "normalization": "NFC and whitespace only, no spelling modernization"
+ },
+ "independent_benchmark": false,
+ "automatic_production_promotion": false,
+ "sota_claim": false
+}
