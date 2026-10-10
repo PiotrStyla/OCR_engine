@@ -11,8 +11,8 @@
     "ink-separated": 6,
     "ink-contact": 0,
     "other": 0,
-    "ink-inside-crop": 6,
-    "boxes-only": 5
+    "ink-inside-crop": 1,
+    "boxes-only": 10
   },
   "cases": [
     {
@@ -101,9 +101,9 @@
       "neighbor_lines": [
         14
       ],
-      "neighbor_ink_pixels_in_crop": 30,
+      "neighbor_ink_pixels_in_crop": 0,
       "neighbor_box_overlap_px2": 837,
-      "verdict": "ink-inside-crop"
+      "verdict": "boxes-only"
     },
     {
       "id": "andersen-basnie-1929-0225-line-021",
@@ -112,9 +112,9 @@
         20,
         22
       ],
-      "neighbor_ink_pixels_in_crop": 0,
+      "neighbor_ink_pixels_in_crop": 22,
       "neighbor_box_overlap_px2": 3232,
-      "verdict": "boxes-only"
+      "verdict": "ink-inside-crop"
     },
     {
       "id": "may-nad-rio-de-la-plata-0523-line-002",
@@ -122,9 +122,9 @@
       "neighbor_lines": [
         3
       ],
-      "neighbor_ink_pixels_in_crop": 8,
+      "neighbor_ink_pixels_in_crop": 0,
       "neighbor_box_overlap_px2": 895,
-      "verdict": "ink-inside-crop"
+      "verdict": "boxes-only"
     },
     {
       "id": "may-nad-rio-de-la-plata-0523-line-003",
@@ -133,9 +133,9 @@
         2,
         4
       ],
-      "neighbor_ink_pixels_in_crop": 15,
+      "neighbor_ink_pixels_in_crop": 0,
       "neighbor_box_overlap_px2": 732,
-      "verdict": "ink-inside-crop"
+      "verdict": "boxes-only"
     },
     {
       "id": "may-nad-rio-de-la-plata-0523-line-004",
@@ -163,9 +163,9 @@
       "neighbor_lines": [
         15
       ],
-      "neighbor_ink_pixels_in_crop": 1,
+      "neighbor_ink_pixels_in_crop": 0,
       "neighbor_box_overlap_px2": 205,
-      "verdict": "ink-inside-crop"
+      "verdict": "boxes-only"
     },
     {
       "id": "may-nad-rio-de-la-plata-0523-line-019",
@@ -193,9 +193,9 @@
       "neighbor_lines": [
         25
       ],
-      "neighbor_ink_pixels_in_crop": 1,
+      "neighbor_ink_pixels_in_crop": 0,
       "neighbor_box_overlap_px2": 22,
-      "verdict": "ink-inside-crop"
+      "verdict": "boxes-only"
     },
     {
       "id": "may-nad-rio-de-la-plata-0523-line-031",
@@ -203,9 +203,9 @@
       "neighbor_lines": [
         30
       ],
-      "neighbor_ink_pixels_in_crop": 9,
+      "neighbor_ink_pixels_in_crop": 0,
       "neighbor_box_overlap_px2": 215,
-      "verdict": "ink-inside-crop"
+      "verdict": "boxes-only"
     }
   ],
   "promoted_pairs": 0,

@@ -1,77 +1,133 @@
 {
   "schema": "slayer-printed-replay-crop-review-v1",
-  "cases": 6,
+  "cases": 1,
   "recommendations": {
-    "trim-2px": 3,
-    "trim-to-depth-or-accept": 3
+    "trim-2px": 1
   },
   "cases_detail": [
     {
-      "id": "andersen-basnie-1929-0225-line-015",
+      "id": "andersen-basnie-1929-0225-line-021",
       "page_id": "andersen-basnie-1929-0225",
       "neighbor_lines": [
-        14
+        20,
+        22
       ],
-      "trace_pixels": 30,
-      "max_depth_px": 2,
-      "recommendation": "trim-2px",
-      "sheet": "andersen-basnie-1929-0225-line-015.png"
-    },
-    {
-      "id": "may-nad-rio-de-la-plata-0523-line-002",
-      "page_id": "may-nad-rio-de-la-plata-0523",
-      "neighbor_lines": [
-        3
-      ],
-      "trace_pixels": 8,
-      "max_depth_px": 3,
-      "recommendation": "trim-to-depth-or-accept",
-      "sheet": "may-nad-rio-de-la-plata-0523-line-002.png"
-    },
-    {
-      "id": "may-nad-rio-de-la-plata-0523-line-003",
-      "page_id": "may-nad-rio-de-la-plata-0523",
-      "neighbor_lines": [
-        2,
-        4
-      ],
-      "trace_pixels": 15,
-      "max_depth_px": 8,
-      "recommendation": "trim-to-depth-or-accept",
-      "sheet": "may-nad-rio-de-la-plata-0523-line-003.png"
-    },
-    {
-      "id": "may-nad-rio-de-la-plata-0523-line-014",
-      "page_id": "may-nad-rio-de-la-plata-0523",
-      "neighbor_lines": [
-        15
-      ],
-      "trace_pixels": 1,
+      "trace_pixels": 22,
       "max_depth_px": 1,
-      "recommendation": "trim-2px",
-      "sheet": "may-nad-rio-de-la-plata-0523-line-014.png"
-    },
-    {
-      "id": "may-nad-rio-de-la-plata-0523-line-026",
-      "page_id": "may-nad-rio-de-la-plata-0523",
-      "neighbor_lines": [
-        25
+      "trace_points": [
+        [
+          2017,
+          2364,
+          1
+        ],
+        [
+          2018,
+          2364,
+          1
+        ],
+        [
+          2019,
+          2364,
+          1
+        ],
+        [
+          2020,
+          2364,
+          1
+        ],
+        [
+          2021,
+          2364,
+          1
+        ],
+        [
+          2022,
+          2364,
+          1
+        ],
+        [
+          2023,
+          2364,
+          1
+        ],
+        [
+          2024,
+          2364,
+          1
+        ],
+        [
+          2025,
+          2364,
+          1
+        ],
+        [
+          2026,
+          2364,
+          1
+        ],
+        [
+          2027,
+          2364,
+          1
+        ],
+        [
+          2028,
+          2364,
+          1
+        ],
+        [
+          2029,
+          2364,
+          1
+        ],
+        [
+          2021,
+          2365,
+          0
+        ],
+        [
+          2022,
+          2365,
+          0
+        ],
+        [
+          2023,
+          2365,
+          0
+        ],
+        [
+          2024,
+          2365,
+          0
+        ],
+        [
+          2025,
+          2365,
+          0
+        ],
+        [
+          2026,
+          2365,
+          0
+        ],
+        [
+          2027,
+          2365,
+          0
+        ],
+        [
+          2028,
+          2365,
+          0
+        ],
+        [
+          2029,
+          2365,
+          0
+        ]
       ],
-      "trace_pixels": 1,
-      "max_depth_px": 0,
       "recommendation": "trim-2px",
-      "sheet": "may-nad-rio-de-la-plata-0523-line-026.png"
-    },
-    {
-      "id": "may-nad-rio-de-la-plata-0523-line-031",
-      "page_id": "may-nad-rio-de-la-plata-0523",
-      "neighbor_lines": [
-        30
-      ],
-      "trace_pixels": 9,
-      "max_depth_px": 3,
-      "recommendation": "trim-to-depth-or-accept",
-      "sheet": "may-nad-rio-de-la-plata-0523-line-031.png"
+      "sheet": "andersen-basnie-1929-0225-line-021.png"
     }
   ],
   "decided": false,
@@ -81,5 +137,5 @@
     "Ink threshold is adaptive and measured, not calibrated.",
     "Trace depth is measured to the padded crop rectangle."
   ],
-  "ink_report_sha256": "506cf30d3535451dd6e3a85062f4a76780181b0926ee8784ea7b3496eee500c8"
+  "ink_report_sha256": "3588838b2a2139854df09b3becb297d051d21581fbc6d8653f242c5fd32ed8e5"
 }

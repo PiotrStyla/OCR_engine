@@ -13,13 +13,17 @@
     {
       "gate": "crop-boundary-ink-trace",
       "cases": 6,
-      "decision": null,
-      "status": "open",
+      "decision": "trim per recommendation (user, conversation 2026-10-10)",
+      "status": "closed",
       "options": [
         "trim crop",
         "accept trace",
         "reject pair"
-      ]
+      ],
+      "applied": {
+        "cases": 1,
+        "note": "recomputed in the rotated frame: 1 real case (was 6 with frame artifact), trimmed 2 px, zero trace pixels remain"
+      }
     },
     {
       "gate": "reference-defects",

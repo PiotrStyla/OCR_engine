@@ -39,3 +39,16 @@ def test_render_case_marks_traces(tmp_path):
         assert sheet.getpixel((60, 112)) == (255, 0, 0), "trace pixel marked in red"
         assert sheet.getpixel((61, 113)) == (255, 0, 0)
         assert sheet.getpixel((200, 250)) == (210, 210, 210), "plain background untouched"
+
+
+def test_trim_box_excludes_traces_per_side():
+    crop = [40, 75, 460, 115]
+    pixels = [(60, 112, 3), (61, 113, 2)]     # traces near the bottom edge
+    trimmed, sides = review.trim_box(pixels, crop)
+    assert sides == {"left": 0, "top": 0, "right": 0, "bottom": 3}
+    assert trimmed == [40, 75, 460, 112]
+    assert all(not (trimmed[0] <= x < trimmed[2] and trimmed[1] <= y < trimmed[3])
+               for x, y, _ in pixels)
+    edge = [(50, 80, 20), (300, 80, 25)]
+    trimmed, sides = review.trim_box(edge, crop)
+    assert sides["top"] == 6 and sides["bottom"] == 0

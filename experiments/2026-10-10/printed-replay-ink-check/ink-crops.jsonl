@@ -1,11 +1,11 @@
-{"id": "andersen-basnie-1929-0225-line-015", "page_id": "andersen-basnie-1929-0225", "neighbor_lines": [14], "neighbor_ink_pixels_in_crop": 30, "neighbor_box_overlap_px2": 837, "verdict": "ink-inside-crop"}
-{"id": "andersen-basnie-1929-0225-line-021", "page_id": "andersen-basnie-1929-0225", "neighbor_lines": [20, 22], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 3232, "verdict": "boxes-only"}
-{"id": "may-nad-rio-de-la-plata-0523-line-002", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [3], "neighbor_ink_pixels_in_crop": 8, "neighbor_box_overlap_px2": 895, "verdict": "ink-inside-crop"}
-{"id": "may-nad-rio-de-la-plata-0523-line-003", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [2, 4], "neighbor_ink_pixels_in_crop": 15, "neighbor_box_overlap_px2": 732, "verdict": "ink-inside-crop"}
+{"id": "andersen-basnie-1929-0225-line-015", "page_id": "andersen-basnie-1929-0225", "neighbor_lines": [14], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 837, "verdict": "boxes-only"}
+{"id": "andersen-basnie-1929-0225-line-021", "page_id": "andersen-basnie-1929-0225", "neighbor_lines": [20, 22], "neighbor_ink_pixels_in_crop": 22, "neighbor_box_overlap_px2": 3232, "verdict": "ink-inside-crop"}
+{"id": "may-nad-rio-de-la-plata-0523-line-002", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [3], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 895, "verdict": "boxes-only"}
+{"id": "may-nad-rio-de-la-plata-0523-line-003", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [2, 4], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 732, "verdict": "boxes-only"}
 {"id": "may-nad-rio-de-la-plata-0523-line-004", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [3], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 232, "verdict": "boxes-only"}
 {"id": "may-nad-rio-de-la-plata-0523-line-008", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [9], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 273, "verdict": "boxes-only"}
-{"id": "may-nad-rio-de-la-plata-0523-line-014", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [15], "neighbor_ink_pixels_in_crop": 1, "neighbor_box_overlap_px2": 205, "verdict": "ink-inside-crop"}
+{"id": "may-nad-rio-de-la-plata-0523-line-014", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [15], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 205, "verdict": "boxes-only"}
 {"id": "may-nad-rio-de-la-plata-0523-line-019", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [18], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 191, "verdict": "boxes-only"}
 {"id": "may-nad-rio-de-la-plata-0523-line-021", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [22], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 404, "verdict": "boxes-only"}
-{"id": "may-nad-rio-de-la-plata-0523-line-026", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [25], "neighbor_ink_pixels_in_crop": 1, "neighbor_box_overlap_px2": 22, "verdict": "ink-inside-crop"}
-{"id": "may-nad-rio-de-la-plata-0523-line-031", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [30], "neighbor_ink_pixels_in_crop": 9, "neighbor_box_overlap_px2": 215, "verdict": "ink-inside-crop"}
+{"id": "may-nad-rio-de-la-plata-0523-line-026", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [25], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 22, "verdict": "boxes-only"}
+{"id": "may-nad-rio-de-la-plata-0523-line-031", "page_id": "may-nad-rio-de-la-plata-0523", "neighbor_lines": [30], "neighbor_ink_pixels_in_crop": 0, "neighbor_box_overlap_px2": 215, "verdict": "boxes-only"}
