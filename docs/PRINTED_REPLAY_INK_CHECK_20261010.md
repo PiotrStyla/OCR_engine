@@ -62,6 +62,16 @@ For the 6 ink-inside crops: per-crop call on the 1–30 px traces.
 All 56 anchors and 43 accepted pairs stay `eligible_for_training: False` until
 that review passes; nothing here changes a frozen reference or a gate.
 
+## Decision record (2026-10-10)
+
+- **Gate 1 (6 ink-separated pairs): APPROVED** — crops cut at the ink gap are
+  allowed. The 56 geometry-gated anchors become review candidates; they are
+  still not training data.
+- **Gate 2 (6 ink traces, 1–30 px): OPEN** — per-crop call pending.
+- No promotion happened; `eligible_for_training` stays `False` for every pair
+  until the review set is complete. Machine-readable record:
+  `experiments/2026-10-10/reference-defects/decisions.json`.
+
 ## Reproduce
 
 ```powershell

@@ -1,0 +1,37 @@
+{
+  "schema": "polocrbench-review-decisions-v1",
+  "decisions": [
+    {
+      "gate": "crop-pair-ink-review",
+      "cases": 6,
+      "decision": "allow crops cut at the ink gap",
+      "effect": "56 geometry-gated anchors become review candidates (still not training data)",
+      "decided_by": "user",
+      "decided_in": "conversation",
+      "date": "2026-10-10"
+    },
+    {
+      "gate": "crop-boundary-ink-trace",
+      "cases": 6,
+      "decision": null,
+      "status": "open",
+      "options": [
+        "trim crop",
+        "accept trace",
+        "reject pair"
+      ]
+    },
+    {
+      "gate": "reference-defects",
+      "cases": 34,
+      "decision": null,
+      "status": "open",
+      "options": [
+        "two-reviewer transcription",
+        "PUA mapping table",
+        "documented exclusion"
+      ]
+    }
+  ],
+  "promotion": "none; eligible_for_training stays False until the full review passes"
+}
