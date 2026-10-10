@@ -1,0 +1,355 @@
+{
+  "schema": "slayer-printed-replay-geometry-v2",
+  "gate_mode": "all-or-nothing page gate, frozen text/anchor/confidence gates",
+  "predicate": "projected word-box extents on the page median baseline normal",
+  "input_geometry_diagnostic_sha256": "09c08b727969e5f50241cc0e0832f3fdc0e830cf7854256ba761fa313aee568c",
+  "selected_pages": [
+    "andersen-basnie-1929-0224",
+    "andersen-basnie-1929-0225",
+    "andersen-basnie-1929-0234",
+    "may-nad-rio-de-la-plata-0523",
+    "may-nad-rio-de-la-plata-0542",
+    "may-nad-rio-de-la-plata-0549",
+    "may-nad-rio-de-la-plata-0557",
+    "may-nad-rio-de-la-plata-0563",
+    "witkiewicz-teatr-0014",
+    "witkiewicz-teatr-0022",
+    "zawadzki-kurjer-1904-0004"
+  ],
+  "v1_reference": {
+    "page_deskew_accepted": 43,
+    "native_conflicts": 27,
+    "source": "experiments/2026-10-08/printed-replay-geometry-v1"
+  },
+  "totals": {
+    "accepted_anchors_conflict_pages": 43,
+    "rejected_exact_anchors_conflict_pages": 56,
+    "conflicts_conflict_pages": 6,
+    "source_order_conflicts": 0,
+    "pairs_with_neighbor_intrusion": 11,
+    "max_roundtrip_error_px": 9.25343817704044e-13
+  },
+  "regression_gates": {
+    "flat_newspaper_no_new_conflicts": {
+      "page": "zawadzki-kurjer-1904-0004",
+      "native_conflicts": 1,
+      "v2_conflicts": 1,
+      "passed": true
+    },
+    "backmatter_recovery": {
+      "pages": [
+        "may-nad-rio-de-la-plata-0557",
+        "may-nad-rio-de-la-plata-0563"
+      ],
+      "accepted": {
+        "may-nad-rio-de-la-plata-0557": 0,
+        "may-nad-rio-de-la-plata-0563": 0
+      }
+    }
+  },
+  "pages": [
+    {
+      "page_id": "andersen-basnie-1929-0224",
+      "split": "replay-probe",
+      "work_family": "andersen-basnie-1929",
+      "role": "control-page",
+      "native_lines": 41,
+      "text_gate_matched": 1,
+      "anchor_coverage": 0.031442663378545004,
+      "geometry_candidates": 1,
+      "accepted_anchors": 1,
+      "rejected_reasons": {
+        "word-confidence-below-90": 35,
+        "no-unique-exact-source-anchor": 3,
+        "anchor-too-short": 2
+      },
+      "conflicts": [],
+      "gated_by_overlap": false,
+      "axis_degrees": 0.0,
+      "axis_snapped_to_flat": true,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "andersen-basnie-1929-0225",
+      "split": "replay-probe",
+      "work_family": "andersen-basnie-1929",
+      "role": "control-page",
+      "native_lines": 34,
+      "text_gate_matched": 13,
+      "anchor_coverage": 0.3858974358974359,
+      "geometry_candidates": 13,
+      "accepted_anchors": 13,
+      "rejected_reasons": {
+        "no-unique-exact-source-anchor": 9,
+        "word-confidence-below-90": 11,
+        "anchor-too-short": 1
+      },
+      "conflicts": [],
+      "gated_by_overlap": false,
+      "axis_degrees": 0.0,
+      "axis_snapped_to_flat": true,
+      "intruding_crops": 2
+    },
+    {
+      "page_id": "andersen-basnie-1929-0234",
+      "split": "replay-probe",
+      "work_family": "andersen-basnie-1929",
+      "role": "control-page",
+      "native_lines": 40,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 0,
+      "accepted_anchors": 0,
+      "rejected_reasons": {
+        "word-confidence-below-90": 37,
+        "no-unique-exact-source-anchor": 3
+      },
+      "conflicts": [],
+      "gated_by_overlap": false,
+      "axis_degrees": 0.0,
+      "axis_snapped_to_flat": true,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "split": "replay-candidate",
+      "work_family": "may-nad-rio-de-la-plata",
+      "role": "conflict-page",
+      "native_lines": 39,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 17,
+      "accepted_anchors": 17,
+      "rejected_reasons": {
+        "word-confidence-below-90": 10,
+        "no-unique-exact-source-anchor": 12
+      },
+      "conflicts": [],
+      "gated_by_overlap": false,
+      "axis_degrees": -1.2037538539900312,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 9
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0542",
+      "split": "replay-candidate",
+      "work_family": "may-nad-rio-de-la-plata",
+      "role": "conflict-page",
+      "native_lines": 39,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 12,
+      "accepted_anchors": 12,
+      "rejected_reasons": {
+        "anchor-too-short": 5,
+        "word-confidence-below-90": 11,
+        "no-unique-exact-source-anchor": 11
+      },
+      "conflicts": [],
+      "gated_by_overlap": false,
+      "axis_degrees": 0.7412310418197573,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0549",
+      "split": "replay-candidate",
+      "work_family": "may-nad-rio-de-la-plata",
+      "role": "conflict-page",
+      "native_lines": 39,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 14,
+      "accepted_anchors": 14,
+      "rejected_reasons": {
+        "word-confidence-below-90": 16,
+        "anchor-too-short": 3,
+        "no-unique-exact-source-anchor": 6
+      },
+      "conflicts": [],
+      "gated_by_overlap": false,
+      "axis_degrees": -0.82395044356496,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0557",
+      "split": "replay-candidate",
+      "work_family": "may-nad-rio-de-la-plata",
+      "role": "conflict-page",
+      "native_lines": 42,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 16,
+      "accepted_anchors": 0,
+      "rejected_reasons": {
+        "word-confidence-below-90": 16,
+        "anchor-too-short": 8,
+        "no-unique-exact-source-anchor": 2,
+        "anchor-order-or-line-overlap": 16
+      },
+      "conflicts": [
+        {
+          "line_indices": [
+            4,
+            5
+          ],
+          "source_order_conflict": false,
+          "slanted_overlap_px": 2.105,
+          "shared_axis_degrees": -0.7335
+        },
+        {
+          "line_indices": [
+            10,
+            11
+          ],
+          "source_order_conflict": false,
+          "slanted_overlap_px": 2.358,
+          "shared_axis_degrees": -0.7335
+        }
+      ],
+      "gated_by_overlap": true,
+      "axis_degrees": -0.7335102173940693,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0563",
+      "split": "replay-candidate",
+      "work_family": "may-nad-rio-de-la-plata",
+      "role": "conflict-page",
+      "native_lines": 39,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 19,
+      "accepted_anchors": 0,
+      "rejected_reasons": {
+        "word-confidence-below-90": 9,
+        "no-unique-exact-source-anchor": 7,
+        "anchor-too-short": 4,
+        "anchor-order-or-line-overlap": 19
+      },
+      "conflicts": [
+        {
+          "line_indices": [
+            6,
+            7
+          ],
+          "source_order_conflict": false,
+          "slanted_overlap_px": 2.135,
+          "shared_axis_degrees": -0.786
+        }
+      ],
+      "gated_by_overlap": true,
+      "axis_degrees": -0.786003473239109,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "witkiewicz-teatr-0014",
+      "split": "replay-candidate",
+      "work_family": "witkiewicz-teatr",
+      "role": "conflict-page",
+      "native_lines": 41,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 5,
+      "accepted_anchors": 0,
+      "rejected_reasons": {
+        "word-confidence-below-90": 28,
+        "no-unique-exact-source-anchor": 8,
+        "anchor-order-or-line-overlap": 5
+      },
+      "conflicts": [
+        {
+          "line_indices": [
+            21,
+            22
+          ],
+          "source_order_conflict": false,
+          "slanted_overlap_px": 3.01,
+          "shared_axis_degrees": -1.0709
+        }
+      ],
+      "gated_by_overlap": true,
+      "axis_degrees": -1.0709183963751934,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "witkiewicz-teatr-0022",
+      "split": "replay-candidate",
+      "work_family": "witkiewicz-teatr",
+      "role": "conflict-page",
+      "native_lines": 39,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 6,
+      "accepted_anchors": 0,
+      "rejected_reasons": {
+        "word-confidence-below-90": 13,
+        "no-unique-exact-source-anchor": 19,
+        "anchor-too-short": 1,
+        "anchor-order-or-line-overlap": 6
+      },
+      "conflicts": [
+        {
+          "line_indices": [
+            16,
+            17
+          ],
+          "source_order_conflict": false,
+          "slanted_overlap_px": 2.135,
+          "shared_axis_degrees": 0.7051
+        }
+      ],
+      "gated_by_overlap": true,
+      "axis_degrees": 0.7051434997438791,
+      "axis_snapped_to_flat": false,
+      "intruding_crops": 0
+    },
+    {
+      "page_id": "zawadzki-kurjer-1904-0004",
+      "split": "replay-candidate",
+      "work_family": "zawadzki-kurjer-1904",
+      "role": "conflict-page",
+      "native_lines": 44,
+      "text_gate_matched": 0,
+      "anchor_coverage": 0.0,
+      "geometry_candidates": 10,
+      "accepted_anchors": 0,
+      "rejected_reasons": {
+        "word-confidence-below-90": 24,
+        "no-unique-exact-source-anchor": 8,
+        "anchor-too-short": 2,
+        "anchor-order-or-line-overlap": 10
+      },
+      "conflicts": [
+        {
+          "line_indices": [
+            7,
+            8
+          ],
+          "source_order_conflict": false,
+          "slanted_overlap_px": 2.0,
+          "shared_axis_degrees": 0.0
+        }
+      ],
+      "gated_by_overlap": true,
+      "axis_degrees": 0.0,
+      "axis_snapped_to_flat": true,
+      "intruding_crops": 0
+    }
+  ],
+  "pairs_written": 57,
+  "promoted_pairs": 0,
+  "eligible_for_training": false,
+  "eligible_for_evaluation": false,
+  "baseline_changed": false,
+  "decision": "Geometry handling is measured, not promoted; frozen gates and baseline unchanged.",
+  "limitations": [
+    "Intrusion is rectangular word-box overlap, not ink collision.",
+    "Per-line angles are least-squares fits of word centers; curved lines are not modeled.",
+    "Crops are not human reviewed and no transcription label was changed."
+  ]
+}
