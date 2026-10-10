@@ -203,7 +203,7 @@ def main():
 
     # --- training --------------------------------------------------------
     args = TrainingArguments(
-        output_dir=str(W / "checkpoints"), num_train_epochs=1, per_device_train_batch_size=BATCH_SIZE,
+        output_dir=str(WORK / "checkpoints"), num_train_epochs=1, per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRADIENT_ACCUMULATION, learning_rate=LEARNING_RATE,
         lr_scheduler_type="cosine", warmup_ratio=0.05, logging_steps=5, save_strategy="no",
         fp16=True, remove_unused_columns=False, report_to=[])
@@ -212,7 +212,7 @@ def main():
     best = (None, float("inf"))
     for epoch in range(1, EPOCHS + 1):
         trainer.train()
-        adapter = W / f"adapter-epoch{epoch}"
+        adapter = WORK / f"adapter-epoch{epoch}"
         engine.save_pretrained(adapter)
         score = dev_cer()
         dev_scores.append({"epoch": epoch, "dev_cer": score})
@@ -220,7 +220,7 @@ def main():
         if score < best[1]:
             best = (adapter, score)
     print("SELECTED_EPOCH", best[0].name, "dev_cer", best[1], flush=True)
-    (W / "dev-metrics.json").write_text(json.dumps({
+    (WORK / "dev-metrics.json").write_text(json.dumps({
         "model": MODEL_SOURCE, "source_dataset": SOURCE_REPOSITORY, "source_revision": SOURCE_REVISION,
         "train_pages": len(train_rows), "dev_pages": len(dev_rows), "epochs": dev_scores,
         "selected": best[0].name, "selected_dev_cer": best[1],
@@ -243,7 +243,7 @@ def main():
     evidence.mkdir()
     for name in ("predictions.jsonl", "score.json", "run.json"):
         shutil.copyfile(out / name, evidence / f"qwen3vl-finetuned-{name}")
-    shutil.copyfile(W / "dev-metrics.json", evidence / "dev-metrics.json")
+    shutil.copyfile(WORK / "dev-metrics.json", evidence / "dev-metrics.json")
     shutil.copyfile(staged / "verification.json", evidence / "staged-verification.json")
     (evidence / "receipt.json").write_text(json.dumps({
         "protocol": "polocrbench-qwen3vl-hist-finetune-v1", "code_revision": CODE_REVISION,
