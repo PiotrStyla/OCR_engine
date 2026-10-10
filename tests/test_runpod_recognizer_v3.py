@@ -69,3 +69,20 @@ def test_build_reviewed_v3_rejects_drift_and_overlap(tmp_path):
         raise SystemExit("should have rejected overlap")
     except ValueError as error:
         assert "Overlapping" in str(error)
+
+
+def test_build_replays_zero_and_subset(tmp_path):
+    source = tmp_path / "src"
+    source.mkdir()
+    ordered = [{"id": "s%d" % i} for i in range(3)]
+    for row in ordered:
+        for suffix in (".png", ".txt"):
+            (source / (row["id"] + suffix)).write_bytes(b"x")
+    replays = v3.build_replays({0, 2}, ordered, source, tmp_path / "work")
+    assert replays[0] is None
+    assert sorted(p.name for p in replays[2].iterdir()) == ["s0.png", "s0.txt", "s1.png", "s1.txt"]
+    try:
+        v3.build_replays({5}, ordered, source, tmp_path / "w2")
+        raise SystemExit("should reject oversized replay")
+    except ValueError as error:
+        assert "replay" in str(error).lower()

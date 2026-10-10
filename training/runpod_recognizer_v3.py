@@ -16,6 +16,7 @@ Runpod start command (after the repo clone and the pinned installs):
   python3 -u /workspace/OCR_engine/training/runpod_recognizer_v3.py
 """
 from datetime import datetime, timezone
+import argparse
 import importlib.metadata
 import json
 import os
@@ -33,8 +34,7 @@ from training.run_reviewed_recognizer_colab import evaluate, preflight
 from training.run_reviewed_recognizer_colab_v2 import package_model, run_logged
 from training.slayer_vision_onnx_smoke import safe_extract_tar
 
-STEM = "recognizer-v3"
-CONFIG = Path(__file__).resolve().parents[1] / "experiments" / "2026-10-10" / "recognizer-v3" / "config.json"
+DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "experiments" / "2026-10-10" / "recognizer-v3" / "config.json"
 
 
 def build_reviewed_v3(repo, expansion_root, cfg, work):
@@ -65,20 +65,40 @@ def build_reviewed_v3(repo, expansion_root, cfg, work):
     return out, rows, probe
 
 
-def run(output_root="/workspace"):
+def build_replays(counts, ordered, source, work):
+    """Materialize deterministic synthetic replay subsets; 0 maps to None."""
+    replays = {}
+    for count in sorted(counts):
+        if not 0 <= count <= len(ordered):
+            raise ValueError("Invalid replay size")
+        if count == 0:
+            replays[count] = None
+            continue
+        replay = work / f"replay-{count}"
+        replay.mkdir(parents=True)
+        for row in ordered[:count]:
+            for suffix in (".png", ".txt"):
+                shutil.copyfile(Path(source) / (row["id"] + suffix), replay / (row["id"] + suffix))
+        replays[count] = replay
+    return replays
+
+
+def run(output_root="/workspace", config_path=DEFAULT_CONFIG):
     os.environ["HF_HUB_DISABLE_XET"] = "1"
     import torch
     from transformers import TrOCRProcessor
     from huggingface_hub import hf_hub_download
     repo = Path(__file__).resolve().parents[1]
-    cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
-    work = Path(output_root) / ("recognizer-v3-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
+    config_path = Path(config_path)
+    stem = config_path.resolve().parent.name
+    cfg = json.loads(config_path.read_text(encoding="utf-8"))
+    work = Path(output_root) / (stem + "-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
     work.mkdir()
     evidence = work / "evidence"
     evidence.mkdir()
     model_archive = None
     try:
-        shutil.copyfile(CONFIG, evidence / "experiment-config.json")
+        shutil.copyfile(config_path, evidence / "experiment-config.json")
         write_json(evidence / "environment.json", dict(
             code_revision=subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"],
                                                   text=True).strip(),
@@ -110,16 +130,8 @@ def run(output_root="/workspace"):
         if len(rows) != 2000:
             raise ValueError("Synthetic training count drift")
         ordered = sorted(rows, key=lambda row: digest_of(cfg["synthetic_order_prefix"] + row["id"]))
-        replays = {}
-        for count in sorted({variant["replay_count"] for variant in cfg["variants"]}):
-            if not 0 < count <= len(ordered):
-                raise ValueError("Invalid replay size")
-            replay = work / f"replay-{count}"
-            replay.mkdir()
-            for row in ordered[:count]:
-                for suffix in (".png", ".txt"):
-                    shutil.copyfile(matches[0] / (row["id"] + suffix), replay / (row["id"] + suffix))
-            replays[count] = replay
+        replays = build_replays({variant["replay_count"] for variant in cfg["variants"]},
+                                ordered, matches[0], work)
         expansion_zip = Path(hf_hub_download(cfg["expansion_evidence"]["repo"],
                                              cfg["expansion_evidence"]["filename"],
                                              repo_type="dataset",
@@ -168,9 +180,11 @@ def run(output_root="/workspace"):
             identifier = variant["id"]
             model = work / identifier
             print("VARIANT", identifier, flush=True)
+            train_dirs = [str(corpus / "train")] * recipe["historical_repeats"] + [str(reviewed_v3)]
+            if replays[variant["replay_count"]] is not None:
+                train_dirs.append(str(replays[variant["replay_count"]]))
             command = [sys.executable, "-m", "training.train_trocr_pl", "--train-dir",
-                       *([str(corpus / "train")] * recipe["historical_repeats"]),
-                       str(reviewed_v3), str(replays[variant["replay_count"]]),
+                       *train_dirs,
                        "--val-dir", str(validation), "--base", str(base), "--output", str(model),
                        "--epochs", str(recipe["epochs"]), "--batch-size", str(recipe["batch_size"]),
                        "--gradient-accumulation-steps", str(recipe["gradient_accumulation_steps"]),
@@ -204,7 +218,7 @@ def run(output_root="/workspace"):
                 if path.is_file() and path.suffix in (".safetensors", ".json", ".txt", ".model"):
                     shutil.copyfile(path, selected / path.name)
             write_json(selected / "guarded-selection.json", selection)
-            model_archive = work / (STEM + "-model.zip")
+            model_archive = work / (stem + "-model.zip")
             package_model(selected, model_archive)
         print("SELECTED", selection["selected"], flush=True)
     except Exception as exc:
@@ -216,7 +230,7 @@ def run(output_root="/workspace"):
         write_json(evidence / "checksums.json",
                    {path.name: digest(path) for path in evidence.iterdir()
                     if path.is_file() and path.name != "checksums.json"})
-        evidence_archive = Path(shutil.make_archive(str(work / (STEM + "-evidence")), "zip", evidence))
+        evidence_archive = Path(shutil.make_archive(str(work / (stem + "-evidence")), "zip", evidence))
         print("EVIDENCE_ZIP", evidence_archive, flush=True)
     return work
 
@@ -235,4 +249,8 @@ def snapshot_base(source, work):
 
 
 if __name__ == "__main__":
-    print("RESULT_DIRECTORY", run(), flush=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default=str(DEFAULT_CONFIG))
+    parser.add_argument("--output-root", default="/workspace")
+    args = parser.parse_args()
+    print("RESULT_DIRECTORY", run(args.output_root, args.config), flush=True)
