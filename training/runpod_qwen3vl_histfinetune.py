@@ -188,7 +188,7 @@ def main():
                                                return_dict=True, return_tensors="pt").to(engine.device)
         eos = engine.generation_config.eos_token_id
         eos = eos if isinstance(eos, list) else [eos]
-    with torch.inference_mode():
+        with torch.inference_mode():
             outputs = engine.generate(**inputs, max_new_tokens=MAX_NEW_TOKENS, do_sample=False,
                                       eos_token_id=eos, pad_token_id=processor.tokenizer.pad_token_id)
         generated = outputs[0][inputs["input_ids"].shape[1]:]
