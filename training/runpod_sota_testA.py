@@ -48,10 +48,12 @@ if not Path(paddle_python).exists():
     subprocess.run([python, "-m", "pip", "install", "-q", "uv"], check=True)
     subprocess.run([python, "-m", "uv", "venv", str(paddle_home)], check=True)
 paddle_ok = False
+PYPI = "https://pypi.org/simple"  # jawny indeks: srodowiskowy mirror nie moze przejac uv
 for cu in ("cu126", "cu118"):
     attempt = subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
-                             "paddlepaddle-gpu==3.3.1",
+                             "--index-url", PYPI,
                              "--extra-index-url", f"https://www.paddlepaddle.org.cn/packages/stable/{cu}/",
+                             "paddlepaddle-gpu==3.3.1",
                              "paddleocr[doc-parser]", "jiwer", "pillow"], capture_output=True, text=True)
     print("PADDLE_GPU_TRY", cu, "rc", attempt.returncode, flush=True)
     if attempt.returncode == 0:
@@ -61,7 +63,8 @@ for cu in ("cu126", "cu118"):
 if not paddle_ok:
     print("Kola GPU Paddle niedostepne; silnik CPU (poprawny, lecz wolny).", flush=True)
     subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
-                    "paddlepaddle==3.3.1", "paddleocr[doc-parser]", "jiwer", "pillow"], check=True)
+                    "--index-url", PYPI, "paddlepaddle==3.3.1", "paddleocr[doc-parser]", "jiwer", "pillow"],
+                   check=True)
 versions = subprocess.check_output([paddle_python, "-c",
     'import importlib.metadata as m\n'
     'def v(name):\n'
