@@ -44,10 +44,12 @@ subprocess.run([python, "-m", "pip", "install", "-q", "transformers==4.57.6", "a
 subprocess.check_call([python, "-c", "import torch; assert torch.cuda.is_available()"])
 paddle_home = Path("/workspace/paddle-env")
 paddle_python = str(paddle_home / "bin" / "python")
+# uv instalujemy zawsze: kontener jest efemeryczny, a venv na /workspace przezywa restart.
+subprocess.run([python, "-m", "pip", "install", "-q", "uv"], check=True)
 if not Path(paddle_python).exists():
-    subprocess.run([python, "-m", "pip", "install", "-q", "uv"], check=True)
     subprocess.run([python, "-m", "uv", "venv", str(paddle_home)], check=True)
 paddle_ok = False
+paddle_error = ""
 PYPI = "https://pypi.org/simple"  # jawny indeks: srodowiskowy mirror nie moze przejac uv
 for cu in ("cu126", "cu118"):
     attempt = subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
@@ -59,25 +61,35 @@ for cu in ("cu126", "cu118"):
     if attempt.returncode == 0:
         paddle_ok = True
         break
-    print(attempt.stderr[-800:], flush=True)
+    paddle_error = (attempt.stderr or attempt.stdout)[-400:]
+    print(paddle_error, flush=True)
 if not paddle_ok:
-    print("Kola GPU Paddle niedostepne; silnik CPU (poprawny, lecz wolny).", flush=True)
-    subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
-                    "--index-url", PYPI, "paddlepaddle==3.3.1", "paddleocr[doc-parser]", "jiwer", "pillow"],
-                   check=True)
-versions = subprocess.check_output([paddle_python, "-c",
-    'import importlib.metadata as m\n'
-    'def v(name):\n'
-    '    try:\n'
-    '        return m.version(name)\n'
-    '    except m.PackageNotFoundError:\n'
-    '        return None\n'
-    'print({p: v(p) for p in ("paddleocr", "paddlex", "paddlepaddle", "paddlepaddle-gpu", "jiwer")})'],
-    text=True).strip()
-print("PADDLE_STACK", versions, flush=True)
+    print("Kola GPU Paddle niedostepne; probuje silnik CPU (poprawny, lecz wolny).", flush=True)
+    fallback = subprocess.run([python, "-m", "uv", "pip", "install", "-q", "--python", paddle_python,
+                              "--index-url", PYPI, "paddlepaddle==3.3.1", "paddleocr[doc-parser]",
+                              "jiwer", "pillow"], capture_output=True, text=True)
+    paddle_ok = fallback.returncode == 0
+    if not paddle_ok:
+        paddle_error = (fallback.stderr or fallback.stdout)[-400:]
+        print("PADDLE_STACK_FAILED", paddle_error, flush=True)
+if paddle_ok:
+    versions = subprocess.check_output([paddle_python, "-c",
+        'import importlib.metadata as m\n'
+        'def v(name):\n'
+        '    try:\n'
+        '        return m.version(name)\n'
+        '    except m.PackageNotFoundError:\n'
+        '        return None\n'
+        'print({p: v(p) for p in ("paddleocr", "paddlex", "paddlepaddle", "paddlepaddle-gpu", "jiwer")})'],
+        text=True).strip()
+    print("PADDLE_STACK", versions, flush=True)
 subprocess.check_call([python, "-c", "import torch; assert torch.cuda.is_available()"])
 print("TORCH_UNTOUCHED ok", flush=True)
 PYTHONS = {"qwen3vl": python, "paddlevl": paddle_python}
+if not paddle_ok:
+    MODELS = tuple(model for model in MODELS if model != "paddlevl")
+    print("MODEL_SKIPPED paddlevl", paddle_error, flush=True)
+assert "qwen3vl" in MODELS, "Pomiar wymaga przynajmniej Qwen3-VL."
 
 from huggingface_hub import hf_hub_download
 archive = Path(hf_hub_download(IMPACT_REPOSITORY, IMPACT_PATH, repo_type="dataset", revision=IMPACT_REVISION))
@@ -126,6 +138,7 @@ shutil.copyfile(staged / "verification.json", evidence / "staged-verification.js
     "protocol_version": "polocrbench-sota-measurement-v1", "code_revision": CODE_REVISION,
     "impact_repository": IMPACT_REPOSITORY, "impact_revision": IMPACT_REVISION,
     "impact_sha256": IMPACT_SHA256, "models": list(MODELS),
+    "paddle_stack_ok": paddle_ok, "paddle_error": paddle_error if not paddle_ok else "",
     "platform": "runpod-pod", "measurement_only": True, "training_performed": False},
     indent=2), encoding="utf-8")
 zip_path = WORK / "polocrbench-sota-measurement-v1-evidence.zip"
