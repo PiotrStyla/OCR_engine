@@ -1,0 +1,6 @@
+{"page_id": "may-nad-rio-de-la-plata-0557", "line_indices": [4, 5], "box_overlap_px": 2.105, "ink_region_threshold": 157.0, "ink_min_gap_px": 14, "columns_checked": 243, "columns_in_contact": 0, "verdict": "ink-separated"}
+{"page_id": "may-nad-rio-de-la-plata-0557", "line_indices": [10, 11], "box_overlap_px": 2.358, "ink_region_threshold": 154.5, "ink_min_gap_px": 13, "columns_checked": 255, "columns_in_contact": 0, "verdict": "ink-separated"}
+{"page_id": "may-nad-rio-de-la-plata-0563", "line_indices": [6, 7], "box_overlap_px": 2.135, "ink_region_threshold": 157.0, "ink_min_gap_px": 17, "columns_checked": 375, "columns_in_contact": 0, "verdict": "ink-separated"}
+{"page_id": "witkiewicz-teatr-0014", "line_indices": [21, 22], "box_overlap_px": 3.01, "ink_region_threshold": 110.5, "ink_min_gap_px": 14, "columns_checked": 669, "columns_in_contact": 0, "verdict": "ink-separated"}
+{"page_id": "witkiewicz-teatr-0022", "line_indices": [16, 17], "box_overlap_px": 2.135, "ink_region_threshold": 112.5, "ink_min_gap_px": 13, "columns_checked": 707, "columns_in_contact": 0, "verdict": "ink-separated"}
+{"page_id": "zawadzki-kurjer-1904-0004", "line_indices": [7, 8], "box_overlap_px": 2.0, "ink_region_threshold": 116.5, "ink_min_gap_px": 7, "columns_checked": 350, "columns_in_contact": 0, "verdict": "ink-separated"}

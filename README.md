@@ -43,6 +43,16 @@ prostokąt sąsiada w kadrze i trafia do przeglądu granic. Wszystko dalej
 `eligible_for_training: false`.
 [Wynik V2 i granica metody](docs/PRINTED_REPLAY_GEOMETRY_V2_RESULT_20261010.md).
 
+**Kontrola atramentu (10 października): 6 blokujących par to fałszywy alarm.**
+Mimo nakładania ramek 2–3 px, atrament obu linii jest **rozdzielony o 7–17 px**
+(0 kolumn w kontakcie w 243–707 kolumnach z atramentem) — to zapas pudełek
+słów, nie zderzenie druku. Z 11 wycinków z „intruzją" tylko 6 ma realny
+atrament sąsiada w kadrze (1–30 px), 5 to same ramki. **56 zablokowanych kotwic
+jest zablokowanych przez ramki, nie przez druk** — decyzja o ich dopuszczeniu
+należy teraz do przeglądu ludzkiego (46 pozycji w kolejce), z dowodem maszynowym
+w ręku.
+[Kontrola atramentu i bramki](docs/PRINTED_REPLAY_INK_CHECK_20261010.md).
+
 ### Pomiar SOTA na zamrożonym teście A — notebook gotowy
 
 **Mierzymy lukę do SOTA na 36 stronach testu A (IMPACT history_print).**

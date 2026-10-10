@@ -1,0 +1,219 @@
+{
+  "schema": "slayer-printed-replay-ink-check-v1",
+  "measures": [
+    "ink_min_gap_px (pair, shared columns)",
+    "neighbor_ink_pixels_in_crop (crop)"
+  ],
+  "geometry_report_sha256": "4d87661beed0f8a47331c2c162fef8656549bbbef530ea47b49e7b1fe94a247a",
+  "pairs_checked": 6,
+  "crops_checked": 11,
+  "verdicts": {
+    "ink-separated": 6,
+    "ink-contact": 0,
+    "other": 0,
+    "ink-inside-crop": 6,
+    "boxes-only": 5
+  },
+  "cases": [
+    {
+      "page_id": "may-nad-rio-de-la-plata-0557",
+      "line_indices": [
+        4,
+        5
+      ],
+      "box_overlap_px": 2.105,
+      "ink_region_threshold": 157.0,
+      "ink_min_gap_px": 14,
+      "columns_checked": 243,
+      "columns_in_contact": 0,
+      "verdict": "ink-separated"
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0557",
+      "line_indices": [
+        10,
+        11
+      ],
+      "box_overlap_px": 2.358,
+      "ink_region_threshold": 154.5,
+      "ink_min_gap_px": 13,
+      "columns_checked": 255,
+      "columns_in_contact": 0,
+      "verdict": "ink-separated"
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0563",
+      "line_indices": [
+        6,
+        7
+      ],
+      "box_overlap_px": 2.135,
+      "ink_region_threshold": 157.0,
+      "ink_min_gap_px": 17,
+      "columns_checked": 375,
+      "columns_in_contact": 0,
+      "verdict": "ink-separated"
+    },
+    {
+      "page_id": "witkiewicz-teatr-0014",
+      "line_indices": [
+        21,
+        22
+      ],
+      "box_overlap_px": 3.01,
+      "ink_region_threshold": 110.5,
+      "ink_min_gap_px": 14,
+      "columns_checked": 669,
+      "columns_in_contact": 0,
+      "verdict": "ink-separated"
+    },
+    {
+      "page_id": "witkiewicz-teatr-0022",
+      "line_indices": [
+        16,
+        17
+      ],
+      "box_overlap_px": 2.135,
+      "ink_region_threshold": 112.5,
+      "ink_min_gap_px": 13,
+      "columns_checked": 707,
+      "columns_in_contact": 0,
+      "verdict": "ink-separated"
+    },
+    {
+      "page_id": "zawadzki-kurjer-1904-0004",
+      "line_indices": [
+        7,
+        8
+      ],
+      "box_overlap_px": 2.0,
+      "ink_region_threshold": 116.5,
+      "ink_min_gap_px": 7,
+      "columns_checked": 350,
+      "columns_in_contact": 0,
+      "verdict": "ink-separated"
+    }
+  ],
+  "crop_cases": [
+    {
+      "id": "andersen-basnie-1929-0225-line-015",
+      "page_id": "andersen-basnie-1929-0225",
+      "neighbor_lines": [
+        14
+      ],
+      "neighbor_ink_pixels_in_crop": 30,
+      "neighbor_box_overlap_px2": 837,
+      "verdict": "ink-inside-crop"
+    },
+    {
+      "id": "andersen-basnie-1929-0225-line-021",
+      "page_id": "andersen-basnie-1929-0225",
+      "neighbor_lines": [
+        20,
+        22
+      ],
+      "neighbor_ink_pixels_in_crop": 0,
+      "neighbor_box_overlap_px2": 3232,
+      "verdict": "boxes-only"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-002",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        3
+      ],
+      "neighbor_ink_pixels_in_crop": 8,
+      "neighbor_box_overlap_px2": 895,
+      "verdict": "ink-inside-crop"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-003",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        2,
+        4
+      ],
+      "neighbor_ink_pixels_in_crop": 15,
+      "neighbor_box_overlap_px2": 732,
+      "verdict": "ink-inside-crop"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-004",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        3
+      ],
+      "neighbor_ink_pixels_in_crop": 0,
+      "neighbor_box_overlap_px2": 232,
+      "verdict": "boxes-only"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-008",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        9
+      ],
+      "neighbor_ink_pixels_in_crop": 0,
+      "neighbor_box_overlap_px2": 273,
+      "verdict": "boxes-only"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-014",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        15
+      ],
+      "neighbor_ink_pixels_in_crop": 1,
+      "neighbor_box_overlap_px2": 205,
+      "verdict": "ink-inside-crop"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-019",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        18
+      ],
+      "neighbor_ink_pixels_in_crop": 0,
+      "neighbor_box_overlap_px2": 191,
+      "verdict": "boxes-only"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-021",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        22
+      ],
+      "neighbor_ink_pixels_in_crop": 0,
+      "neighbor_box_overlap_px2": 404,
+      "verdict": "boxes-only"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-026",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        25
+      ],
+      "neighbor_ink_pixels_in_crop": 1,
+      "neighbor_box_overlap_px2": 22,
+      "verdict": "ink-inside-crop"
+    },
+    {
+      "id": "may-nad-rio-de-la-plata-0523-line-031",
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "neighbor_lines": [
+        30
+      ],
+      "neighbor_ink_pixels_in_crop": 9,
+      "neighbor_box_overlap_px2": 215,
+      "verdict": "ink-inside-crop"
+    }
+  ],
+  "promoted_pairs": 0,
+  "eligible_for_training": false,
+  "decision": "Ink evidence for human crop review; nothing promoted.",
+  "limitations": [
+    "Ink threshold is adaptive per case and measured, not calibrated.",
+    "Per-column band gaps approximate the distance along the line normal.",
+    "No transcription label was changed and no crop was accepted or rejected here."
+  ]
+}
