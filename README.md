@@ -68,6 +68,15 @@ czyste).
 Audyt lokalny przelicza metryki z predykcji i sprawdza piny
 (`training/audit_polocrbench_sota_evidence.py`, 7 testów).
 
+**Audyt referencji (10 października):** wszystkie wady GT testu A są źródłowe
+(IMPACT), nie nasze — potwierdzone porównaniem ze źródłowymi PAGE XML. Errata
+`NA2_FT__434735` ma uciętą adnotację u źródła (XML też ma 4 znaki) → wymaga
+nowej transkrypcji ludzkiej; U+FFFD (86×) i 10 znaków PUA (624×) to mapa glifów
+historycznych u źródła → **≥1,36% CER gwarantowanego szumu** dla każdego
+systemu. Bramki decyzji (errata, polityka mapowania PUA):
+[dokument](docs/POLLOCR_REFERENCE_DEFECTS_20261010.md),
+[kolejka recenzyjna 34 pozycji](experiments/2026-10-10/reference-defects/README.md).
+
 ### DATA ENGINE recognizera V3: rozbudowa danych replay
 
 **Pilotaż replay V2 zakończony: 26 par, w tym 25 kandydatów i jedna kontrolna.**
