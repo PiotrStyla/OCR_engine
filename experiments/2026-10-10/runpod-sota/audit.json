@@ -1,0 +1,57 @@
+{
+  "schema": "polocrbench-sota-evidence-audit-v1",
+  "archive": "polocrbench-sota-measurement-v1-evidence.zip",
+  "archive_sha256": "dac9ef12216f79c28797b35407a62a04fe1e3c5d5b6a0a5ebeed75e6071b306a",
+  "code_revision": "607ae333a6f8c61457aa0372eb941679f2c86088",
+  "models": {
+    "qwen3vl": {
+      "cer_micro": 0.20032146342396817,
+      "wer_micro": 0.613582554517134,
+      "structure_similarity": 0.5879171944444442,
+      "errors_or_missing": 0,
+      "pages": 36,
+      "package_versions": {
+        "transformers": "4.57.6",
+        "torch": "2.8.0+cu128",
+        "bitsandbytes": "0.50.2",
+        "paddlepaddle": null,
+        "paddlepaddle-gpu": null,
+        "paddlex": null,
+        "paddleocr": null,
+        "jiwer": "4.0.0"
+      }
+    },
+    "paddlevl": {
+      "cer_micro": 0.33799582862937944,
+      "wer_micro": 0.8559501557632399,
+      "structure_similarity": 0.2499329444444444,
+      "errors_or_missing": 0,
+      "pages": 36,
+      "package_versions": {
+        "transformers": null,
+        "torch": null,
+        "bitsandbytes": null,
+        "paddlepaddle": "3.3.1",
+        "paddlepaddle-gpu": "3.3.1",
+        "paddlex": "3.7.2",
+        "paddleocr": "3.7.0",
+        "jiwer": "4.0.0"
+      }
+    }
+  },
+  "frozen_input": {
+    "repository": "PiotrSty/impact-print-v2",
+    "revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+    "sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0",
+    "pages": 36
+  },
+  "metrics_recomputed_from": "returned per-page predictions",
+  "audited_at": "2026-10-10T12:44:24.284175+00:00",
+  "training_performed": false,
+  "promoted": false,
+  "limitations": [
+    "Recomputation trusts returned predictions, not model inference.",
+    "References contain U+FFFD and private-use characters; absolute CER has reference noise.",
+    "Package versions identify the run but GPU wheel builds are not re-verified."
+  ]
+}

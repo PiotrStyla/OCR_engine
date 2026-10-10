@@ -1,0 +1,16 @@
+{
+  "protocol_version": "polocrbench-sota-measurement-v1",
+  "code_revision": "607ae333a6f8c61457aa0372eb941679f2c86088",
+  "impact_repository": "PiotrSty/impact-print-v2",
+  "impact_revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+  "impact_sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0",
+  "models": [
+    "qwen3vl",
+    "paddlevl"
+  ],
+  "paddle_stack_ok": true,
+  "paddle_error": "",
+  "platform": "runpod-pod",
+  "measurement_only": true,
+  "training_performed": false
+}

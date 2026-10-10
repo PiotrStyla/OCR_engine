@@ -51,19 +51,22 @@ jeden notebook, `Accelerator: GPU T4` + `Internet: on`, Run All; wynikowy
 [Protokół i ograniczenia](docs/POLLOCR_SOTA_MEASUREMENT_V1_20261008.md).
 Po zwróceniu ZIP-a metryki są przeliczane lokalnie z predykcji.
 
-**Status pomiarów (8 października):** pierwszy pomiar API zero-shot na
-zamrożonym teście A **zakończony** — frontier `gpt-5.4` CER **16,87%**,
-Qwen3-VL-235B 20,48%, `gpt-4o-mini` 58,11% (modernizuje pisownię i odmawia
-2 stron) wobec baseline'u Tesseract.js 34,94%. Bez uszkodzonej strony GT
-(errata, referencja 4 znaki) `gpt-5.4` schodzi do 13,46%. Trzy przebiegi to
-koszt poniżej 1 USD. [Wynik, tabele i wnioski](docs/POLLOCR_SOTA_API_RESULT_20261008.md),
-[dowody w experiments/2026-10-08/api-testA](experiments/2026-10-08/api-testA/README.md).
-W toku: pełny pomiar CPU Surya 2 (backend `llama-server` b11503) na 36 stronach
-— ~353 s/stronę. Ścieżka GPU (Colab: PaddleOCR-VL-1.6 + Qwen3-VL-4B) czeka na
-odpalenie. Audyt zwróconego ZIP-a Colab:
-`training/audit_polocrbench_sota_evidence.py` przelicza wszystkie metryki z
-predykcji, sprawdza piny wejścia, flagi pomiarowe i hash zamrożonego promptu
-(7 testów CPU).
+**Wynik kompletny (8–10 października):** na zamrożonym teście A (36 stron)
+sześć systemów zmierzonych tym samym ewaluatorem v1.1 — frontier `gpt-5.4`
+**CER 16,87%** (13,46% bez strony z uszkodzonym GT), **Qwen3-VL-4B 4-bit na
+własnym RTX 4090 20,03%** (17,06%) — tyle samo co Qwen3-VL-235B przez API
+(20,48%), a **PaddleOCR-VL-1.6 (#1 OmniDocBench) 33,80%**, czyli poziom
+baseline'u Tesseracta (34,94%) — pozycja na OmniDocBench nie przenosi się na
+polski druk historyczny. `gpt-4o-mini` 58,11% (modernizuje pisownię, 2 odmowy).
+Koszt pomiarów GPU: ~$1,06 (pod RTX 4090 zgaszony). Cel dla recognizer v3:
+zejść poniżej 17% CER (frontier zero-shot) i poniżej 13,5% (frontier, strony
+czyste).
+[Wynik GPU + pełna tabela](docs/POLLOCR_SOTA_GPU_RESULT_20261010.md),
+[wynik API](docs/POLLOCR_SOTA_API_RESULT_20261008.md),
+[dowody GPU](experiments/2026-10-10/runpod-sota/README.md),
+[dowody API](experiments/2026-10-08/api-testA/README.md).
+Audyt lokalny przelicza metryki z predykcji i sprawdza piny
+(`training/audit_polocrbench_sota_evidence.py`, 7 testów).
 
 ### DATA ENGINE recognizera V3: rozbudowa danych replay
 

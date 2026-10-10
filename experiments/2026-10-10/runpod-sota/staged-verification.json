@@ -1,0 +1,19 @@
+{
+  "source_url": "https://huggingface.co/datasets/PiotrSty/impact-print-v2/resolve/a2480fde6f15284701458ff370b81cce50dc5c2d/impact-print-v2-test.tar.gz",
+  "source_revision": "a2480fde6f15284701458ff370b81cce50dc5c2d",
+  "archive_sha256": "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0",
+  "frozen_manifest_sha256": "95ed716cbafc6f3e7c8d498c7d678dfb452fc5b210d3d0ec76155dcbce6f40d6",
+  "train_pool_sha256": "07cf7abfb4b6002dd6e4892e629018ba487d182f0a999eb6c4a47777ef0297cd",
+  "staged_manifest_sha256": "b7ed83788ae887565bb2e305d760a869d120fbaa8546949ad4b4dbfe6d0db211",
+  "pages_verified": 36,
+  "train_regions": 2531,
+  "test_collections": [
+    "NA2_FT",
+    "Nowiny_z_Rakuz_FT",
+    "Powodzenia_FT"
+  ],
+  "collection_overlap": [],
+  "image_hash_overlap": [],
+  "path_format": "relative POSIX",
+  "limitations": "Exact hashes and collection IDs only; no near-duplicate audit."
+}

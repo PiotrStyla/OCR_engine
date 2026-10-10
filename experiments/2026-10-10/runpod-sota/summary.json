@@ -1,0 +1,14 @@
+{
+  "qwen3vl": {
+    "cer_micro": 0.20032146342396817,
+    "wer_micro": 0.613582554517134,
+    "structure_similarity": 0.5879171944444445,
+    "errors_or_missing": 0
+  },
+  "paddlevl": {
+    "cer_micro": 0.33799582862937944,
+    "wer_micro": 0.8559501557632399,
+    "structure_similarity": 0.24993294444444444,
+    "errors_or_missing": 0
+  }
+}
