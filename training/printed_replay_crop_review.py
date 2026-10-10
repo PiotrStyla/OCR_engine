@@ -1,0 +1,119 @@
+"""Crop-boundary review material for the six ink-trace cases (CPU-only).
+
+Renders each accepted crop with the neighboring ink pixels that fall inside the
+crop rectangle marked in red, measures how deep the deepest trace sits inside
+the crop, and gives a mechanical recommendation so a human can decide every
+case in one pass. Measurement and rendering only: no crop is changed, accepted
+or rejected here.
+"""
+import argparse
+import json
+from pathlib import Path
+
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+
+from training.full_page_pilot import digest, read_rows, write_json
+from training.printed_replay_geometry import parse_words
+
+
+SCHEMA = "slayer-printed-replay-crop-review-v1"
+
+
+def trace_pixels(gray, crop_box, neighbor_boxes):
+    """Neighbor ink pixels inside the crop rectangle with their depth in px."""
+    left, top, right, bottom = crop_box
+    threshold = float((np.median(gray) + int(gray.min())) / 2.0)
+    mask = np.zeros_like(gray, dtype=bool)
+    for x0, y0, x1, y1 in neighbor_boxes:
+        mask[y0:y1, x0:x1] = True
+    neighbor_ink = mask & (gray <= threshold)
+    pixels = []
+    for y, x in zip(*np.nonzero(neighbor_ink)):
+        if left <= x < right and top <= y < bottom:
+            depth = min(x - left, right - 1 - x, y - top, bottom - 1 - y)
+            pixels.append((int(x), int(y), int(depth)))
+    return pixels
+
+
+def recommend(pixels):
+    """Mechanical recommendation from the deepest trace pixel."""
+    if not pixels:
+        return "no-trace", 0
+    deepest = max(depth for _, _, depth in pixels)
+    if deepest <= 2:
+        return "trim-2px", deepest
+    if deepest <= 8:
+        return "trim-to-depth-or-accept", deepest
+    return "review-closely", deepest
+
+
+def render_case(crop_path, pixels, label, out_path):
+    """Crop with each trace pixel marked in red and the label drawn."""
+    with Image.open(crop_path) as source:
+        image = source.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    for x, y, _ in pixels:
+        draw.point((x, y), fill=(255, 0, 0))
+    font_path = Path("C:/Windows/Fonts/arial.ttf")
+    font = ImageFont.truetype(str(font_path), 16) if font_path.exists() else ImageFont.load_default()
+    draw.rectangle([0, 0, image.width, 22], fill=(255, 255, 255))
+    draw.text((6, 3), label, font=font, fill=(200, 0, 0))
+    image.save(out_path)
+    return out_path.name
+
+
+def run(ink_root, geometry_root, ink_report, output):
+    ink_root, geometry_root, ink_report, output = (Path(ink_root), Path(geometry_root),
+                                                   Path(ink_report), Path(output))
+    evidence = ink_root / "evidence"
+    report = json.loads(Path(ink_report).read_text(encoding="utf-8"))
+    cases = [c for c in report["crop_cases"] if c["verdict"] == "ink-inside-crop"]
+    if output.exists():
+        raise FileExistsError(output)
+    (output / "sheets").mkdir(parents=True)
+    results = []
+    for case in cases:
+        page_id = case["page_id"]
+        directory = evidence / "native-pages" / page_id
+        with Image.open(directory / "page.png") as image:
+            gray = np.asarray(image.convert("L"), dtype=np.uint8)
+        height, width = gray.shape
+        lines = parse_words((directory / "tesseract.tsv").read_text(encoding="utf-8"), width, height)
+        boxes = {index: [word["bbox"] for word in line["words"]] for index, line in enumerate(lines)}
+        neighbor_boxes = [box for index in case["neighbor_lines"] for box in boxes[index]]
+        crop_box = case["crop_bbox"] if "crop_bbox" in case else None
+        if crop_box is None:
+            pairs = read_rows(geometry_root / "evidence" / "pairs.jsonl")
+            crop_box = next(row["crop_bbox"] for row in pairs if row["id"] == case["id"])
+        pixels = trace_pixels(gray, crop_box, neighbor_boxes)
+        verdict, deepest = recommend(pixels)
+        crop_path = geometry_root / "evidence" / "crops" / page_id / f"{case['id']}.png"
+        label = f"{case['id']} | trace px {len(pixels)} | depth {deepest} | {verdict}"
+        sheet = render_case(crop_path, pixels, label, output / "sheets" / f"{case['id']}.png")
+        results.append({"id": case["id"], "page_id": page_id,
+                        "neighbor_lines": case["neighbor_lines"],
+                        "trace_pixels": len(pixels), "max_depth_px": deepest,
+                        "recommendation": verdict, "sheet": sheet})
+        print("CROP_CASE", case["id"], len(pixels), "px depth", deepest, verdict, flush=True)
+    write_json(output / "review.json", {
+        "schema": SCHEMA, "cases": len(results),
+        "recommendations": {name: sum(1 for r in results if r["recommendation"] == name)
+                            for name in {r["recommendation"] for r in results}},
+        "cases_detail": results,
+        "decided": False, "eligible_for_training": False,
+        "decision": "Review material only; the human call on each case is pending.",
+        "limitations": ["Ink threshold is adaptive and measured, not calibrated.",
+                        "Trace depth is measured to the padded crop rectangle."],
+        "ink_report_sha256": digest(ink_report)})
+    return output / "review.json"
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ink-root", required=True)
+    parser.add_argument("--geometry-root", required=True)
+    parser.add_argument("--ink-report", required=True)
+    parser.add_argument("--output", required=True)
+    args = parser.parse_args()
+    run(args.ink_root, args.geometry_root, args.ink_report, args.output)
