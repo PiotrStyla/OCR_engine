@@ -1,0 +1,48 @@
+{
+  "schema": "slayer-recognizer-v3-package-v1",
+  "totals": {
+    "train_candidates": 226,
+    "from_expansion_mining": 127,
+    "from_replay_pool": 99,
+    "probe_held_out": 65,
+    "work_families": {
+      "schneider-babiagora": 23,
+      "witkiewicz-teatr": 33,
+      "may-nad-rio-de-la-plata": 116,
+      "pamietniki-lekarzy-1939": 12,
+      "prokesch-nowa-reforma-1923": 25,
+      "zawadzki-kurjer-1904": 17
+    },
+    "content_types": {
+      "unclassified-pending-review": 191,
+      "publisher-backmatter": 35
+    },
+    "cut_rules": {
+      "miner-padded-rectangle": 127,
+      "geometry-v2-accepted": 43,
+      "ink-gap-approved": 56
+    }
+  },
+  "inputs": {
+    "expansion_audit_root": "data\\printed-replay-expansion-v1-audit-reproduced",
+    "replay_pool": "experiments\\2026-10-10\\replay-pool",
+    "accepted_manifest_sha256": "ce0bd632a973f74deb0c8a57d8e6e2637a3419e83e2feced95479a1e29a7f1cb",
+    "pool_manifest_sha256": "9f786bb8cfdfec6939a710baa50cf52b537b7f2bb1ff2af3f4d43acd17219bb5"
+  },
+  "eligible_for_training": false,
+  "eligible_for_evaluation": false,
+  "decision": "Training package assembled as candidates; the human gates decide promotion.",
+  "open_gates": [
+    "second-reviewer sign-off on the reference candidate",
+    "rare PUA spots (5 codepoints, 23 places)",
+    "U+FFFD (86 spots)",
+    "errata page transcription",
+    "content-type classification (64 pool + 127 mining rows unclassified)",
+    "10 pool crops flagged for ink review"
+  ],
+  "limitations": [
+    "Image/text bytes are referenced from the evidence roots by path and hash.",
+    "Protection sets (9 historical + 75 ordinary dev lines) come from the recognizer v2 package.",
+    "The 65 probe pairs are held out and never enter training."
+  ]
+}
