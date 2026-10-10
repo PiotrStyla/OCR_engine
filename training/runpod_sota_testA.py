@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-CODE_REVISION = "PENDING_PIN"
+CODE_REVISION = "607ae333a6f8c61457aa0372eb941679f2c86088"
 IMPACT_REPOSITORY = "PiotrSty/impact-print-v2"
 IMPACT_REVISION = "a2480fde6f15284701458ff370b81cce50dc5c2d"
 IMPACT_SHA256 = "0a9ffa126029703726fc5883a8279ddccf15763c4fdd483ed9b8cc034bdb42f0"
