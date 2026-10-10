@@ -23,6 +23,9 @@ EVIDENCE_PATH = "experiments/2026-10-08/polocrbench-sota-runpod"
 WORK = Path("/workspace/polocrbench-sota-v1")
 WORK.mkdir(parents=True, exist_ok=True)
 python = sys.executable
+# Obraz Runpoda wlacza HF_HUB_ENABLE_HF_TRANSFER=1 bez pakietu hf_transfer:
+# pobieranie modeli padalo natychmiast. Wylaczamy przyspieszenie.
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
 
 print("STACK_PYTHON", sys.version, flush=True)
 assert subprocess.check_output([python, "-c", "import torch; print(torch.cuda.is_available())"],
