@@ -1,0 +1,104 @@
+{
+  "selected": "unchanged-baseline",
+  "candidates": [
+    {
+      "id": "control-lr1e5-replay500",
+      "metrics": {
+        "historical-development": {
+          "cer": 0.3167420814479638,
+          "wer": 0.7972972972972973,
+          "lines": 9,
+          "replacement_characters": 0
+        },
+        "ordinary-development": {
+          "cer": 0.05861010326542004,
+          "wer": 0.2464,
+          "lines": 75,
+          "replacement_characters": 3
+        },
+        "combined": {
+          "cer": 0.08695652173913043,
+          "wer": 0.30472103004291845,
+          "lines": 84,
+          "replacement_characters": 3
+        }
+      },
+      "eligible": false,
+      "reasons": [
+        "ordinary-development:additional-replacement-characters",
+        "combined:additional-replacement-characters",
+        "ordinary:CER-regression",
+        "ordinary:WER-regression",
+        "combined:CER-not-improved"
+      ]
+    },
+    {
+      "id": "low-lr3e6-replay500",
+      "metrics": {
+        "historical-development": {
+          "cer": 0.3190045248868778,
+          "wer": 0.7972972972972973,
+          "lines": 9,
+          "replacement_characters": 0
+        },
+        "ordinary-development": {
+          "cer": 0.055260954507396036,
+          "wer": 0.2368,
+          "lines": 75,
+          "replacement_characters": 2
+        },
+        "combined": {
+          "cer": 0.08422360248447205,
+          "wer": 0.296137339055794,
+          "lines": 84,
+          "replacement_characters": 2
+        }
+      },
+      "eligible": false,
+      "reasons": [
+        "ordinary:CER-regression",
+        "ordinary:WER-regression",
+        "combined:CER-not-improved"
+      ]
+    },
+    {
+      "id": "low-lr3e6-replay2000",
+      "metrics": {
+        "historical-development": {
+          "cer": 0.3257918552036199,
+          "wer": 0.7972972972972973,
+          "lines": 9,
+          "replacement_characters": 0
+        },
+        "ordinary-development": {
+          "cer": 0.056935528886408036,
+          "wer": 0.2416,
+          "lines": 75,
+          "replacement_characters": 2
+        },
+        "combined": {
+          "cer": 0.08645962732919255,
+          "wer": 0.30042918454935624,
+          "lines": 84,
+          "replacement_characters": 2
+        }
+      },
+      "eligible": false,
+      "reasons": [
+        "ordinary:CER-regression",
+        "ordinary:WER-regression",
+        "combined:CER-not-improved"
+      ]
+    }
+  ],
+  "baseline_retained": true,
+  "selection_uses_development_data": true,
+  "independent_benchmark": false,
+  "production_promoted": false,
+  "sota_claim": false,
+  "base_model": "PiotrSty/trocr-pl-mixed-v3",
+  "base_revision": "85d0c91c26f8e088849096dded7c9ba10b4cd9c9",
+  "dataset_revision": "3a301fd12a6272b28774d1888213ddf528b47f24",
+  "reviewed_v3_pairs": 226,
+  "probe_held_out": 65
+}
