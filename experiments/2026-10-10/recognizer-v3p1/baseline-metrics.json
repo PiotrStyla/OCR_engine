@@ -1,0 +1,20 @@
+{
+  "historical-development": {
+    "cer": 0.33031674208144796,
+    "wer": 0.8108108108108109,
+    "lines": 9,
+    "replacement_characters": 0
+  },
+  "ordinary-development": {
+    "cer": 0.053307284398548704,
+    "wer": 0.2288,
+    "lines": 75,
+    "replacement_characters": 2
+  },
+  "combined": {
+    "cer": 0.08372670807453417,
+    "wer": 0.290414878397711,
+    "lines": 84,
+    "replacement_characters": 2
+  }
+}
