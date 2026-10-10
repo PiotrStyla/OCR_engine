@@ -1,0 +1,95 @@
+{
+  "schema": "slayer-replay-pool-candidate-v1",
+  "cut_rule": "line ink band + 1 px margin (approved 2026-10-10)",
+  "input_geometry_sha256": "4d87661beed0f8a47331c2c162fef8656549bbbef530ea47b49e7b1fe94a247a",
+  "totals": {
+    "anchors": 99,
+    "geometry_v2_accepted": 43,
+    "ink_gap_approved": 56,
+    "ink_verified_clean": 89,
+    "content_types": {
+      "unclassified-pending-review": 64,
+      "publisher-backmatter": 35
+    }
+  },
+  "pages": [
+    {
+      "page_id": "may-nad-rio-de-la-plata-0523",
+      "anchors": 17,
+      "rule": "geometry-v2-accepted",
+      "geometry_v2_accepted": 17,
+      "ink_verified_clean": 17,
+      "content_type": "unclassified-pending-review"
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0542",
+      "anchors": 12,
+      "rule": "geometry-v2-accepted",
+      "geometry_v2_accepted": 12,
+      "ink_verified_clean": 12,
+      "content_type": "unclassified-pending-review"
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0549",
+      "anchors": 14,
+      "rule": "geometry-v2-accepted",
+      "geometry_v2_accepted": 14,
+      "ink_verified_clean": 14,
+      "content_type": "unclassified-pending-review"
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0557",
+      "anchors": 16,
+      "rule": "ink-gap-approved",
+      "geometry_v2_accepted": 0,
+      "ink_verified_clean": 16,
+      "content_type": "publisher-backmatter"
+    },
+    {
+      "page_id": "may-nad-rio-de-la-plata-0563",
+      "anchors": 19,
+      "rule": "ink-gap-approved",
+      "geometry_v2_accepted": 0,
+      "ink_verified_clean": 19,
+      "content_type": "publisher-backmatter"
+    },
+    {
+      "page_id": "witkiewicz-teatr-0014",
+      "anchors": 5,
+      "rule": "ink-gap-approved",
+      "geometry_v2_accepted": 0,
+      "ink_verified_clean": 3,
+      "content_type": "unclassified-pending-review"
+    },
+    {
+      "page_id": "witkiewicz-teatr-0022",
+      "anchors": 6,
+      "rule": "ink-gap-approved",
+      "geometry_v2_accepted": 0,
+      "ink_verified_clean": 5,
+      "content_type": "unclassified-pending-review"
+    },
+    {
+      "page_id": "zawadzki-kurjer-1904-0004",
+      "anchors": 10,
+      "rule": "ink-gap-approved",
+      "geometry_v2_accepted": 0,
+      "ink_verified_clean": 3,
+      "content_type": "unclassified-pending-review"
+    }
+  ],
+  "eligible_for_training": false,
+  "eligible_for_evaluation": false,
+  "decision": "Candidate pool assembled; promotion needs the remaining human gates.",
+  "open_gates": [
+    "second-reviewer sign-off on the reference candidate",
+    "rare PUA spots (5 codepoints, 23 places)",
+    "U+FFFD (86 spots)",
+    "errata page transcription",
+    "content-type classification for non-backmatter pages"
+  ],
+  "limitations": [
+    "Ink verification is threshold-based, not a human inspection.",
+    "Content types are flagged only where documented earlier."
+  ]
+}

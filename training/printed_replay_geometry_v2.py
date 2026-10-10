@@ -104,7 +104,7 @@ def run_page(native, lines, reference):
             "geometry_candidates": len(anchors), "accepted_anchors": len(accepted),
             "rejected_reasons": dict(Counter(row["reason"] for row in rejected)),
             "conflicts": details, "gated_by_overlap": not admitted,
-            "accepted": accepted, "thetas": thetas,
+            "accepted": accepted, "candidates": anchors, "thetas": thetas,
             "page_theta": page_theta, "axis_degrees": axis,
             "axis_snapped_to_flat": axis != page_theta}
 
