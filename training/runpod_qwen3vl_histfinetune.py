@@ -20,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-CODE_REVISION = "TBD"
+CODE_REVISION = "f3eb05f5fe728767769398907345119077330bf7"
 SOURCE_REPOSITORY = "PiotrSty/impact-psnc-polish-ocr"
 SOURCE_REVISION = "c7cb156fb95d2880699c33725bbaf1fbc1008fea"
 IMPACT_REPOSITORY = "PiotrSty/impact-print-v2"
