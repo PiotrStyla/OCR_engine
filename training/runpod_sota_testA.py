@@ -104,6 +104,7 @@ print("INPUT_READY", staged, len(rows), "stron", flush=True)
 
 for model in MODELS:
     out = WORK / "smoke" / model
+    shutil.rmtree(out, ignore_errors=True)  # /workspace jest trwaly: przebieg musi byc powtarzalny
     result = subprocess.run([PYTHONS[model], "-m", "training.run_sota_benchmark", "--model", model,
                              "--benchmark", str(staged), "--output", str(out), "--limit", "1"],
                             cwd=repo, capture_output=True, text=True)
@@ -118,6 +119,7 @@ for model in MODELS:
 summary = {}
 for model in MODELS:
     out = WORK / "runs" / model
+    shutil.rmtree(out, ignore_errors=True)
     result = subprocess.run([PYTHONS[model], "-m", "training.run_sota_benchmark", "--model", model,
                              "--benchmark", str(staged), "--output", str(out)], cwd=repo)
     assert result.returncode == 0, f"Pomiar nie ukonczyl sie dla {model}."
