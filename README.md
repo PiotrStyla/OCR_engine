@@ -30,6 +30,19 @@ należy rozróżnić prozę, spis treści i materiał wydawniczy.
 [Wynik, audyt i następny eksperyment](docs/PRINTED_REPLAY_GEOMETRY_V1_RESULT_20261008.md).
 [Kompletny ZIP, arkusze i paragony na HF](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/089ff368ec0f5b49230940c09a7f20b3d62859c4/experiments/2026-10-08/printed-replay-geometry-v1).
 
+**Geometria per linii V2 (10 października): dokładna projekcja zamiast AABB.**
+Rzutowanie narożników pudełek słów na normalną mediany kąta strony (bez inflacji
+i zaokrągleń) na tych samych 11 stronach: **43 kotwice** (tyle co V1) przy
+**6 konfliktach** zamiast 27 natywnych / 9 w V1. Bramka regresji **zaliczona** —
+gazeta Zawadzkiego wraca do 1 konfliktu (pari­te z natywną; V1 dawała 4).
+Wariant z klatkami per linii został **sfalsyfikowany** przez tę bramkę (szum
+dopasowania kąta tworzył fałszywe konflikty 0,3–1,3 px) — test regresji to
+zapisuje. Reszta: 6 prawdziwych nakłań 2–3 px na wierszach o ciasnym
+interliniażu — tu kończy się geometria prostokątów; 11 z 43 wycinków ma
+prostokąt sąsiada w kadrze i trafia do przeglądu granic. Wszystko dalej
+`eligible_for_training: false`.
+[Wynik V2 i granica metody](docs/PRINTED_REPLAY_GEOMETRY_V2_RESULT_20261010.md).
+
 ### Pomiar SOTA na zamrożonym teście A — notebook gotowy
 
 **Mierzymy lukę do SOTA na 36 stronach testu A (IMPACT history_print).**
