@@ -35,6 +35,22 @@
         "PUA mapping table",
         "documented exclusion"
       ]
+    },
+    {
+      "gate": "pua-mapping-policy",
+      "cases": 601,
+      "decision": "map PUA to historical glyphs (six-system consensus table)",
+      "status": "applied-to-candidate",
+      "applied": {
+        "candidate": "experiments/2026-10-10/reference-candidate/history_testA_manifest.candidate-v2.jsonl",
+        "mapped_codepoints": 5,
+        "mapped_spots": 601,
+        "unmapped_codepoints": 5,
+        "effect": "every system scores 0.55-1.78 CER points better"
+      },
+      "decided_by": "user",
+      "decided_in": "conversation",
+      "date": "2026-10-10"
     }
   ],
   "promotion": "none; eligible_for_training stays False until the full review passes"

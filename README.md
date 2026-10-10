@@ -100,6 +100,15 @@ systemu. Bramki decyzji (errata, polityka mapowania PUA):
 [dokument](docs/POLLOCR_REFERENCE_DEFECTS_20261010.md),
 [kolejka recenzyjna 34 pozycji](experiments/2026-10-10/reference-defects/README.md).
 
+**Decyzja PUA wdrożona (10 października):** mapa do glifów historycznych
+(`ſt`, `ſi`, `ſł`, `ct`, `ſsi`) z konsensu 6 systemów — 601 miejsc, 5 rzadkich
+kodpunktów do wglądu. Zbudowany **kandydat manifestu v2** (zamrożony plik
+nietknięty) i policzony efekt: każdy system poprawia się o 0,55–1,78 pkt CER
+(gpt-5.4: 16,87% → **15,09%**, Qwen3-VL-4B: 20,03% → 18,96%). Kandydat czeka na
+zgodność drugiego recenzenta przed wydaniem.
+[Glify, kandydat i efekt na wyniki](experiments/2026-10-10/reference-candidate/README.md),
+[materiał dowodowy](experiments/2026-10-10/reference-review/README.md).
+
 ### DATA ENGINE recognizera V3: rozbudowa danych replay
 
 **Pilotaż replay V2 zakończony: 26 par, w tym 25 kandydatów i jedna kontrolna.**

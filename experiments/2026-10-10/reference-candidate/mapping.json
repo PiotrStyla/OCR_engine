@@ -1,0 +1,19 @@
+{
+  "schema": "polocrbench-reference-candidate-v2",
+  "decision": "map PUA to historical glyphs (user, 2026-10-10)",
+  "mapping": {
+    "U+EADA": "ſt",
+    "U+EBA2": "ſi",
+    "U+F51E": "ſl",
+    "U+EEC5": "ct",
+    "U+EBA7": "ſſi"
+  },
+  "unmapped": {
+    "U+EBA6": "16x: ff 36 / ss 22 / long-s 4 - ligature ambiguous, needs human look",
+    "U+E5DC": "3x: n / n-acute / ni - needs human look",
+    "U+F516": "2x: z (4 systems) - needs human look",
+    "U+F50E": "1x: divergent readings",
+    "U+EBA3": "1x: divergent readings"
+  },
+  "policy": "historical glyphs preserved; no normalization to modern spelling"
+}

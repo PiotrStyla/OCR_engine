@@ -1,0 +1,51 @@
+{
+  "schema": "polocrbench-reference-candidate-v2",
+  "verification": {
+    "rows": 36,
+    "mapped_spots": 601,
+    "unmapped_codepoints": 5
+  },
+  "systems": {
+    "tesseract-js": {
+      "cer_frozen": 0.3494192610168194,
+      "cer_candidate": 0.3408170985435975,
+      "delta": -0.00860216247322193,
+      "pages": 36
+    },
+    "gpt-4o-mini": {
+      "cer_frozen": 0.5810834082776831,
+      "cer_candidate": 0.5755627009646302,
+      "delta": -0.005520707313052875,
+      "pages": 36
+    },
+    "qwen3-vl-235b-api": {
+      "cer_frozen": 0.2047607202311475,
+      "cer_candidate": 0.19146964251938717,
+      "delta": -0.01329107771176033,
+      "pages": 36
+    },
+    "gpt-5.4": {
+      "cer_frozen": 0.16874916285566674,
+      "cer_candidate": 0.1509173444297333,
+      "delta": -0.017831818425933427,
+      "pages": 36
+    },
+    "qwen3-vl-4b": {
+      "cer_frozen": 0.20032146342396817,
+      "cer_candidate": 0.18957821070550407,
+      "delta": -0.010743252718464102,
+      "pages": 36
+    },
+    "paddlevl-1.6": {
+      "cer_frozen": 0.33799582862937944,
+      "cer_candidate": 0.32668810289389066,
+      "delta": -0.011307725735488772,
+      "pages": 36
+    }
+  },
+  "effect": "candidate references score every system; deltas show the mapping cost",
+  "frozen_manifest_sha256": "95ed716cbafc6f3e7c8d498c7d678dfb452fc5b210d3d0ec76155dcbce6f40d6",
+  "eligible_for_training": false,
+  "published": false,
+  "note": "Candidate only; the frozen manifest is unchanged and publication needs review."
+}
