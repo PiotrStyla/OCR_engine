@@ -93,6 +93,8 @@ order: human boundary review of the 11 intrusion crops and the 6 residual
 pairs; content-type classification (prose / contents / publisher backmatter);
 only then a replay training dataset.
 
+[Kompletny ZIP i dowody na HF (rewizja pinned)](https://huggingface.co/datasets/PiotrSty/slayer-ocr-experiment-evidence/tree/faabf819f252ff9ba6d3c1e01319eef3e42d42b5/experiments/2026-10-10).
+
 ## Reproduce
 
 ```powershell
