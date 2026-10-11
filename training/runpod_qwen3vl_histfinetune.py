@@ -199,7 +199,7 @@ def main():
             return {"input_ids": input_ids, "labels": labels,
                     "attention_mask": tokens["attention_mask"][0],
                     "pixel_values": tokens["pixel_values"][0],
-                    "image_grid_thw": tokens["image_grid_thw"][0]}
+                    "image_grid_thw": tokens["image_grid_thw"]}  # keep 2D (1,3); collate concatenates
 
     def collate(batch):
         pad = processor.tokenizer.pad_token_id
