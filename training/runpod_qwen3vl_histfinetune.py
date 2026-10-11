@@ -42,6 +42,39 @@ EVIDENCE_PATH = "experiments/2026-10-10/qwen3vl-hist-finetune"
 
 WORK = Path("/workspace/qwen3vl-hist-finetune")
 
+# Custom chat template for Qwen3-VL — avoids bug in model's default template
+QWEN3VL_CHAT_TEMPLATE = """{% for message in messages %}
+    {% if message.role == 'user' %}
+        <|im_start|>user
+        {% if message.content is string %}
+            {{ message.content }}
+        {% else %}
+            {% for content in message.content %}
+                {% if content.type == 'image' or 'image' in content %}
+                    <|vision_start|><|image_pad|><|vision_end|>
+                {% elif content.type == 'text' or 'text' in content %}
+                    {{ content.text }}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        <|im_end|>
+    {% elif message.role == 'assistant' %}
+        <|im_start|>assistant
+        {% if message.content is string %}
+            {{ message.content }}
+        {% else %}
+            {% for content in message.content %}
+                {% if 'text' in content %}
+                    {{ content.text }}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        <|im_end|>
+    {% endif %}
+{% endfor %}
+{% if add_generation_prompt %}
+    <|im_start|>assistant
+{% endif %}"""
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -77,7 +110,7 @@ def chat_example(row, prompt):
         {"role": "user", "content": [
             {"type": "image", "image": row["_image"]},
             {"type": "text", "text": prompt}]},
-        {"role": "assistant", "content": [{"type": "text", "text": row["text"]}]}]}
+        {"role": "assistant", "content": row["text"]}]}  # string works with custom template
 
 
 def main():
@@ -135,6 +168,8 @@ def main():
         MODEL_SOURCE, device_map={"": 0}, torch_dtype=torch.float16,
         attn_implementation="sdpa", quantization_config=quantization)
     processor = AutoProcessor.from_pretrained(MODEL_SOURCE, min_pixels=MIN_PIXELS, max_pixels=MAX_PIXELS)
+    # Override buggy default chat template
+    processor.tokenizer.chat_template = QWEN3VL_CHAT_TEMPLATE
     engine = get_peft_model(engine, LoraConfig(
         r=LORA_R, lora_alpha=LORA_ALPHA, lora_dropout=0.05, bias="none", task_type="CAUSAL_LM",
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]))
