@@ -41,6 +41,7 @@ EVIDENCE_REPOSITORY = "PiotrSty/slayer-ocr-experiment-evidence"
 EVIDENCE_PATH = "experiments/2026-10-10/qwen3vl-hist-finetune"
 
 WORK = Path("/workspace/qwen3vl-hist-finetune")
+REPO = Path("/workspace/OCR_engine-finetune")
 
 # Custom chat template for Qwen3-VL — avoids bug in model's default template
 QWEN3VL_CHAT_TEMPLATE = """{% for message in messages %}
@@ -75,6 +76,30 @@ QWEN3VL_CHAT_TEMPLATE = """{% for message in messages %}
 {% if add_generation_prompt %}
     <|im_start|>assistant
 {% endif %}"""
+
+def ensure_repo():
+    """Clone/fetch/checkout only when needed; tolerate stale index.lock.
+
+    The pod's /workspace persists across container restarts, so on a
+    restart the repo already exists and is checked out at CODE_REVISION.
+    Keeping the block idempotent avoids git lock errors after a crash.
+    """
+    lock = REPO / ".git" / "index.lock"
+    if lock.exists():
+        lock.unlink()
+        print("RM_STALE_INDEX_LOCK", flush=True)
+    if not REPO.exists():
+        subprocess.run(["git", "clone", "https://github.com/PiotrStyla/OCR_engine.git", str(REPO)], check=True)
+    head = subprocess.check_output(["git", "-C", str(REPO), "rev-parse", "HEAD"], text=True).strip()
+    if head != CODE_REVISION:
+        # stale branches may hold lock files; scrub them
+        for stale in (REPO / ".git").glob("*.lock"):
+            stale.unlink()
+        subprocess.run(["git", "-C", str(REPO), "fetch", "origin", "main"], check=True)
+        subprocess.run(["git", "-C", str(REPO), "checkout", "--detach", CODE_REVISION], check=True)
+    print("CODE_REVISION", subprocess.check_output(["git", "-C", str(REPO), "rev-parse", "HEAD"], text=True).strip(),
+          flush=True)
+
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -118,14 +143,8 @@ def main():
     python = sys.executable
     subprocess.run([python, "-m", "pip", "install", "-q", "transformers==4.57.6", "peft==0.19.1",
                     "bitsandbytes", "accelerate==1.13.0", "jiwer==4.0.0", "huggingface_hub==0.36.2"], check=True)
-    repo = Path("/workspace/OCR_engine-finetune")
-    if not repo.exists():
-        subprocess.run(["git", "clone", "https://github.com/PiotrStyla/OCR_engine.git", str(repo)], check=True)
-    subprocess.run(["git", "-C", str(repo), "fetch", "origin", "main"], check=True)
-    subprocess.run(["git", "-C", str(repo), "checkout", "--detach", CODE_REVISION], check=True)
-    print("CODE_REVISION", subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip(),
-          flush=True)
-    sys.path.insert(0, str(repo))
+    ensure_repo()
+    sys.path.insert(0, str(REPO))
     import torch
     from PIL import Image
     from jiwer import cer
@@ -155,7 +174,7 @@ def main():
     staged = WORK / "benchmark"
     if not (staged / "manifest.jsonl").exists():
         subprocess.run([sys.executable, "-m", "training.stage_impact_benchmark", "--archive", str(archive),
-                        "--output", str(staged)], cwd=repo, check=True)
+                        "--output", str(staged)], cwd=REPO, check=True)
     test_rows = read_rows(staged / "manifest.jsonl")
     assert len(test_rows) == 36, f"Oczekiwano 36 stron testu A, jest {len(test_rows)}."
     train_rows, dev_rows = build_finetune_rows(pages, {row["sha256"] for row in test_rows})
