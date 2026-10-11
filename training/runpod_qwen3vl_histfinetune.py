@@ -106,11 +106,11 @@ def build_finetune_rows(pages, test_image_hashes):
 
 
 def chat_example(row, prompt):
-    return {"messages": [
+    return [
         {"role": "user", "content": [
             {"type": "image", "image": row["_image"]},
             {"type": "text", "text": prompt}]},
-        {"role": "assistant", "content": row["text"]}]}  # string works with custom template
+        {"role": "assistant", "content": row["text"]}]
 
 
 def main():
