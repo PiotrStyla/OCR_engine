@@ -168,7 +168,8 @@ def main():
         MODEL_SOURCE, device_map={"": 0}, torch_dtype=torch.float16,
         attn_implementation="sdpa", quantization_config=quantization)
     processor = AutoProcessor.from_pretrained(MODEL_SOURCE, min_pixels=MIN_PIXELS, max_pixels=MAX_PIXELS)
-    # Override buggy default chat template
+    # Override buggy default chat template: processor's own attribute takes precedence
+    processor.chat_template = QWEN3VL_CHAT_TEMPLATE
     processor.tokenizer.chat_template = QWEN3VL_CHAT_TEMPLATE
     engine = get_peft_model(engine, LoraConfig(
         r=LORA_R, lora_alpha=LORA_ALPHA, lora_dropout=0.05, bias="none", task_type="CAUSAL_LM",
