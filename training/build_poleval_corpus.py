@@ -1,0 +1,1 @@
+@@FILE:C:/Users/Hipek/OCR_engine/training/build_poleval_corpus.py
